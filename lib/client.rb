@@ -4,10 +4,13 @@ module Teachbase
   module Bot
     class Client
 
-      def initialize
-      end
+      attr_reader :commands
 
-      
+      def initialize
+        @commands = {signin: Emoji.find_by_alias("rocket").raw + I18n.t('signin'),
+                     settings: Emoji.find_by_alias("wrench").raw + I18n.t('settings'),
+                     hello: "Hello"}
+      end
 
     end
   end

@@ -5,7 +5,6 @@ class MessageSender
   attr_reader :bot
   attr_reader :text
   attr_reader :chat
-  #attr_reader :answers
   attr_reader :reply_to_message
   attr_reader :menu
 
