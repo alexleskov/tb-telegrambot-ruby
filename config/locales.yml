@@ -1,0 +1,16 @@
+en:
+  greeting_message: "Hello"
+  farewell_message: "Bye"
+  start_menu_message: "Choose that you want"
+  thanks: "Thanks"
+  signin: "[Sign in]"
+  settings: "[Settings]"
+  hide_menu: "[Hide menu]"
+ru: 
+  greeting_message: "Привет"
+  farewell_message: "Пока"
+  start_menu_message: "С чего начнем?"
+  thanks: "Спасибо"
+  signin: "[Войти]"
+  settings: "[Настройки]"
+  hide_menu: "[Спрячь меню]"

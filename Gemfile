@@ -1,0 +1,10 @@
+source 'https://rubygems.org'
+
+gem 'telegram-bot-ruby'
+gem 'activerecord', '< 5.3.0', '>= 4.2.7'
+gem 'i18n'
+gem 'pg'
+gem 'rake', '>= 10.0'
+gem 'standalone_migrations', '~> 5.2', '>= 5.2.7'
+gem 'encrypted_strings'
+gem 'gemoji'
