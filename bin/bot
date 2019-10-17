@@ -20,7 +20,7 @@ telegram_bot_client = Telegram::Bot::Client.new(token)
 telegram_bot_client.run do |bot|
   bot.listen do |message|
     options = { bot: bot, message: message, tb_bot_client: Teachbase::Bot::Client.new }
-    
+
     logger.debug "@#{message.from.username}: #{message.text}"
     MessageResponder.new(options).respond
   end
