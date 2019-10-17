@@ -8,7 +8,7 @@ module Teachbase
     class ActionController
       VALID_EMAIL_REGEXP = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i.freeze
       VALID_PASSWORD_REGEXP = /[\w|._#*^!+=@-]{6,40}$/.freeze
-      ABORT_ACTION_COMMAND = %r{^/stop}.freeze
+      ABORT_ACTION_COMMAND = /^\/stop/.freeze
 
       attr_reader :user, :message_responder, :tb_bot_client, :tg_info
 
@@ -34,16 +34,16 @@ module Teachbase
       end
 
       def match_data
-        on %r{^/start} do
+        on /^\/start/ do
           answer_with_greeting_message
-          strating_menu
+          #strating_menu
         end
 
-        on %r{^/close} do
+        on /^\/close/ do
           answer_with_farewell_message
         end
 
-        on %r{^/hide_menu} do
+        on /^\/hide_menu/ do
           hide_menu
         end
       end
