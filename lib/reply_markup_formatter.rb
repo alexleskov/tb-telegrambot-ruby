@@ -3,7 +3,7 @@ class ReplyMarkupFormatter
 
   def initialize(options = {})
     @array = options[:buttons]
-    @slices = options[:slices].present? ? options[:slices] : 1
+    @slices = !options[:slices].nil? ? options[:slices] : 1
   end
 
   def get_markup

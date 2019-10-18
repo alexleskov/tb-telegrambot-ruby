@@ -4,8 +4,8 @@ require 'telegram/bot'
 require 'gemoji'
 
 require './lib/message_responder'
+require './controllers/controller'
 require './lib/app_configurator'
-require './lib/client'
 
 config = AppConfigurator.new
 config.configure
@@ -19,9 +19,9 @@ telegram_bot_client = Telegram::Bot::Client.new(token)
 
 telegram_bot_client.run do |bot|
   bot.listen do |message|
-    options = { bot: bot, message: message, tb_bot_client: Teachbase::Bot::Client.new }
+    options = { bot: bot, message: message}
 
-    logger.debug "@#{message.from.username}: #{message.text}"
+    logger.debug "@#{message.from.username}: #{message}"
     MessageResponder.new(options).respond
   end
 end
