@@ -32,15 +32,6 @@ module Teachbase
         answer.send "#{I18n.t('error')} #{e}"
       end
 
-      #protected
-
-      def take_data
-        message_responder.bot.listen do |message|
-          @logger.debug "taking data: @#{message.from.username}: #{message.text}"
-          break message.text
-        end
-      end
-
       def signin
         answer.send "#{Emoji.find_by_alias('rocket').raw}*#{I18n.t('signin')} #{I18n.t('in_teachbase')}*"
         @logger.debug "user: #{user.first_name}, #{user.last_name}"
@@ -78,13 +69,6 @@ module Teachbase
         # retry
       end
 
-      def request_data(validate_type)
-        data = take_data
-        return if data =~ ABORT_ACTION_COMMAND || commands.command_by_value?(data)
-
-        value = data if validation(validate_type, data)
-      end
-
       def load_profile
         retries ||= 0
         retries_off = 3
@@ -100,6 +84,22 @@ module Teachbase
         \n#{Emoji.find_by_alias('green_book').raw}#{I18n.t('courses')}: #{I18n.t('active_courses')}: #{profile['active_courses_count']} / #{I18n.t('archived_courses')}: #{profile['archived_courses_count']}
         \n#{Emoji.find_by_alias('school').raw}#{I18n.t('average_score_percent')}: #{profile['average_score_percent']}%
         \n#{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{profile['total_time_spent'] / 3600} #{I18n.t('hour')}"
+      end
+
+      protected
+
+      def take_data
+        message_responder.bot.listen do |message|
+          @logger.debug "taking data: @#{message.from.username}: #{message.text}"
+          break message.text
+        end
+      end
+
+      def request_data(validate_type)
+        data = take_data
+        return if data =~ ABORT_ACTION_COMMAND || commands.command_by?(:value,data)
+
+        value = data if validation(validate_type, data)
       end
 
       def validation(type, value)

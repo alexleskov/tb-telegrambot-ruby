@@ -2,8 +2,6 @@ require './controllers/controller'
 
 class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
 
-  attr_reader :user, :message_responder, :answer, :menu
-
   def initialize(message_responder)
     super(message_responder, :from)
   end

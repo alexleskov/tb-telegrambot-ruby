@@ -20,22 +20,20 @@ module Teachbase
         raise "'CommandList' not created" if all.empty?
       end
 
-      def command_by_value?(value)
-        all.any? { |command| command.value == value}
+      def command_by?(param, data)
+        raise "No such param: #{param}" if ![:key,:emoji,:text,:value].include?(param)
+        all.any? { |command| command.public_send(param) == data}
       end
 
-      def find_by_value(value)
-        return unless command_by_value?(value)
+      def find_by(param, data)
+        return unless command_by?(param, data)
 
-        command = all.select { |command| command.value == value}
+        command = all.select { |command| command.public_send(param) == data}
         command.first
       end
 
-      def get_value(key)
-        raise "No such command with key: #{key}" unless all.any? { |command| command.key == key}
-
-        command = all.select { |command| command.key == key}   
-        command.first.value     
+      def show(key)
+        find_by(:key, key).value
       end
     end
   end

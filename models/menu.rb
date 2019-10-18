@@ -30,8 +30,7 @@ module Teachbase
       end
 
       def starting
-        buttons = [commands.get_value(:signin), commands.get_value(:settings)]
-        @logger.debug "buttons: '#{[commands.get_value(:signin), commands.get_value(:settings)]}"
+        buttons = [commands.show(:signin), commands.show(:settings)]
         create(buttons, :menu, I18n.t('start_menu_message'))
       end
 
