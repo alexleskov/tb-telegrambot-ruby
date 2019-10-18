@@ -29,7 +29,6 @@ module Teachbase
         @menu = Teachbase::Bot::Menu.new(message_responder, dest)
         @logger = AppConfigurator.new.get_logger
         @apitoken = Teachbase::Bot::ApiToken.find_by(user_id: user.id, active: true)
-
         # @logger.debug "mes_res: '#{message_responder}"
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}"
@@ -40,29 +39,30 @@ module Teachbase
         @logger.debug "user: #{user.first_name}, #{user.last_name}"
 
         begin
-        
-        if @apitoken.nil? || !@apitoken.active?
-          loop do
-            answer.send I18n.t('add_user_email').to_s
-            user.email = request_data(:email)
-            answer.send I18n.t('add_user_password').to_s
-            user.password = request_data(:password)
-            break if [user.email, user.password].any?(nil) || [user.email, user.password].all?(String)
-          end
-          
-          user.api_auth(:mobile_v2, user_email: user.email, password: user.password)
-          user.password.encrypt!(:symmetric, password: @encrypt_key)
 
-          @apitoken = Teachbase::Bot::ApiToken.create!(user_id: user.id,
-                                                       version: user.tb_api.token.version,
-                                                       grant_type: user.tb_api.token.grant_type,
-                                                       expired_at: user.tb_api.token.expired_at,
-                                                       value: user.tb_api.token.value,
-                                                       active: true)
-        else
-          raise "API Token value empty" if @apitoken.value.empty?
-          user.api_auth(:mobile_v2, access_token: @apitoken.value)
-        end
+          if @apitoken.nil? || !@apitoken.active?
+            loop do
+              answer.send I18n.t('add_user_email').to_s
+              user.email = request_data(:email)
+              answer.send I18n.t('add_user_password').to_s
+              user.password = request_data(:password)
+              break if [user.email, user.password].any?(nil) || [user.email, user.password].all?(String)
+            end
+            
+            user.api_auth(:mobile_v2, user_email: user.email, password: user.password)
+            user.password.encrypt!(:symmetric, password: @encrypt_key)
+
+            @apitoken = Teachbase::Bot::ApiToken.create!(user_id: user.id,
+                                                         version: user.tb_api.token.version,
+                                                         grant_type: user.tb_api.token.grant_type,
+                                                         expired_at: user.tb_api.token.expired_at,
+                                                         value: user.tb_api.token.value,
+                                                         active: true)
+          elsif @apitoken.active?
+            raise "API Token value empty" if @apitoken.value.empty?
+            user.api_auth(:mobile_v2, access_token: @apitoken.value)
+          else raise "Can't load API Token"
+          end
 
         rescue RuntimeError => e
           answer.send "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"

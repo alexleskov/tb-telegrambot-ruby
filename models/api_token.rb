@@ -4,14 +4,13 @@ module Teachbase
   module Bot
     class ApiToken < ActiveRecord::Base
       belongs_to :users, dependent: :destroy
-    end
 
       def active?
-        if Time.now.utc >= token.expired_at
-          token.active = false
-        else
-          token.active = true
-        end
+        return if value.nil? || value.empty?
+        result = expired_at >= Time.now.utc
+        active = result
+        save
       end
+    end
   end
 end
