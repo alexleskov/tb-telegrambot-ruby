@@ -3,9 +3,10 @@
 require 'telegram/bot'
 require 'gemoji'
 
+require './lib/app_configurator'
 require './lib/message_responder'
 require './controllers/controller'
-require './lib/app_configurator'
+
 
 config = AppConfigurator.new
 config.configure

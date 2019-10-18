@@ -1,5 +1,6 @@
 require './lib/message_sender'
 require './lib/message_responder'
+require './models/api_token'
 require './models/answer'
 require './models/menu'
 require 'encrypted_strings'
@@ -27,6 +28,8 @@ module Teachbase
         @answer = Teachbase::Bot::Answer.new(message_responder, dest)
         @menu = Teachbase::Bot::Menu.new(message_responder, dest)
         @logger = AppConfigurator.new.get_logger
+        @apitoken = Teachbase::Bot::ApiToken.find_by(user_id: user.id, active: true)
+
         # @logger.debug "mes_res: '#{message_responder}"
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}"
@@ -36,7 +39,9 @@ module Teachbase
         answer.send "#{Emoji.find_by_alias('rocket').raw}*#{I18n.t('signin')} #{I18n.t('in_teachbase')}*"
         @logger.debug "user: #{user.first_name}, #{user.last_name}"
 
-        if user.tb_api.nil?
+        begin
+        
+        if @apitoken.nil? || !@apitoken.active?
           loop do
             answer.send I18n.t('add_user_email').to_s
             user.email = request_data(:email)
@@ -44,14 +49,31 @@ module Teachbase
             user.password = request_data(:password)
             break if [user.email, user.password].any?(nil) || [user.email, user.password].all?(String)
           end
+          
+          user.api_auth(:mobile_v2, user_email: user.email, password: user.password)
+          user.password.encrypt!(:symmetric, password: @encrypt_key)
+
+          @apitoken = Teachbase::Bot::ApiToken.create!(user_id: user.id,
+                                                       version: user.tb_api.token.version,
+                                                       grant_type: user.tb_api.token.grant_type,
+                                                       expired_at: user.tb_api.token.expired_at,
+                                                       value: user.tb_api.token.value,
+                                                       active: true)
+        else
+          raise "API Token value empty" if @apitoken.value.empty?
+          user.api_auth(:mobile_v2, access_token: @apitoken.value)
         end
 
-        raise if [user.email, user.password].any?(nil)
+        rescue RuntimeError => e
+          answer.send "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+          retry
+        end
 
-        user.password.encrypt!(:symmetric, password: @encrypt_key)
-        user.api_auth(:mobile_v2, user_email: user.email, password: user.password.decrypt)
-        @logger.debug "user2: #{user.first_name}, #{user.last_name}, #{user.tb_api}, token: #{user.tb_api.token.value}"
+        user.auth_at = Time.now.utc
         profile = load_profile
+
+        raise "Profile is not loaded" if profile.nil?
+
         user.first_name = profile["name"]
         user.last_name = profile["last_name"]
         user.external_id = profile["id"]
@@ -64,18 +86,16 @@ module Teachbase
 
         menu.testing
       rescue RuntimeError => e
-        answer.send "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
-
-        # retry
+        answer.send "#{I18n.t('error')} #{e}"
       end
 
       def load_profile
-        retries ||= 0
+        retries ||= 1
         retries_off = 3
         user.load_profile
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}\n#{I18n.t('retry')}: ##{retries}.. (#{retries_off})"
-        retry if (retries += 1) < 3
+        retry if (retries += 1) < 4
       end
 
       def learning_profile_state
