@@ -26,3 +26,4 @@ telegram_bot_client.run do |bot|
     MessageResponder.new(options).respond
   end
 end
+

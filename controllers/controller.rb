@@ -35,78 +35,80 @@ module Teachbase
       end
 
       def signin
-        answer.send "#{Emoji.find_by_alias('rocket').raw}*#{I18n.t('signin')} #{I18n.t('in_teachbase')}*"
-        @logger.debug "user: #{user.first_name}, #{user.last_name}"
-
-        begin
-
-          if @apitoken.nil? || !@apitoken.active?
-            loop do
-              answer.send I18n.t('add_user_email').to_s
-              user.email = request_data(:email)
-              answer.send I18n.t('add_user_password').to_s
-              user.password = request_data(:password)
-              break if [user.email, user.password].any?(nil) || [user.email, user.password].all?(String)
-            end
-            
-            user.api_auth(:mobile_v2, user_email: user.email, password: user.password)
-            user.password.encrypt!(:symmetric, password: @encrypt_key)
-
-            @apitoken = Teachbase::Bot::ApiToken.create!(user_id: user.id,
-                                                         version: user.tb_api.token.version,
-                                                         grant_type: user.tb_api.token.grant_type,
-                                                         expired_at: user.tb_api.token.expired_at,
-                                                         value: user.tb_api.token.value,
-                                                         active: true)
-          elsif @apitoken.active?
-            raise "API Token value empty" if @apitoken.value.empty?
-            user.api_auth(:mobile_v2, access_token: @apitoken.value)
-          else raise "Can't load API Token"
-          end
-
-        rescue RuntimeError => e
-          answer.send "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
-          retry
-        end
-
-        user.auth_at = Time.now.utc
-        profile = load_profile
-
-        raise "Profile is not loaded" if profile.nil?
-
-        user.first_name = profile["name"]
-        user.last_name = profile["last_name"]
-        user.external_id = profile["id"]
-        user.phone = profile["phone"]
-        answer.send I18n.t('auth_success')
-        user.save
-        answer.send "#{Emoji.find_by_alias('heart').raw}*#{I18n.t('greetings')}* *#{I18n.t('in_teachbase')}!*
-                \n[#{profile['name']} #{profile['last_name']}](#{profile['avatar_url']})"
-        learning_profile_state
-
+        authorization
+        return if !@apitoken.active?
+        call_profile
+        show_profile_state
         menu.testing
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}"
       end
 
-      def load_profile
+      def authorization
+        answer.send "#{Emoji.find_by_alias('rocket').raw}*#{I18n.t('signin')} #{I18n.t('in_teachbase')}*"
+        if @apitoken.nil? || !@apitoken.active?
+          loop do
+            answer.send I18n.t('add_user_email').to_s
+            user.email = request_data(:email)
+            answer.send I18n.t('add_user_password').to_s
+            user.password = request_data(:password)
+            break if [user.email, user.password].any?(nil) || [user.email, user.password].all?(String)
+          end
+          
+          user.api_auth(:mobile_v2, user_email: user.email, password: user.password)
+
+          raise "Can't authorize user id: #{user.id}. Token value: #{user.tb_api.token.value}" unless user.tb_api.token.value
+
+          @apitoken = Teachbase::Bot::ApiToken.create!(user_id: user.id,
+                                                       version: user.tb_api.token.version,
+                                                       grant_type: user.tb_api.token.grant_type,
+                                                       expired_at: user.tb_api.token.expired_at,
+                                                       value: user.tb_api.token.value,
+                                                       active: true)
+        elsif @apitoken.active?
+          raise "API Token value empty" if @apitoken.value.empty?
+          user.api_auth(:mobile_v2, access_token: @apitoken.value)
+        else
+          raise "Can't load API Token"
+        end
+        user.password.encrypt!(:symmetric, password: @encrypt_key)
+        user.auth_at = Time.now.utc
+        user.save
+        answer.send I18n.t('auth_success')
+
+      rescue RuntimeError => e
+        answer.send "#{I18n.t('error')} #{I18n.t('auth_failed')} #{I18n.t('try_again')}"
+        retry
+      end
+
+      def call_profile
         retries ||= 1
         retries_off = 3
-        user.load_profile
+        @profile = user.load_profile
+
+        raise "Profile is not loaded" if @profile.nil?
+        user.first_name = @profile["name"]
+        user.last_name = @profile["last_name"]
+        user.external_id = @profile["id"]
+        user.phone = @profile["phone"]
+        user.save
+        answer.send "#{Emoji.find_by_alias('heart').raw}*#{I18n.t('greetings')}* *#{I18n.t('in_teachbase')}!*
+                \n[#{@profile['name']} #{@profile['last_name']}](#{@profile['avatar_url']})"
+
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}\n#{I18n.t('retry')}: ##{retries}.. (#{retries_off})"
         retry if (retries += 1) < 4
       end
 
-      def learning_profile_state
-        profile = load_profile
-        answer.send "#{I18n.t('profile_state')}
-        \n#{Emoji.find_by_alias('green_book').raw}#{I18n.t('courses')}: #{I18n.t('active_courses')}: #{profile['active_courses_count']} / #{I18n.t('archived_courses')}: #{profile['archived_courses_count']}
-        \n#{Emoji.find_by_alias('school').raw}#{I18n.t('average_score_percent')}: #{profile['average_score_percent']}%
-        \n#{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{profile['total_time_spent'] / 3600} #{I18n.t('hour')}"
-      end
-
       protected
+
+      def show_profile_state
+        raise if @profile.nil?
+        answer.send "#{I18n.t('profile_state')}
+        \n#{Emoji.find_by_alias('green_book').raw}#{I18n.t('courses')}: #{I18n.t('active_courses')}: #{@profile['active_courses_count']} / #{I18n.t('archived_courses')}: #{@profile['archived_courses_count']}
+        \n#{Emoji.find_by_alias('school').raw}#{I18n.t('average_score_percent')}: #{@profile['average_score_percent']}%
+        \n#{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{@profile['total_time_spent'] / 3600} #{I18n.t('hour')}"
+      end
 
       def take_data
         message_responder.bot.listen do |message|

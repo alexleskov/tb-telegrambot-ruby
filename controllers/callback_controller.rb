@@ -8,8 +8,8 @@ class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
 
   def match_data
     case message_responder.message.data
-    when 'touch'
-      answer.send "Touch this"
+    when "touch"
+      answer.send "Touching"
     end
   end
 
