@@ -5,10 +5,9 @@ module Teachbase
     class ApiToken < ActiveRecord::Base
       belongs_to :users, dependent: :destroy
 
-      def active?
+      def avaliable?
         return if value.nil? || value.empty?
-        result = expired_at >= Time.now.utc
-        active = result
+        active = expired_at >= Time.now.utc
         save
       end
     end

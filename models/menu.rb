@@ -29,8 +29,13 @@ module Teachbase
         MessageSender.new(menu_params).send
       end
 
-      def starting
+      def starting(text = I18n.t('start_menu_message'))
         buttons = [commands.show(:signin), commands.show(:settings)]
+        create(buttons, :menu, text)
+      end
+
+      def after_auth
+        buttons = [commands.show(:show_profile_state), commands.show(:settings)]
         create(buttons, :menu, I18n.t('start_menu_message'))
       end
 
@@ -40,7 +45,8 @@ module Teachbase
       end
 
       def hide
-        MessageSender.new(bot: message_responder.bot, chat: message_responder.message.chat, text: I18n.t('farewell_message'), hide_kb: true).send
+        MessageSender.new(bot: message_responder.bot, chat: message_responder.message.chat,
+                          text: "-----------------------------", hide_kb: true).send
       end
 
     end
