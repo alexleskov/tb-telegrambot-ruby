@@ -29,6 +29,13 @@ class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
       course_session_open($1)
     end
 
+    on %r{^cs_sec_id:} do
+      @message_value =~ %r{^cs_sec_id:(\d*)}
+      course_session_id = $1
+      answer.send "*#{I18n.t('enter_number_of')} #{I18n.t('section2')}:*\n_#{I18n.t('section_show_hint')}_"
+      take_data
+    end
+
   end
 
   private

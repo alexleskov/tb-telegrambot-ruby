@@ -28,6 +28,11 @@ module Teachbase
       def load_sections(course_session_id)
         tb_api.request("course-sessions_/", id: course_session_id).response.answer
       end
+
+      def load_material
+        
+      end
+
     end
   end
 end

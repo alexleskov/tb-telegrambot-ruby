@@ -124,6 +124,14 @@ module Teachbase
         answer_message = mess.join("\n")
 
         answer.send "*#{Emoji.find_by_alias('book').raw}#{I18n.t('course')}: #{course_session.course_name}*\n#{answer_message}"
+        buttons = [[text: "#{I18n.t('open')} #{I18n.t('in')} #{I18n.t('section')}" , callback_data: "cs_sec_id:#{course_session.id}"]]
+        menu.create(buttons, :menu_inline, "#{I18n.t('start_menu_message')}", 1)
+      end
+
+      def section_show_materials(position, course_session_id)
+        materials = Teachbase::Bot::Materials.order(id: :asc).joins('LEFT JOIN sections ON materials.sections_id = sections.id')
+        .where('course_sessions.id = :id', id: course_session_id)
+        section = Teachbase::Bot::Section.find_by(course_sessions_id: course_session_id, position: position)
       end
 
       def authorization
