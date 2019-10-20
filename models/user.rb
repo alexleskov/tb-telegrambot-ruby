@@ -24,6 +24,10 @@ module Teachbase
       def load_archived_course_sessions
         tb_api.request("course-sessions", order_by: "progress", order_direction: "asc", filter: "archived").response.answer
       end
+
+      def load_sections(course_session_id)
+        tb_api.request("course-sessions_/", id: course_session_id).response.answer
+      end
     end
   end
 end

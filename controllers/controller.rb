@@ -4,6 +4,9 @@ require './models/api_token'
 require './models/answer'
 require './models/menu'
 require './models/course_session'
+require './models/section'
+require './models/material'
+require './lib/data_loader'
 require 'encrypted_strings'
 
 module Teachbase
@@ -13,7 +16,7 @@ module Teachbase
       VALID_PASSWORD_REGEXP = /[\w|._#*^!+=@-]{6,40}$/.freeze
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
 
-      attr_reader :user, :message_responder, :answer, :menu, :destination, :commands
+      attr_reader :user, :message_responder, :answer, :menu, :destination, :commands, :data_loader
 
       def initialize(message_responder, dest = :chat)
         raise "No such destination '#{dest}' for send menu" unless [:chat,:from].include?(dest)
@@ -28,19 +31,20 @@ module Teachbase
         @encrypt_key = AppConfigurator.new.get_encrypt_key
         @answer = Teachbase::Bot::Answer.new(message_responder, dest)
         @menu = Teachbase::Bot::Menu.new(message_responder, dest)
+        @data_loader = Teachbase::Bot::DataLoader.new(self)
         @logger = AppConfigurator.new.get_logger
-        @apitoken = Teachbase::Bot::ApiToken.find_by(user_id: user.id, active: true)
+        @apitoken = data_loader.apitoken
         # @logger.debug "mes_res: '#{message_responder}"
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}"
       end
 
       def signin
-        auth_checker
+        data_loader.auth_checker
         answer.send "*#{I18n.t('greetings')}* *#{I18n.t('in_teachbase')}!*"
         show_profile_state
-        answer.send "[#{@profile['name']} #{@profile['last_name']}](#{@profile['avatar_url']})"
         menu.after_auth
+        call_data_from_profile
 
         #menu.testing
       rescue RuntimeError => e
@@ -48,65 +52,41 @@ module Teachbase
       end
 
       def settings
-        auth_checker
+        data_loader.auth_checker
         answer.send "#{Emoji.find_by_alias('wrench').raw}*#{I18n.t('settings')} #{I18n.t('for_profile')}*
         \n#{I18n.t('stage_empty')}"
       end
 
       def show_profile_state
-        call_profile if @profile.nil?
+        data_loader.call_profile if @profile.nil?
 
+        @profile = data_loader.profile
         answer.send "#{Emoji.find_by_alias('mortar_board').raw}*#{I18n.t('profile_state')}*
         \n  #{Emoji.find_by_alias('green_book').raw}#{I18n.t('courses')}: #{I18n.t('active_courses')}: #{@profile['active_courses_count']} / #{I18n.t('archived_courses')}: #{@profile['archived_courses_count']}
         \n  #{Emoji.find_by_alias('school').raw}#{I18n.t('average_score_percent')}: #{@profile['average_score_percent']}%
-        \n  #{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{@profile['total_time_spent'] / 3600} #{I18n.t('hour')}"
+        \n  #{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{@profile['total_time_spent'] / 3600} #{I18n.t('hour')}
+        \n  [#{@profile['name']} #{@profile['last_name']}](#{@profile['avatar_url']})"
       end
 
       def course_list_l1
-        menu.cb_course_sessions_choice
-        #@active_course_sessions = user.load_active_course_sessions
-        #@archived_course_sessions = user.load_archived_course_sessions
-
-        #raise "Course list is not loaded" if @course_list_l1.nil?
-
-      rescue RuntimeError => e
-        answer.send "#{I18n.t('error')} #{e}"
-        auth_checker        
+        menu.course_sessions_choice
       end
 
       def course_sessions_list(param)
-        raise "No such param for course sessions list" unless [:active, :archived].include?(param)
-        auth_checker
+        course_sessions = Teachbase::Bot::CourseSession.where(user_id: user.id, complete_status: param.to_s)
+        data_loader.call_course_sessions_list(param) if course_sessions.empty?
+        
+        course_sessions = Teachbase::Bot::CourseSession.where(user_id: user.id, complete_status: param.to_s)
         case param
         when :active
-          course_sessions = @active_course_sessions = user.load_active_course_sessions
           answer.send "#{Emoji.find_by_alias('green_book').raw}*#{I18n.t('active_courses').capitalize!}*"
         when :archived
-          course_sessions = @archived_course_sessions = user.load_archived_course_sessions
-          answer.send "#{Emoji.find_by_alias('green_book').raw}*#{I18n.t('archived_courses').capitalize!}*"
+          answer.send "#{Emoji.find_by_alias('closed_book').raw}*#{I18n.t('archived_courses').capitalize!}*"
         end
-
-        raise "Course list is not loaded" if course_sessions.nil?
 
         course_sessions.each do |course_session|
-          Teachbase::Bot::CourseSession.find_or_create_by!(name: course_session["name"],
-                                                           icon_url: course_session["icon_url"],
-                                                           bg_url: course_session["bg_url"],
-                                                           deadline: course_session["deadline"],
-                                                           period: course_session["period"],
-                                                           listeners_count: course_session["listeners_count"],
-                                                           progress: course_session["progress"],
-                                                           started_at: Time.at(course_session["started_at"]).utc,
-                                                           can_download: course_session["can_download"],
-                                                           success: course_session["success"],
-                                                           full_access: course_session["full_access"],
-                                                           application_status: course_session["application_status"],
-                                                           user_id: user.id)
-        end
-
-        Teachbase::Bot::CourseSession.where(user_id: user.id).each do |course_session|
           buttons = [[text: "#{I18n.t('open')}" , callback_data: "cs_id:#{course_session.id}"], [text: "#{I18n.t('course_results')}" , callback_data: "cs_info_id:#{course_session.id}"]]
-          menu.create(buttons, :menu_inline, "[#{I18n.t('course')}](#{course_session.icon_url}): #{course_session.name}", 2)
+          menu.create(buttons, :menu_inline, "[#{I18n.t('course')}](#{course_session.icon_url}): #{course_session.course_name}", 2)
         end
 
       rescue RuntimeError => e
@@ -114,15 +94,36 @@ module Teachbase
         auth_checker  
       end
 
-      protected
+      def course_session_show_info(course_session_id)
+        course_session = Teachbase::Bot::CourseSession.where(user_id: user.id, id: course_session_id).first
 
-      def auth_checker
-        if @apitoken && @apitoken.avaliable?
-          user.api_auth(:mobile_v2, access_token: @apitoken.value)
-        else
-          answer.send "#{Emoji.find_by_alias('rocket').raw}*#{I18n.t('enter')} #{I18n.t('in_teachbase')}*"
-          authorization
+        deadline = course_session.deadline.nil? ? "\u221e" : Time.at(course_session.deadline.to_i).utc
+
+        answer.send "* #{I18n.t('course')}: #{course_session.course_name}*
+        \n  #{Emoji.find_by_alias('runner').raw}#{I18n.t('started_at')}: #{course_session.started_at}
+        \n  #{Emoji.find_by_alias('alarm_clock').raw}#{I18n.t('deadline')}: #{deadline} 
+        \n  #{Emoji.find_by_alias('chart_with_upwards_trend').raw}#{I18n.t('progress')}: #{course_session.progress}%
+        \n  #{Emoji.find_by_alias('book').raw}#{I18n.t('complete_status')}: #{I18n.t("complete_status_#{course_session.complete_status}")}
+        \n  #{Emoji.find_by_alias('trophy').raw}#{I18n.t('success')}: #{I18n.t("success_#{course_session.success}")}
+        "
+      end
+
+      def course_session_open(course_session_id)
+        data_loader.call_course_session_section(course_session_id)
+        sections = Teachbase::Bot::Section.order(position: :asc).joins('LEFT JOIN course_sessions ON sections.course_sessions_id = course_sessions.id')
+        .where('course_sessions.id = :id', id: course_session_id)
+        course_session = Teachbase::Bot::CourseSession.all.select(:course_name).find_by(id: course_session_id)
+        mess = []
+        sec_index = 1
+        sections.each do |section|
+          string = "\n*#{I18n.t('section')} #{sec_index}:* #{section.part_name}"
+          mess << string
+          sec_index += 1
         end
+
+        answer_message = mess.join("\n")
+
+        answer.send "*#{Emoji.find_by_alias('book').raw}#{I18n.t('course')}: #{course_session.course_name}*\n#{answer_message}"
       end
 
       def authorization
@@ -150,6 +151,7 @@ module Teachbase
         user.auth_at = Time.now.utc
         user.save
         answer.send I18n.t('auth_success')
+        @apitoken = data_loader.apitoken
         menu.hide
 
       rescue RuntimeError => e
@@ -157,20 +159,11 @@ module Teachbase
         retry
       end
 
-      def call_profile
-        auth_checker
-        @profile = user.load_profile
+      protected
 
-        raise "Profile is not loaded" if @profile.nil?
-        user.first_name = @profile["name"]
-        user.last_name = @profile["last_name"]
-        user.external_id = @profile["id"]
-        user.phone = @profile["phone"]
-        user.save
-
-      rescue RuntimeError => e
-        answer.send "#{I18n.t('error')} #{e}"
-        auth_checker
+      def call_data_from_profile
+        data_loader.call_course_sessions_list(:active)
+        data_loader.call_course_sessions_list(:archived)
       end
 
       def take_data
@@ -182,7 +175,7 @@ module Teachbase
 
       def request_data(validate_type)
         data = take_data
-        return if data =~ ABORT_ACTION_COMMAND || commands.command_by?(:value,data)
+        return value = nil if data =~ ABORT_ACTION_COMMAND || commands.command_by?(:value, data)
 
         value = data if validation(validate_type, data)
       end
@@ -199,6 +192,24 @@ module Teachbase
           value.is_a?(String)
         end
       end
+
+      def on(command, param, &block)
+        raise "No such param '#{param}'. Must be :text or :data" unless [:text,:data].include?(param)
+        @message_value = param == :text ? message_responder.message.text : message_responder.message.data
+
+        command =~ @message_value
+        if $~
+          case block.arity
+          when 0
+            yield
+          when 1
+            yield $1
+          when 2
+            yield $1, $2
+          end
+        end
+      end
+
     end
   end
 end

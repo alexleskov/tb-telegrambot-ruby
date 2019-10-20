@@ -3,7 +3,8 @@ require 'active_record'
 module Teachbase
   module Bot
     class CourseSession < ActiveRecord::Base
-      belongs_to :users, dependent: :destroy
+      belongs_to :user
+      has_many :sections
 
     end
   end

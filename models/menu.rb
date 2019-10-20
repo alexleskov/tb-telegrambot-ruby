@@ -39,7 +39,7 @@ module Teachbase
         create(buttons, :menu, I18n.t('start_menu_message'), 2)
       end
 
-      def cb_course_sessions_choice
+      def course_sessions_choice
         buttons = [[text: I18n.t('active_courses').capitalize!, callback_data: "active_courses"], [text: I18n.t('archived_courses').capitalize!, callback_data: "archived_courses"]]
         create(buttons, :menu_inline, "#{Emoji.find_by_alias('books').raw}*#{I18n.t('show_course_list')}*", 2)
       end

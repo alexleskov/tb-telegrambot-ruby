@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 3) do
+ActiveRecord::Schema.define(version: 5) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,7 +28,8 @@ ActiveRecord::Schema.define(version: 3) do
   end
 
   create_table "course_sessions", force: :cascade do |t|
-    t.string "name", null: false
+    t.string "instance"
+    t.string "course_name", null: false
     t.string "icon_url", default: "https://image.flaticon.com/icons/svg/149/149092.svg"
     t.string "bg_url"
     t.string "deadline"
@@ -40,10 +41,34 @@ ActiveRecord::Schema.define(version: 3) do
     t.boolean "success"
     t.boolean "full_access"
     t.string "application_status"
+    t.string "complete_status", null: false
     t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_course_sessions_on_user_id"
+  end
+
+  create_table "materials", force: :cascade do |t|
+    t.string "instance"
+    t.string "material_name", null: false
+    t.integer "category"
+    t.boolean "markdown"
+    t.string "source"
+    t.string "type"
+    t.bigint "sections_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["sections_id"], name: "index_materials_on_sections_id"
+  end
+
+  create_table "sections", force: :cascade do |t|
+    t.string "instance"
+    t.string "part_name", null: false
+    t.integer "position", null: false
+    t.bigint "course_sessions_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_sessions_id"], name: "index_sections_on_course_sessions_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -60,4 +85,6 @@ ActiveRecord::Schema.define(version: 3) do
 
   add_foreign_key "api_tokens", "users"
   add_foreign_key "course_sessions", "users"
+  add_foreign_key "materials", "sections", column: "sections_id"
+  add_foreign_key "sections", "course_sessions", column: "course_sessions_id"
 end

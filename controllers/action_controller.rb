@@ -24,16 +24,7 @@ class Teachbase::Bot::ActionController < Teachbase::Bot::Controller
   private
 
   def on(command, &block)
-    command =~ message_responder.message.text
-    if $~
-      case block.arity
-      when 0
-        yield
-      when 1
-        yield $1
-      when 2
-        yield $1, $2
-      end
-    end
+    super(command, :text, &block)
   end
+
 end
