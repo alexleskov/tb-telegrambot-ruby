@@ -10,6 +10,10 @@ class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
     case message_responder.message.data
     when "touch"
       answer.send "Touching"
+    when "archived_courses"
+      course_sessions_list(:archived)
+    when "active_courses"
+      course_sessions_list(:active)
     end
   end
 

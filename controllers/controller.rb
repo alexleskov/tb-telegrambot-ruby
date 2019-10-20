@@ -3,6 +3,7 @@ require './lib/message_responder'
 require './models/api_token'
 require './models/answer'
 require './models/menu'
+require './models/course_session'
 require 'encrypted_strings'
 
 module Teachbase
@@ -59,6 +60,58 @@ module Teachbase
         \n  #{Emoji.find_by_alias('green_book').raw}#{I18n.t('courses')}: #{I18n.t('active_courses')}: #{@profile['active_courses_count']} / #{I18n.t('archived_courses')}: #{@profile['archived_courses_count']}
         \n  #{Emoji.find_by_alias('school').raw}#{I18n.t('average_score_percent')}: #{@profile['average_score_percent']}%
         \n  #{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{@profile['total_time_spent'] / 3600} #{I18n.t('hour')}"
+      end
+
+      def course_list_l1
+        menu.cb_course_sessions_choice
+        #@active_course_sessions = user.load_active_course_sessions
+        #@archived_course_sessions = user.load_archived_course_sessions
+
+        #raise "Course list is not loaded" if @course_list_l1.nil?
+
+      rescue RuntimeError => e
+        answer.send "#{I18n.t('error')} #{e}"
+        auth_checker        
+      end
+
+      def course_sessions_list(param)
+        raise "No such param for course sessions list" unless [:active, :archived].include?(param)
+        auth_checker
+        case param
+        when :active
+          course_sessions = @active_course_sessions = user.load_active_course_sessions
+          answer.send "#{Emoji.find_by_alias('green_book').raw}*#{I18n.t('active_courses').capitalize!}*"
+        when :archived
+          course_sessions = @archived_course_sessions = user.load_archived_course_sessions
+          answer.send "#{Emoji.find_by_alias('green_book').raw}*#{I18n.t('archived_courses').capitalize!}*"
+        end
+
+        raise "Course list is not loaded" if course_sessions.nil?
+
+        course_sessions.each do |course_session|
+          Teachbase::Bot::CourseSession.find_or_create_by!(name: course_session["name"],
+                                                           icon_url: course_session["icon_url"],
+                                                           bg_url: course_session["bg_url"],
+                                                           deadline: course_session["deadline"],
+                                                           period: course_session["period"],
+                                                           listeners_count: course_session["listeners_count"],
+                                                           progress: course_session["progress"],
+                                                           started_at: Time.at(course_session["started_at"]).utc,
+                                                           can_download: course_session["can_download"],
+                                                           success: course_session["success"],
+                                                           full_access: course_session["full_access"],
+                                                           application_status: course_session["application_status"],
+                                                           user_id: user.id)
+        end
+
+        Teachbase::Bot::CourseSession.where(user_id: user.id).each do |course_session|
+          buttons = [[text: "#{I18n.t('open')}" , callback_data: "cs_id:#{course_session.id}"], [text: "#{I18n.t('course_results')}" , callback_data: "cs_info_id:#{course_session.id}"]]
+          menu.create(buttons, :menu_inline, "[#{I18n.t('course')}](#{course_session.icon_url}): #{course_session.name}", 2)
+        end
+
+      rescue RuntimeError => e
+        answer.send "#{I18n.t('error')} #{e}"
+        auth_checker  
       end
 
       protected

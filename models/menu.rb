@@ -24,19 +24,24 @@ module Teachbase
         raise "No such menu type: #{type}" unless %i[menu menu_inline].include?(type)
 
         menu_params = { bot: message_responder.bot,
-                        chat: message_responder.message.chat,
+                        chat: destination,
                         text: text, type => { buttons: buttons, slices: slices_count } }
         MessageSender.new(menu_params).send
       end
 
       def starting(text = I18n.t('start_menu_message'))
         buttons = [commands.show(:signin), commands.show(:settings)]
-        create(buttons, :menu, text)
+        create(buttons, :menu, text, 1)
       end
 
       def after_auth
-        buttons = [commands.show(:show_profile_state), commands.show(:settings)]
-        create(buttons, :menu, I18n.t('start_menu_message'))
+        buttons = [commands.show(:course_list_l1), commands.show(:show_profile_state), commands.show(:settings)]
+        create(buttons, :menu, I18n.t('start_menu_message'), 2)
+      end
+
+      def cb_course_sessions_choice
+        buttons = [[text: I18n.t('active_courses').capitalize!, callback_data: "active_courses"], [text: I18n.t('archived_courses').capitalize!, callback_data: "archived_courses"]]
+        create(buttons, :menu_inline, "#{Emoji.find_by_alias('books').raw}*#{I18n.t('show_course_list')}*", 2)
       end
 
       def testing
@@ -45,7 +50,7 @@ module Teachbase
       end
 
       def hide
-        MessageSender.new(bot: message_responder.bot, chat: message_responder.message.chat,
+        MessageSender.new(bot: message_responder.bot, chat: destination,
                           text: "-----------------------------", hide_kb: true).send
       end
 

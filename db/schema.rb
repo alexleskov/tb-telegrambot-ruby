@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2) do
+ActiveRecord::Schema.define(version: 3) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -27,6 +27,25 @@ ActiveRecord::Schema.define(version: 2) do
     t.index ["user_id"], name: "index_api_tokens_on_user_id"
   end
 
+  create_table "course_sessions", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "icon_url", default: "https://image.flaticon.com/icons/svg/149/149092.svg"
+    t.string "bg_url"
+    t.string "deadline"
+    t.integer "period"
+    t.integer "listeners_count"
+    t.integer "progress", null: false
+    t.datetime "started_at"
+    t.boolean "can_download"
+    t.boolean "success"
+    t.boolean "full_access"
+    t.string "application_status"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_course_sessions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
@@ -40,4 +59,5 @@ ActiveRecord::Schema.define(version: 2) do
   end
 
   add_foreign_key "api_tokens", "users"
+  add_foreign_key "course_sessions", "users"
 end
