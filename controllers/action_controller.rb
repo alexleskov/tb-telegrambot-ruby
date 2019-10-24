@@ -19,6 +19,14 @@ class Teachbase::Bot::ActionController < Teachbase::Bot::Controller
     on %r{^/hide_menu} do
       menu.hide
     end
+
+    on %r{^/sec(\d*)_cs(\d*)} do
+      @message_value =~ %r{^/sec(\d*)_cs(\d*)}
+      section_id = $1
+      course_session_id = $2
+      answer.send "#{section_id} #{course_session_id}"
+      section_show_materials(section_id, course_session_id)
+    end
   end
 
   private

@@ -28,15 +28,13 @@ ActiveRecord::Schema.define(version: 5) do
   end
 
   create_table "course_sessions", force: :cascade do |t|
-    t.string "instance"
-    t.string "course_name", null: false
+    t.string "name", null: false
     t.string "icon_url", default: "https://image.flaticon.com/icons/svg/149/149092.svg"
     t.string "bg_url"
-    t.string "deadline"
-    t.integer "period"
+    t.integer "deadline"
     t.integer "listeners_count"
     t.integer "progress", null: false
-    t.datetime "started_at"
+    t.integer "started_at"
     t.boolean "can_download"
     t.boolean "success"
     t.boolean "full_access"
@@ -49,8 +47,7 @@ ActiveRecord::Schema.define(version: 5) do
   end
 
   create_table "materials", force: :cascade do |t|
-    t.string "instance"
-    t.string "material_name", null: false
+    t.string "name", null: false
     t.integer "category"
     t.boolean "markdown"
     t.string "source"
@@ -62,8 +59,10 @@ ActiveRecord::Schema.define(version: 5) do
   end
 
   create_table "sections", force: :cascade do |t|
-    t.string "instance"
-    t.string "part_name", null: false
+    t.integer "opened_at"
+    t.boolean "is_publish"
+    t.boolean "is_available"
+    t.string "name", null: false
     t.integer "position", null: false
     t.bigint "course_sessions_id"
     t.datetime "created_at", null: false

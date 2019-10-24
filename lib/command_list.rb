@@ -16,7 +16,8 @@ module Teachbase
         sign_emoji = [:signin, Emoji.find_by_alias('rocket').raw],
                     [:settings, Emoji.find_by_alias('wrench').raw],
                     [:show_profile_state, Emoji.find_by_alias('mortar_board').raw],
-                    [:course_list_l1, Emoji.find_by_alias('books').raw]
+                    [:course_list_l1, Emoji.find_by_alias('books').raw],
+                    [:update_profile_data, Emoji.find_by_alias('arrows_counterclockwise').raw]
         sign_emoji.each { |data| all << Teachbase::Bot::Command.new(data[0], data[1]) }
         all
         raise "'CommandList' not created" if all.empty?

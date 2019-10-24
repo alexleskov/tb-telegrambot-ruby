@@ -1,8 +1,7 @@
 class CreateMaterials < ActiveRecord::Migration[5.2]
   def change
     create_table :materials do |t|
-      t.string :instance
-      t.string :material_name, null: false
+      t.string :name, null: false
       t.integer :category
       t.boolean :markdown
       t.string :source

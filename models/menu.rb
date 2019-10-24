@@ -29,19 +29,19 @@ module Teachbase
         MessageSender.new(menu_params).send
       end
 
-      def starting(text = I18n.t('start_menu_message'))
+      def starting(text = "#{I18n.t('start_menu_message')}")
         buttons = [commands.show(:signin), commands.show(:settings)]
         create(buttons, :menu, text, 1)
       end
 
       def after_auth
-        buttons = [commands.show(:course_list_l1), commands.show(:show_profile_state), commands.show(:settings)]
-        create(buttons, :menu, I18n.t('start_menu_message'), 2)
+        buttons = [commands.show(:course_list_l1), commands.show(:show_profile_state), commands.show(:settings), commands.show(:update_profile_data)]
+        create(buttons, :menu, I18n.t('start_menu_message'), 3)
       end
 
       def course_sessions_choice
         buttons = [[text: I18n.t('active_courses').capitalize!, callback_data: "active_courses"], [text: I18n.t('archived_courses').capitalize!, callback_data: "archived_courses"]]
-        create(buttons, :menu_inline, "#{Emoji.find_by_alias('books').raw}*#{I18n.t('show_course_list')}*", 2)
+        create(buttons, :menu_inline, "#{Emoji.find_by_alias('books').raw}<b>#{I18n.t('show_course_list')}</b>", 2)
       end
 
       def testing

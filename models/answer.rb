@@ -27,7 +27,7 @@ module Teachbase
       def send_greeting_message
         first_name = user.first_name.nil? ? tg_info[:first_name] : user.first_name
         last_name = user.first_name.nil? ? tg_info[:last_name] : user.last_name
-        send("#{I18n.t('greeting_message')} #{first_name} #{last_name}!")
+        send("#{I18n.t('greeting_message')} <b>#{first_name} #{last_name}!</b>")
       end
 
       def send_farewell_message

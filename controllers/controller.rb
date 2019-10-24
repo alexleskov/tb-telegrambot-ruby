@@ -41,19 +41,17 @@ module Teachbase
 
       def signin
         data_loader.auth_checker
-        answer.send "*#{I18n.t('greetings')}* *#{I18n.t('in_teachbase')}!*"
+        answer.send "<b>#{I18n.t('greetings')} #{I18n.t('in_teachbase')}!</b>"
         show_profile_state
         menu.after_auth
-        call_data_from_profile
-
-        #menu.testing
+        call_data_course_sessions
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}"
       end
 
       def settings
         data_loader.auth_checker
-        answer.send "#{Emoji.find_by_alias('wrench').raw}*#{I18n.t('settings')} #{I18n.t('for_profile')}*
+        answer.send "<b>#{Emoji.find_by_alias('wrench').raw}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
         \n#{I18n.t('stage_empty')}"
       end
 
@@ -61,15 +59,23 @@ module Teachbase
         data_loader.call_profile if @profile.nil?
 
         @profile = data_loader.profile
-        answer.send "#{Emoji.find_by_alias('mortar_board').raw}*#{I18n.t('profile_state')}*
+        answer.send "<b>#{Emoji.find_by_alias('mortar_board').raw}#{I18n.t('profile_state')}</b>
+        \n  <a href='#{@profile['avatar_url']}'>#{@profile['name']} #{@profile['last_name']}</a>
         \n  #{Emoji.find_by_alias('green_book').raw}#{I18n.t('courses')}: #{I18n.t('active_courses')}: #{@profile['active_courses_count']} / #{I18n.t('archived_courses')}: #{@profile['archived_courses_count']}
         \n  #{Emoji.find_by_alias('school').raw}#{I18n.t('average_score_percent')}: #{@profile['average_score_percent']}%
-        \n  #{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{@profile['total_time_spent'] / 3600} #{I18n.t('hour')}
-        \n  [#{@profile['name']} #{@profile['last_name']}](#{@profile['avatar_url']})"
+        \n  #{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{@profile['total_time_spent'] / 3600} #{I18n.t('hour')}"
       end
 
       def course_list_l1
         menu.course_sessions_choice
+      end
+
+      def update_profile_data
+        answer.send "<b>#{Emoji.find_by_alias('arrows_counterclockwise').raw}#{I18n.t('updating_profile')}</b>"
+        course_sessions = call_data_course_sessions
+        profile = data_loader.call_profile
+        raise "Profile update failed" unless course_sessions || profile
+        answer.send "<i>#{Emoji.find_by_alias('+1').raw}#{I18n.t('updating_success')}</i>"
       end
 
       def course_sessions_list(param)
@@ -79,14 +85,19 @@ module Teachbase
         course_sessions = Teachbase::Bot::CourseSession.where(user_id: user.id, complete_status: param.to_s)
         case param
         when :active
-          answer.send "#{Emoji.find_by_alias('green_book').raw}*#{I18n.t('active_courses').capitalize!}*"
+          answer.send "#{Emoji.find_by_alias('green_book').raw}<b>#{I18n.t('active_courses').capitalize!}</b>"
         when :archived
-          answer.send "#{Emoji.find_by_alias('closed_book').raw}*#{I18n.t('archived_courses').capitalize!}*"
+          answer.send "#{Emoji.find_by_alias('closed_book').raw}<b>#{I18n.t('archived_courses').capitalize!}</b>"
         end
 
-        course_sessions.each do |course_session|
-          buttons = [[text: "#{I18n.t('open')}" , callback_data: "cs_id:#{course_session.id}"], [text: "#{I18n.t('course_results')}" , callback_data: "cs_info_id:#{course_session.id}"]]
-          menu.create(buttons, :menu_inline, "[#{I18n.t('course')}](#{course_session.icon_url}): #{course_session.course_name}", 2)
+        if course_sessions.empty?
+          answer.send "#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: <b>#{course_session.name}</b>
+          \n#{Emoji.find_by_alias('soon').raw} <i>#{I18n.t('empty')}</i>"
+        else
+          course_sessions.each do |course_session|
+            buttons = [[text: "#{I18n.t('open')}", callback_data: "cs_id:#{course_session.id}"], [text: "#{I18n.t('course_results')}", callback_data: "cs_info_id:#{course_session.id}"]]
+            menu.create(buttons, :menu_inline, "#{Emoji.find_by_alias('book').raw} <a href='#{course_session.icon_url}'>#{I18n.t('course')}</a>: <b>#{course_session.name}</b>", 2)
+          end
         end
 
       rescue RuntimeError => e
@@ -95,43 +106,74 @@ module Teachbase
       end
 
       def course_session_show_info(course_session_id)
-        course_session = Teachbase::Bot::CourseSession.where(user_id: user.id, id: course_session_id).first
+        course_session = Teachbase::Bot::CourseSession.order(name: :asc).where(user_id: user.id, id: course_session_id).first
 
-        deadline = course_session.deadline.nil? ? "\u221e" : Time.at(course_session.deadline.to_i).utc
+        deadline = course_session.deadline.nil? ? "\u221e" : Time.at(course_session.deadline).utc.strftime("%d.%m.%Y %H:%M")
+        started_at = course_session.started_at.nil? ? "-" : Time.at(course_session.started_at).utc.strftime("%d.%m.%Y %H:%M")
 
-        answer.send "* #{I18n.t('course')}: #{course_session.course_name}*
-        \n  #{Emoji.find_by_alias('runner').raw}#{I18n.t('started_at')}: #{course_session.started_at}
+        answer.send "#{Emoji.find_by_alias('book').raw} <b>#{I18n.t('course')}: #{course_session.name} - #{Emoji.find_by_alias('information_source').raw} #{I18n.t('information')}</b>
+        \n  #{Emoji.find_by_alias('runner').raw}#{I18n.t('started_at')}: #{started_at}
         \n  #{Emoji.find_by_alias('alarm_clock').raw}#{I18n.t('deadline')}: #{deadline} 
         \n  #{Emoji.find_by_alias('chart_with_upwards_trend').raw}#{I18n.t('progress')}: #{course_session.progress}%
-        \n  #{Emoji.find_by_alias('book').raw}#{I18n.t('complete_status')}: #{I18n.t("complete_status_#{course_session.complete_status}")}
+        \n  #{Emoji.find_by_alias('star2').raw}#{I18n.t('complete_status')}: #{I18n.t("complete_status_#{course_session.complete_status}")}
         \n  #{Emoji.find_by_alias('trophy').raw}#{I18n.t('success')}: #{I18n.t("success_#{course_session.success}")}
         "
       end
 
-      def course_session_open(course_session_id)
+      def sections_show(course_session_id)
         data_loader.call_course_session_section(course_session_id)
         sections = Teachbase::Bot::Section.order(position: :asc).joins('LEFT JOIN course_sessions ON sections.course_sessions_id = course_sessions.id')
         .where('course_sessions.id = :id', id: course_session_id)
-        course_session = Teachbase::Bot::CourseSession.all.select(:course_name).find_by(id: course_session_id)
+        course_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: course_session_id)
         mess = []
         sec_index = 1
         sections.each do |section|
-          string = "\n*#{I18n.t('section')} #{sec_index}:* #{section.part_name}"
+          if section.is_publish
+            string = "\n#{Emoji.find_by_alias('arrow_forward').raw}<b>#{I18n.t('section')} #{sec_index}:</b> #{section.name}
+                      \n#{I18n.t('open')}: /sec#{sec_index}_cs#{course_session_id}"
+          elsif !section.is_available && section.opened_at.nil?
+            string = "\n#{Emoji.find_by_alias('no_entry_sign').raw}<b>#{I18n.t('section')} #{sec_index}:</b> #{section.name}
+                      \n#{I18n.t('section_unable')}."
+          elsif !section.is_available && !section.opened_at.nil?
+            string = "\n#{Emoji.find_by_alias('no_entry_sign').raw}<b>#{I18n.t('section')} #{sec_index}:</b> #{section.name}
+                      \n#{I18n.t('section_delayed')} #{Time.at(section.opened_at).utc.strftime("%d.%m.%Y %H:%M")}."
+          elsif !section.is_publish
+            string = "\n#{Emoji.find_by_alias('no_entry_sign').raw}<b>#{I18n.t('section')} #{sec_index}:</b> #{section.name}
+                      \n#{I18n.t('section_unpublish')}."
+          end
           mess << string
           sec_index += 1
         end
-
-        answer_message = mess.join("\n")
-
-        answer.send "*#{Emoji.find_by_alias('book').raw}#{I18n.t('course')}: #{course_session.course_name}*\n#{answer_message}"
-        buttons = [[text: "#{I18n.t('open')} #{I18n.t('in')} #{I18n.t('section')}" , callback_data: "cs_sec_id:#{course_session.id}"]]
-        menu.create(buttons, :menu_inline, "#{I18n.t('start_menu_message')}", 1)
+        if mess.empty?
+          answer.send "\n-----------------------------
+                       \n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_name} - #{Emoji.find_by_alias('arrow_down').raw} <b>#{I18n.t('course_sections')}</b>
+                       \n#{Emoji.find_by_alias('soon').raw} <i>#{I18n.t('empty')}</i>" 
+        else
+          answer_message = mess.join("\n")
+          answer.send "\n-----------------------------
+          \n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_name} - #{Emoji.find_by_alias('arrow_down').raw} <b>#{I18n.t('course_sections')}</b>\n#{answer_message}"
+        end
       end
 
-      def section_show_materials(position, course_session_id)
-        materials = Teachbase::Bot::Materials.order(id: :asc).joins('LEFT JOIN sections ON materials.sections_id = sections.id')
-        .where('course_sessions.id = :id', id: course_session_id)
-        section = Teachbase::Bot::Section.find_by(course_sessions_id: course_session_id, position: position)
+      def section_show_materials(section_position, course_session_id)
+        materials = Teachbase::Bot::Material.order(id: :asc).joins('LEFT JOIN sections ON materials.sections_id = sections.id')
+        .where('sections.course_sessions_id = :cs_id and sections_id = :section_position', cs_id: course_session_id, section_position: section_position)
+        section_name = Teachbase::Bot::Section.select(:name).find_by(course_sessions_id: course_session_id, position: section_position)
+        course_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: course_session_id)
+        mess = []
+        materials.each do |material|
+           @logger.debug "=============material: #{material}"
+          string = "\n#{Emoji.find_by_alias('page_facing_up').raw}<b>#{I18n.t('material')}:</b> #{material.name}"
+          mess << string
+        end
+
+        if mess.empty?
+          answer.send "\n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_name} - #{Emoji.find_by_alias('arrow_forward').raw} <b>#{I18n.t('section')}: #{section_name}</b>
+          \n#{Emoji.find_by_alias('soon').raw} <i>#{I18n.t('empty')}</i>"
+        else
+          answer_message = mess.join("\n")
+          answer.send "\n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_name} - #{Emoji.find_by_alias('arrow_forward').raw} <b>#{I18n.t('section')}: #{section_name}</b>\n#{answer_message}"
+        end
       end
 
       def authorization
@@ -169,7 +211,7 @@ module Teachbase
 
       protected
 
-      def call_data_from_profile
+      def call_data_course_sessions
         data_loader.call_course_sessions_list(:active)
         data_loader.call_course_sessions_list(:archived)
       end
@@ -183,6 +225,7 @@ module Teachbase
 
       def request_data(validate_type)
         data = take_data
+        @logger.debug "user.data: #{data}"
         return value = nil if data =~ ABORT_ACTION_COMMAND || commands.command_by?(:value, data)
 
         value = data if validation(validate_type, data)
