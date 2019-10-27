@@ -1,4 +1,5 @@
 require './controllers/controller'
+require './models/user'
 require './models/api_token'
 
 require 'encrypted_strings'
@@ -43,12 +44,12 @@ module Teachbase
         when :archived
           course_sessions = user.load_archived_course_sessions
         end
+        course_s_params = [:name, :icon_url, :bg_url, :deadline, :listeners_count, :progress, :started_at,
+                        :can_download, :success, :started_at, :can_download, :success, :full_access,
+                        :application_status] 
 
         course_sessions.each do |course_s|
-          params = [:name, :icon_url, :bg_url, :deadline, :listeners_count, :progress, :started_at,
-                        :can_download, :success, :started_at, :can_download, :success, :full_access,
-                        :application_status]
-          object_attributes = create_attributes(params, course_s).merge!(complete_status: option.to_s)
+          object_attributes = create_attributes(course_s_params, course_s).merge!(complete_status: option.to_s)
           Teachbase::Bot::CourseSession.where(user_id: user.id, id: course_s["id"])
           .first_or_create!(object_attributes)
           .update!(object_attributes)
@@ -63,22 +64,19 @@ module Teachbase
         course_session = user.load_sections(cs_id)
         sections = course_session["sections"]
         pos_index = 1
+        section_params = [:name, :opened_at, :is_publish, :is_available]
+        material_params = [:name, :category, :markdown]
 
         sections.each do |section|
-          params = [:name, :opened_at, :is_publish, :is_available]
-          object_attributes = create_attributes(params, section)
-          section_bd = Teachbase::Bot::Section.where(course_session_id: cs_id, position: pos_index)
+          object_attributes = create_attributes(section_params, section)
+          section_bd = Teachbase::Bot::Section.where(course_session_id: cs_id, position: pos_index, user_id: user.id)
           .first_or_create!(object_attributes)
           section_bd_id = section_bd.id
           section_bd.update!(object_attributes)
-
-          #@logger.debug "\nSECTION: '#{section}"
-
           materials = section["materials"]
           materials.each do |material|
-            params = [:name, :category, :markdown]
-            object_attributes = create_attributes(params, material)
-            Teachbase::Bot::Material.where(section_id: section_bd_id, id: material["id"], course_session_id: cs_id)
+            object_attributes = create_attributes(material_params, material)
+            Teachbase::Bot::Material.where(section_id: section_bd_id, id: material["id"], course_session_id: cs_id, user_id: user.id)
             .first_or_create!(object_attributes).update!(object_attributes)
           end
           pos_index += 1
@@ -101,7 +99,8 @@ module Teachbase
           user.api_auth(:mobile_v2, user_email: user.email, password: user.password)
           raise "Can't authorize user id: #{user.id}. Token value: #{user.tb_api.token.value}" unless user.tb_api.token.value
 
-          @apitoken.update!(version: user.tb_api.token.version,
+          @apitoken.update!(user_id: user.id,
+                            version: user.tb_api.token.version,
                             grant_type: user.tb_api.token.grant_type,
                             expired_at: user.tb_api.token.expired_at,
                             value: user.tb_api.token.value,

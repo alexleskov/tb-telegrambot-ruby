@@ -1,6 +1,5 @@
 require './lib/message_sender'
 require './lib/message_responder'
-require './models/user'
 require './models/answer'
 require './models/menu'
 require './models/course_session'
@@ -25,8 +24,6 @@ module Teachbase
         @destination = msg.public_send(dest) if msg.respond_to? dest
         raise "Can't find menu destination for message #{message_responder}" if destination.nil?
 
-        #@user = message_responder.user
-        #@user = Teachbase::Bot::User.find_or_create_by!(id: message.from.id)
         @message_responder = message_responder
         @answer = Teachbase::Bot::Answer.new(message_responder, dest)
         @menu = Teachbase::Bot::Menu.new(message_responder, dest)
@@ -123,8 +120,8 @@ module Teachbase
 
       def sections_show(cs_id)
         data_loader.call_course_session_section(cs_id)
-        sections = Teachbase::Bot::Section.order(position: :asc).where(course_session_id: cs_id)
-        course_session_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: cs_id).name
+        sections = Teachbase::Bot::Section.order(position: :asc).where(course_session_id: cs_id, user_id: user.id)
+        course_session_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: cs_id, user_id: user.id).name
         if sections.empty?
           answer.send "\n-----------------------------
                        \n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_down').raw} <b>#{I18n.t('course_sections')}</b>
@@ -158,10 +155,10 @@ module Teachbase
       def section_show_materials(section_position, cs_id)
         materials = Teachbase::Bot::Material
                     .order(id: :asc)
-                    .joins(:section).where("sections.course_session_id = :cs_id and sections.position = :sec_position",
-                           cs_id: cs_id, sec_position: section_position)
-        section_name = Teachbase::Bot::Section.select(:name).find_by(course_session_id: cs_id, position: section_position).name
-        course_session_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: cs_id).name
+                    .joins(:section).where("sections.course_session_id = :cs_id and sections.position = :sec_position and sections.user_id = :user_id",
+                           cs_id: cs_id, sec_position: section_position, user_id: user.id)
+        section_name = Teachbase::Bot::Section.select(:name).find_by(course_session_id: cs_id, position: section_position, user_id: user.id).name
+        course_session_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: cs_id, user_id: user.id).name
         if materials.empty?
           answer.send "\n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_forward').raw} <b>#{I18n.t('section')}: #{section_name}</b>
           \n#{Emoji.find_by_alias('soon').raw} <i>#{I18n.t('empty')}</i>"
