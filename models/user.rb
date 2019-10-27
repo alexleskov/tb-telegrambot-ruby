@@ -6,7 +6,8 @@ require './lib/tbclient/client'
 module Teachbase
   module Bot
     class User < ActiveRecord::Base
-      has_many :api_tokens, dependent: :destroy
+      belongs_to :tg_account
+      has_many :api_tokens
       attr_reader :tb_api
 
       def api_auth(version, oauth_params = {})

@@ -32,6 +32,10 @@ class AppConfigurator
     YAML.safe_load(IO.read('config/secrets.yml'))['encrypt_key']
   end
 
+  def get_parse_mode
+    YAML.safe_load(IO.read('config/secrets.yml'))['parse_mode']
+  end
+
   private
 
   def setup_i18n

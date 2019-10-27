@@ -25,7 +25,7 @@ class MessageSender
     params[:reply_markup] = force_reply_markup if @force_reply
     params[:reply_markup] = hide_markup if @hide_kb
     params[:reply_markup] = inline_markup unless menu_inline.nil?
-    params[:parse_mode] ||= "HTML"
+    params[:parse_mode] ||= AppConfigurator.new.get_parse_mode
 
     resp = bot.api.send_message(params)
     @logger.debug "sending '#{text}' to #{chat.username}"

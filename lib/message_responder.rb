@@ -1,4 +1,4 @@
-require './models/user'
+require './models/tg_account'
 require './lib/command_list'
 require './controllers/controller'
 require './controllers/action_controller'
@@ -6,15 +6,14 @@ require './controllers/callback_controller'
 
 
 class MessageResponder
-  attr_reader :message, :bot, :user, :tg_info, :commands
+  attr_reader :message, :bot, :tg_user, :commands
 
   def initialize(options)
-    @tg_info = {}
     @bot = options[:bot]
     @message = options[:message]
-    @user = Teachbase::Bot::User.find_or_create_by!(id: message.from.id)
-    @tg_info[:first_name] = message.from.first_name
-    @tg_info[:last_name] = message.from.last_name
+    @tg_user = Teachbase::Bot::TgAccount.find_or_create_by!(id: message.from.id)
+    @tg_user.first_name = message.from.first_name
+    @tg_user.last_name = message.from.last_name
     @commands = Teachbase::Bot::CommandList.new
   end
 

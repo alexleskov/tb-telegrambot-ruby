@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 5) do
+ActiveRecord::Schema.define(version: 7) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,9 +21,11 @@ ActiveRecord::Schema.define(version: 5) do
     t.string "expired_at", null: false
     t.string "value", null: false
     t.boolean "active", default: false, null: false
+    t.bigint "tg_account_id"
     t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["tg_account_id"], name: "index_api_tokens_on_tg_account_id"
     t.index ["user_id"], name: "index_api_tokens_on_user_id"
   end
 
@@ -52,10 +54,14 @@ ActiveRecord::Schema.define(version: 5) do
     t.boolean "markdown"
     t.string "source"
     t.string "type"
-    t.bigint "sections_id"
+    t.bigint "section_id"
+    t.bigint "course_session_id"
+    t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["sections_id"], name: "index_materials_on_sections_id"
+    t.index ["course_session_id"], name: "index_materials_on_course_session_id"
+    t.index ["section_id"], name: "index_materials_on_section_id"
+    t.index ["user_id"], name: "index_materials_on_user_id"
   end
 
   create_table "sections", force: :cascade do |t|
@@ -64,26 +70,48 @@ ActiveRecord::Schema.define(version: 5) do
     t.boolean "is_available"
     t.string "name", null: false
     t.integer "position", null: false
-    t.bigint "course_sessions_id"
+    t.bigint "course_session_id"
+    t.bigint "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["course_sessions_id"], name: "index_sections_on_course_sessions_id"
+    t.index ["course_session_id"], name: "index_sections_on_course_session_id"
+    t.index ["user_id"], name: "index_sections_on_user_id"
+  end
+
+  create_table "tg_accounts", force: :cascade do |t|
+    t.string "first_name"
+    t.string "last_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["user_id"], name: "index_tg_accounts_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
+    t.integer "tb_id"
     t.string "first_name"
     t.string "last_name"
-    t.string "external_id"
     t.string "email"
     t.string "phone"
     t.string "password"
     t.datetime "auth_at"
+    t.bigint "tg_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "api_token_id"
+    t.index ["api_token_id"], name: "index_users_on_api_token_id"
+    t.index ["tg_account_id"], name: "index_users_on_tg_account_id"
   end
 
+  add_foreign_key "api_tokens", "tg_accounts"
   add_foreign_key "api_tokens", "users"
   add_foreign_key "course_sessions", "users"
-  add_foreign_key "materials", "sections", column: "sections_id"
-  add_foreign_key "sections", "course_sessions", column: "course_sessions_id"
+  add_foreign_key "materials", "course_sessions"
+  add_foreign_key "materials", "sections"
+  add_foreign_key "materials", "users"
+  add_foreign_key "sections", "course_sessions"
+  add_foreign_key "sections", "users"
+  add_foreign_key "tg_accounts", "users"
+  add_foreign_key "users", "api_tokens"
+  add_foreign_key "users", "tg_accounts"
 end
