@@ -20,6 +20,10 @@ class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
       course_sessions_list(:active)
     end
 
+    on %r{update_course_sessions} do
+      update_course_sessions
+    end
+
     on %r{^cs_info_id:} do
       @message_value =~ %r{^cs_info_id:(\d*)}
       course_session_show_info($1)

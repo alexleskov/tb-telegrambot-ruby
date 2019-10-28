@@ -16,10 +16,10 @@ ActiveRecord::Schema.define(version: 7) do
   enable_extension "plpgsql"
 
   create_table "api_tokens", force: :cascade do |t|
-    t.string "version", null: false
-    t.string "grant_type", null: false
-    t.string "expired_at", null: false
-    t.string "value", null: false
+    t.string "version"
+    t.string "grant_type"
+    t.string "expired_at"
+    t.string "value"
     t.boolean "active", default: false, null: false
     t.bigint "tg_account_id"
     t.bigint "user_id"
@@ -95,6 +95,11 @@ ActiveRecord::Schema.define(version: 7) do
     t.string "phone"
     t.string "password"
     t.datetime "auth_at"
+    t.string "avatar_url", default: "https://image.flaticon.com/icons/png/512/149/149071.png"
+    t.integer "active_courses_count", default: 0
+    t.integer "average_score_percent", default: 0
+    t.integer "archived_courses_count", default: 0
+    t.integer "total_time_spent", default: 0
     t.bigint "tg_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

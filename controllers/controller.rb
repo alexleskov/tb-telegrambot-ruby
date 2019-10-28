@@ -15,21 +15,17 @@ module Teachbase
       VALID_PASSWORD_REGEXP = /[\w|._#*^!+=@-]{6,40}$/.freeze
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
 
-      attr_reader :user, :message_responder, :answer, :menu, :destination, :data_loader
+      attr_reader :user, :message_responder, :answer, :menu, :data_loader
 
       def initialize(message_responder, dest = :chat)
         raise "No such destination '#{dest}' for send menu" unless [:chat,:from].include?(dest)
 
-        msg = message_responder.message
-        @destination = msg.public_send(dest) if msg.respond_to? dest
-        raise "Can't find menu destination for message #{message_responder}" if destination.nil?
-
         @message_responder = message_responder
-        @answer = Teachbase::Bot::Answer.new(message_responder, dest)
-        @menu = Teachbase::Bot::Menu.new(message_responder, dest)
         @data_loader = Teachbase::Bot::DataLoader.new(self)
-        @logger = AppConfigurator.new.get_logger
         @user = data_loader.user
+        @answer = Teachbase::Bot::Answer.new(message_responder, user, dest)
+        @menu = Teachbase::Bot::Menu.new(message_responder, dest)
+        @logger = AppConfigurator.new.get_logger
         # @logger.debug "mes_res: '#{message_responder}"
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}"
@@ -38,7 +34,6 @@ module Teachbase
       def signin
         answer.send "#{Emoji.find_by_alias('rocket').raw}<b>#{I18n.t('enter')} #{I18n.t('in_teachbase')}</b>"
         data_loader.auth_checker
-        answer.send I18n.t('auth_success')
         answer.send "<b>#{I18n.t('greetings')} #{I18n.t('in_teachbase')}!</b>"
         menu.hide
         show_profile_state
@@ -55,25 +50,22 @@ module Teachbase
       end
 
       def show_profile_state
-        data_loader.call_profile if @profile.nil?
-
-        @profile = data_loader.profile
+        data_loader.call_profile
         answer.send "<b>#{Emoji.find_by_alias('mortar_board').raw}#{I18n.t('profile_state')}</b>
-        \n  <a href='#{@profile['avatar_url']}'>#{@profile['name']} #{@profile['last_name']}</a>
-        \n  #{Emoji.find_by_alias('green_book').raw}#{I18n.t('courses')}: #{I18n.t('active_courses')}: #{@profile['active_courses_count']} / #{I18n.t('archived_courses')}: #{@profile['archived_courses_count']}
-        \n  #{Emoji.find_by_alias('school').raw}#{I18n.t('average_score_percent')}: #{@profile['average_score_percent']}%
-        \n  #{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{@profile['total_time_spent'] / 3600} #{I18n.t('hour')}"
+        \n  <a href='#{user.avatar_url}'>#{user.first_name} #{user.last_name}</a>
+        \n  #{Emoji.find_by_alias('green_book').raw}#{I18n.t('courses')}: #{I18n.t('active_courses')}: #{user.active_courses_count} / #{I18n.t('archived_courses')}: #{user.archived_courses_count}
+        \n  #{Emoji.find_by_alias('school').raw}#{I18n.t('average_score_percent')}: #{user.average_score_percent}%
+        \n  #{Emoji.find_by_alias('hourglass').raw}#{I18n.t('total_time_spent')}: #{user.total_time_spent / 3600} #{I18n.t('hour')}"
       end
 
       def course_list_l1
         menu.course_sessions_choice
       end
 
-      def update_profile_data
-        answer.send "<b>#{Emoji.find_by_alias('arrows_counterclockwise').raw}#{I18n.t('updating_profile')}</b>"
+      def update_course_sessions
+        answer.send "<b>#{Emoji.find_by_alias('arrows_counterclockwise').raw}#{I18n.t('updating_data')}</b>"
         course_sessions = data_loader.call_data_course_sessions
-        @profile = data_loader.call_profile
-        raise "Profile update failed" unless course_sessions || @profile
+        raise "Course sessions update failed" unless course_sessions
         answer.send "<i>#{Emoji.find_by_alias('+1').raw}#{I18n.t('updating_success')}</i>"
       end
 

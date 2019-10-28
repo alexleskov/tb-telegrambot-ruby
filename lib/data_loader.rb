@@ -7,13 +7,13 @@ require 'encrypted_strings'
 module Teachbase
   module Bot
     class DataLoader
-      attr_reader :controller, :tg_user, :apitoken, :profile, :user
+      attr_reader :controller, :tg_user, :apitoken, :user
 
       def initialize(controller, param = {})
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
         @controller = controller
         @tg_user = controller.message_responder.tg_user
-        @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(tg_account_id: tg_user.id, user_id: tg_user.user_id, active: true)
+        @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(tg_account_id: tg_user.id, user_id: tg_user.user_id)
         @user = Teachbase::Bot::User.find_or_create_by!(tg_account_id: tg_user.id, api_token_id: apitoken.id)
         @encrypt_key = AppConfigurator.new.get_encrypt_key
         @logger = AppConfigurator.new.get_logger
@@ -21,15 +21,18 @@ module Teachbase
 
       def call_profile
         auth_checker
-        @profile = user.load_profile
-
+        profile = user.load_profile
         raise "Profile is not loaded" if profile.nil?
-        user.first_name = @profile["name"]
-        user.last_name = @profile["last_name"]
-        user.tb_id = @profile["id"]
-        user.phone = @profile["phone"]
-        user.save
 
+        user.update!(first_name: profile["name"],
+                     last_name: profile["last_name"],
+                     tb_id: profile["id"],
+                     phone: profile["phone"],
+                     avatar_url: profile["avatar_url"],
+                     active_courses_count: profile["active_courses_count"],
+                     average_score_percent: profile["average_score_percent"],
+                     archived_courses_count: profile["archived_courses_count"],
+                     total_time_spent: profile['total_time_spent'])
       rescue RuntimeError => e
         @logger.debug "#{e}"
         auth_checker
@@ -94,31 +97,47 @@ module Teachbase
       def auth_checker
         if apitoken && apitoken.avaliable?
           user.api_auth(:mobile_v2, access_token: apitoken.value)
+        elsif user.email && user.password
+          login_by_user_data
         else
-          controller.authorization
-          user.api_auth(:mobile_v2, user_email: user.email, password: user.password)
-          raise "Can't authorize user id: #{user.id}. Token value: #{user.tb_api.token.value}" unless user.tb_api.token.value
-
-          @apitoken.update!(user_id: user.id,
-                            version: user.tb_api.token.version,
-                            grant_type: user.tb_api.token.grant_type,
-                            expired_at: user.tb_api.token.expired_at,
-                            value: user.tb_api.token.value,
-                            active: true)
-          raise "Can't load API Token" unless @apitoken
-
-          user.password.encrypt!(:symmetric, password: @encrypt_key)
-          user.auth_at = Time.now.utc
-          user.save
-          tg_user.user_id = user.id
-          save
+          login_by_user_input
         end
         rescue RuntimeError => e
+          @logger.debug "#{e}"
           answer.send "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
           retry
       end
 
     private
+
+      def login_by_user_data
+        crypted_password = user.password.encrypt(:symmetric, password: @encrypt_key)
+        user.api_auth(:mobile_v2, user_email: user.email, password: crypted_password.decrypt)
+        raise "Can't authorize user id: #{user.id}. Token value: #{user.tb_api.token.value}" unless user.tb_api.token.value
+
+        @apitoken.update!(user_id: user.id,
+                          version: user.tb_api.token.version,
+                          grant_type: user.tb_api.token.grant_type,
+                          expired_at: user.tb_api.token.expired_at,
+                          value: user.tb_api.token.value,
+                          active: true)
+        raise "Can't load API Token" unless @apitoken
+
+        user.password = crypted_password
+        user.auth_at = Time.now.utc
+        user.save
+        tg_user.user_id = user.id
+        tg_user.save   
+        rescue RuntimeError => e
+          @logger.debug "#{e}"
+          login_by_user_input
+      end
+
+      def login_by_user_input
+        controller.authorization
+        login_by_user_data        
+      end
+
 
       def create_attributes(params, source_hash)
         attributes = {}

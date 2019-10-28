@@ -14,6 +14,7 @@ class MessageResponder
     @tg_user = Teachbase::Bot::TgAccount.find_or_create_by!(id: message.from.id)
     @tg_user.first_name = message.from.first_name
     @tg_user.last_name = message.from.last_name
+    tg_user.save
     @commands = Teachbase::Bot::CommandList.new
   end
 
