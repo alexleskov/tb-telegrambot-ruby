@@ -7,7 +7,7 @@ module Teachbase
       belongs_to :user, dependent: :destroy
 
       def avaliable?
-        return if value.nil? || value.empty?
+        return if value.nil? || value.empty? || !active
         self.active = expired_at >= Time.now.utc
         save
         active

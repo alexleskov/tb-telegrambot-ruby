@@ -34,8 +34,9 @@ module Teachbase
       def after_auth
         buttons = [commands.show(:course_list_l1),
                    commands.show(:show_profile_state),
-                   commands.show(:settings)]
-        create(buttons, :menu, I18n.t('start_menu_message'), 1)
+                   commands.show(:settings),
+                   commands.show(:sign_out)]
+        create(buttons, :menu, I18n.t('start_menu_message'), 2)
       end
 
       def course_sessions_choice

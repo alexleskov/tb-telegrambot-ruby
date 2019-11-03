@@ -5,6 +5,17 @@ require 'gemoji'
 module Teachbase
   module Bot
     class CommandList
+
+      @sign_and_emoji = [:signin, Emoji.find_by_alias('rocket').raw],
+                        [:sign_out, Emoji.find_by_alias('door').raw],
+                        [:settings, Emoji.find_by_alias('wrench').raw],
+                        [:show_profile_state, Emoji.find_by_alias('mortar_board').raw],
+                        [:course_list_l1, Emoji.find_by_alias('books').raw],
+                        [:update_profile_data, Emoji.find_by_alias('arrows_counterclockwise').raw]
+      class << self
+        attr_reader :sign_and_emoji
+      end
+
       attr_reader :all
 
       def initialize
@@ -13,12 +24,9 @@ module Teachbase
       end
 
       def create
-        sign_emoji = [:signin, Emoji.find_by_alias('rocket').raw],
-                    [:settings, Emoji.find_by_alias('wrench').raw],
-                    [:show_profile_state, Emoji.find_by_alias('mortar_board').raw],
-                    [:course_list_l1, Emoji.find_by_alias('books').raw],
-                    [:update_profile_data, Emoji.find_by_alias('arrows_counterclockwise').raw]
-        sign_emoji.each { |data| all << Teachbase::Bot::Command.new(data[0], data[1]) }
+        Teachbase::Bot::CommandList.sign_and_emoji.each do |data|
+          all << Teachbase::Bot::Command.new(data[0], data[1])
+        end
         all
         raise "'CommandList' not created" if all.empty?
       end

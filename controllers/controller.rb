@@ -43,6 +43,14 @@ module Teachbase
         answer.send "#{I18n.t('error')} #{e}"
       end
 
+      def sign_out
+        answer.send "#{Emoji.find_by_alias('door').raw}<b>#{I18n.t('sign_out')}</b>"
+        token = data_loader.apitoken
+        token.update!(active: false)
+        menu.hide
+        menu.starting
+      end
+
       def settings
         data_loader.auth_checker
         answer.send "<b>#{Emoji.find_by_alias('wrench').raw}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
@@ -115,8 +123,8 @@ module Teachbase
         sections = Teachbase::Bot::Section.order(position: :asc).where(course_session_id: cs_id, user_id: user.id)
         course_session_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: cs_id, user_id: user.id).name
         if sections.empty?
-          answer.send "\n-----------------------------
-                       \n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_down').raw} <b>#{I18n.t('course_sections')}</b>
+          answer.send "\n
+                       \n#{Emoji.find_by_alias('book').raw} <b>#{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_down').raw} #{I18n.t('course_sections')}</b>
                        \n#{Emoji.find_by_alias('soon').raw} <i>#{I18n.t('empty')}</i>" 
         else
           mess = []
@@ -137,8 +145,8 @@ module Teachbase
             mess << string
           end
           answer_message = mess.join("\n")
-          answer.send "\n-----------------------------
-          \n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_down').raw} <b>#{I18n.t('course_sections')}</b>\n#{answer_message}"
+          answer.send "\n
+          \n#{Emoji.find_by_alias('book').raw} <b>#{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_down').raw} #{I18n.t('course_sections')}</b>\n#{answer_message}"
         end
       rescue => e
         answer.send "#{I18n.t('error')}"
@@ -152,7 +160,7 @@ module Teachbase
         section_name = Teachbase::Bot::Section.select(:name).find_by(course_session_id: cs_id, position: section_position, user_id: user.id).name
         course_session_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: cs_id, user_id: user.id).name
         if materials.empty?
-          answer.send "\n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_forward').raw} <b>#{I18n.t('section')}: #{section_name}</b>
+          answer.send "\n#{Emoji.find_by_alias('book').raw} <b>#{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_forward').raw} #{I18n.t('section')}: #{section_name}</b>
           \n#{Emoji.find_by_alias('soon').raw} <i>#{I18n.t('empty')}</i>"
         else
           mess = []
@@ -161,7 +169,7 @@ module Teachbase
             mess << string
           end
           answer_message = mess.join("\n")
-          answer.send "\n#{Emoji.find_by_alias('book').raw} #{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_forward').raw} <b>#{I18n.t('section')}: #{section_name}</b>\n#{answer_message}"
+          answer.send "\n#{Emoji.find_by_alias('book').raw} <b>#{I18n.t('course')}: #{course_session_name} - #{Emoji.find_by_alias('arrow_forward').raw} #{I18n.t('section')}: #{section_name}</b>\n#{answer_message}"
         end
       rescue => e
         answer.send "#{I18n.t('error')}" 

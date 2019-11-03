@@ -19,14 +19,14 @@ module Teachbase
       end
 
       def send_greeting_message
-        first_name = user.first_name.nil? ? message_responder.tg_user.first_name : user.first_name
-        last_name = user.first_name.nil? ? message_responder.tg_user.last_name : user.last_name
+        first_name = message_responder.tg_user.first_name
+        last_name = message_responder.tg_user.last_name
         send("#{I18n.t('greeting_message')} <b>#{first_name} #{last_name}!</b>")
       end
 
       def send_farewell_message
-        first_name = user.first_name.nil? ? message_responder.tg_user.first_name : user.first_name
-        last_name = user.first_name.nil? ? message_responder.tg_user.last_name : user.last_name
+        first_name = message_responder.tg_user.first_name
+        last_name = message_responder.tg_user.last_name
         send("#{I18n.t('farewell_message')} #{first_name} #{last_name}!")
       end
 
