@@ -3,13 +3,12 @@ require './lib/message_sender'
 module Teachbase
   module Bot
     class Answer
-      attr_reader :user, :message_responder, :destination
+      attr_reader :message_responder, :destination
 
-      def initialize(message_responder, user, param)
+      def initialize(message_responder, param)
         raise "No such param '#{param}' for send answer" unless [:chat,:from].include?(param)
         
         @param = param
-        @user = user
         @message_responder = message_responder
       end
 

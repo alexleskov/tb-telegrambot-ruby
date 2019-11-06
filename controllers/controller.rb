@@ -1,32 +1,28 @@
 require './lib/message_sender'
-require './lib/message_responder'
 require './models/answer'
 require './models/menu'
 require './models/course_session'
 require './models/section'
 require './models/material'
-require './lib/data_loader'
+require './lib/app_shell'
 
 
 module Teachbase
   module Bot
     class Controller
-      VALID_EMAIL_REGEXP = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i.freeze
-      VALID_PASSWORD_REGEXP = /[\w|._#*^!+=@-]{6,40}$/.freeze
-      ABORT_ACTION_COMMAND = %r{^/stop}.freeze
 
-      attr_reader :user, :message_responder, :answer, :menu, :data_loader
+      attr_reader :user, :respond, :answer, :menu, :data_loader
 
-      def initialize(message_responder, dest = :chat)
-        raise "No such destination '#{dest}' for send menu" unless [:chat,:from].include?(dest)
+      def initialize(respond, dest = :chat)
+        raise "No such destination '#{dest}' for send menu or message" unless [:chat,:from].include?(dest)
+        @respond = respond
+        @appshell =  Teachbase::Bot::AppShell.new(self)
 
-        @message_responder = message_responder
-        @data_loader = Teachbase::Bot::DataLoader.new(self)
         @user = data_loader.user
-        @answer = Teachbase::Bot::Answer.new(message_responder, user, dest)
-        @menu = Teachbase::Bot::Menu.new(message_responder, dest)
+        @answer = Teachbase::Bot::Answer.new(respond, dest)
+        @menu = Teachbase::Bot::Menu.new(respond, dest)
         @logger = AppConfigurator.new.get_logger
-        # @logger.debug "mes_res: '#{message_responder}"
+        # @logger.debug "mes_res: '#{respond}"
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}"
       end
@@ -175,48 +171,11 @@ module Teachbase
         answer.send "#{I18n.t('error')}" 
       end
 
-      def authorization
-        loop do
-          answer.send I18n.t('add_user_email')
-          user.email = request_data(:email)
-          answer.send I18n.t('add_user_password')
-          user.password = request_data(:password)
-          break if [user.email, user.password].any?(nil) || [user.email, user.password].all?(String)
-        end
-      end
-
       protected
-
-      def take_data
-        message_responder.bot.listen do |message|
-          @logger.debug "taking data: @#{message.from.username}: #{message.text}"
-          break message.text
-        end
-      end
-
-      def request_data(validate_type)
-        data = take_data
-        return value = nil if data =~ ABORT_ACTION_COMMAND || message_responder.commands.command_by?(:value, data)
-
-        value = data if validation(validate_type, data)
-      end
-
-      def validation(type, value)
-        return unless value
-
-        case type
-        when :email
-          value =~ VALID_EMAIL_REGEXP
-        when :password
-          value =~ VALID_PASSWORD_REGEXP
-        when :string
-          value.is_a?(String)
-        end
-      end
 
       def on(command, param, &block)
         raise "No such param '#{param}'. Must be :text or :data" unless [:text,:data].include?(param)
-        @message_value = param == :text ? message_responder.message.text : message_responder.message.data
+        @message_value = param == :text ? respond.message.text : respond.message.data
 
         command =~ @message_value
         if $~

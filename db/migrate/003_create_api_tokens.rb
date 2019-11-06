@@ -6,7 +6,6 @@ class CreateApiTokens < ActiveRecord::Migration[5.2]
       t.string :expired_at
       t.string :value
       t.boolean :active, default: false, null: false
-      t.references :tg_account, foreign_key: true
       t.references :user, foreign_key: true
 
       t.timestamps

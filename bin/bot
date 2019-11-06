@@ -5,8 +5,6 @@ require 'gemoji'
 
 require './lib/app_configurator'
 require './lib/message_responder'
-require './controllers/controller'
-
 
 config = AppConfigurator.new
 config.configure

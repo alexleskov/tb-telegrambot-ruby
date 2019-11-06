@@ -2,8 +2,8 @@ require './controllers/controller'
 
 class Teachbase::Bot::ActionController < Teachbase::Bot::Controller
 
-  def initialize(message_responder)
-    super(message_responder)
+  def initialize(respond)
+    super(respond)
   end
 
   def match_data

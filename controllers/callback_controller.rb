@@ -2,9 +2,8 @@ require './controllers/controller'
 
 class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
 
-  def initialize(message_responder)
-    super(message_responder, :from)
-    @logger = AppConfigurator.new.get_logger
+  def initialize(respond)
+    super(respond, :from)
   end
 
   def match_data
