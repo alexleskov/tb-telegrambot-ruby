@@ -1,9 +1,10 @@
 require './lib/message_sender'
-require './models/answer'
-require './models/menu'
-require './models/course_session'
-require './models/section'
-require './models/material'
+require './lib/answers/answer'
+require './lib/answers/answer_menu'
+require './lib/answers/answer_text'
+#require './models/course_session'
+#require './models/section'
+#require './models/material'
 require './lib/app_shell'
 
 
@@ -11,16 +12,14 @@ module Teachbase
   module Bot
     class Controller
 
-      attr_reader :user, :respond, :answer, :menu, :data_loader
+      attr_reader :respond, :answer, :menu, :data_loader
 
-      def initialize(respond, dest = :chat)
+      def initialize(respond, dest)
         raise "No such destination '#{dest}' for send menu or message" unless [:chat,:from].include?(dest)
         @respond = respond
         @appshell =  Teachbase::Bot::AppShell.new(self)
-
-        @user = data_loader.user
-        @answer = Teachbase::Bot::Answer.new(respond, dest)
-        @menu = Teachbase::Bot::Menu.new(respond, dest)
+        @answer = Teachbase::Bot::AnswerText.new(respond, dest)
+        @menu = Teachbase::Bot::AnswerMenu.new(respond, dest)
         @logger = AppConfigurator.new.get_logger
         # @logger.debug "mes_res: '#{respond}"
       rescue RuntimeError => e
@@ -29,12 +28,12 @@ module Teachbase
 
       def signin
         answer.send "#{Emoji.find_by_alias('rocket').raw}<b>#{I18n.t('enter')} #{I18n.t('in_teachbase')}</b>"
-        data_loader.auth_checker
+        #data_loader.auth_checker
         answer.send "<b>#{I18n.t('greetings')} #{I18n.t('in_teachbase')}!</b>"
-        menu.hide
-        show_profile_state
-        menu.after_auth
-        data_loader.call_data_course_sessions
+        #menu.hide
+        #show_profile_state
+        #menu.after_auth
+        #data_loader.call_data_course_sessions
       rescue RuntimeError => e
         answer.send "#{I18n.t('error')} #{e}"
       end
@@ -175,7 +174,7 @@ module Teachbase
 
       def on(command, param, &block)
         raise "No such param '#{param}'. Must be :text or :data" unless [:text,:data].include?(param)
-        @message_value = param == :text ? respond.message.text : respond.message.data
+        @message_value = param == :text ? respond.incoming_data.message.text : respond.incoming_data.message.data
 
         command =~ @message_value
         if $~

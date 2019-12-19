@@ -3,7 +3,7 @@ require './controllers/controller'
 class Teachbase::Bot::ActionController < Teachbase::Bot::Controller
 
   def initialize(respond)
-    super(respond)
+    super(respond, :chat)
   end
 
   def match_data

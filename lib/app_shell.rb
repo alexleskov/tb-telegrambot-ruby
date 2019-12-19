@@ -1,6 +1,6 @@
-require './models/course_session'
-require './models/section'
-require './models/material'
+#require './models/course_session'
+#require './models/section'
+#require './models/material'
 require './models/auth_session'
 require './lib/data_loader'
 
@@ -16,8 +16,8 @@ module Teachbase
 
       def initialize(controller)
         @controller = controller
-        @data_loader = Teachbase::Bot::DataLoader.new(self)
-        @user = data_loader.user
+        #@data_loader = Teachbase::Bot::DataLoader.new(self)
+        #@user = data_loader.user
         @logger = AppConfigurator.new.get_logger
         # @logger.debug "mes_res: '#{respond}"
       rescue RuntimeError => e

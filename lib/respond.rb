@@ -6,15 +6,15 @@ require './controllers/callback_controller'
 module Teachbase
   module Bot
     class Respond
-      attr_reader :commands, :msg_responder
+      attr_reader :commands, :incoming_data
 
       def initialize(message_responder)
-        @msg_responder = message_responder
+        @incoming_data = message_responder
         @commands = Teachbase::Bot::CommandList.new
       end
 
       def detect_respond_type
-        if msg_responder.message.is_a?(Telegram::Bot::Types::CallbackQuery)
+        if incoming_data.message.is_a?(Telegram::Bot::Types::CallbackQuery)
           Teachbase::Bot::CallbackController.new(self).match_data
         elsif command?
           command = find_command
@@ -30,11 +30,11 @@ module Teachbase
       private
 
       def command?
-        commands.command_by?(:value, msg_responder.message.text)
+        commands.command_by?(:value, incoming_data.message.text)
       end
 
       def find_command
-        commands.find_by(:value, msg_responder.message.text).key
+        commands.find_by(:value, incoming_data.message.text).key
       end
     end
   end
