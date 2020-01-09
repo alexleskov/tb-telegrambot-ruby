@@ -5,7 +5,9 @@ require 'active_record'
 module Teachbase
   module Bot
     class AuthSession < ActiveRecord::Base
-      belongs_to :user, dependent: :destroy
+      belongs_to :user
+      belongs_to :tg_account
+      belongs_to :api_token
 
       attr_reader :tb_api
 

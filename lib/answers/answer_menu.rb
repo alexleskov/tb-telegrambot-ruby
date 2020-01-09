@@ -37,9 +37,9 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     create(buttons, :menu_inline, "#{Emoji.find_by_alias('books').raw}<b>#{I18n.t('show_course_list')}</b>", 2)
   end
 
-  def hide
+  def hide(text)
     raise "Can't find menu destination for message #{@respond.incoming_data}" if destination.nil?
     MessageSender.new(bot: @respond.incoming_data.bot, chat: destination,
-                      text: "-----------------------------", hide_kb: true).send
+                      text: text.to_s, hide_kb: true).send
   end
 end

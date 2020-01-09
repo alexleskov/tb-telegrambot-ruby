@@ -8,7 +8,7 @@ class CreateUsers < ActiveRecord::Migration[5.2]
       t.string :phone
       t.string :password
       t.string :avatar_url, default: "https://image.flaticon.com/icons/png/512/149/149071.png"
-      
+
       t.timestamps
     end
   end

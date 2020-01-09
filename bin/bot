@@ -21,6 +21,8 @@ telegram_bot_client.run do |bot|
     options = { bot: bot, message: message}
     logger.debug "@#{message.from.username}: #{message}"
     MessageResponder.new(options).respond
+    rescue RuntimeError => e
+      logger.debug "#{e}"
   end
 end
 

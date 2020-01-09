@@ -32,14 +32,14 @@ module Teachbase
       end
 
       def command_by?(param, data)
-        raise "No such param: #{param}" if ![:key,:emoji,:text,:value].include?(param)
-        all.any? { |command| command.public_send(param) == data}
+        raise "No such param: #{param}" unless [:key,:emoji,:text,:value].include?(param)
+        all.any? { |command| command.public_send(param) == data }
       end
 
       def find_by(param, data)
         return unless command_by?(param, data)
 
-        command = all.select { |command| command.public_send(param) == data}
+        command = all.select { |command| command.public_send(param) == data }
         command.first
       end
 

@@ -1,42 +1,53 @@
-require './controllers/controller'
 require './models/user'
 require './models/api_token'
+require './models/profile'
 
 require 'encrypted_strings'
 
 module Teachbase
   module Bot
     class DataLoader
-      attr_reader :controller, :tg_user, :apitoken, :user
+      MAX_RETRIES = 5.freeze
 
-      def initialize(controller, param = {})
-        raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
-        @controller = controller
-        @tg_user = controller.message_responder.tg_user
-        @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(tg_account_id: tg_user.id, user_id: tg_user.user_id)
-        @user = Teachbase::Bot::User.find_or_create_by!(tg_account_id: tg_user.id, api_token_id: apitoken.id)
+      attr_reader :apitoken, :user, :appshell, :authsession, :profile
+
+      def initialize(appshell)
+        raise "'#{appshell}' is not Teachbase::Bot::AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
+        @appshell = appshell
+        @tg_user = appshell.controller.respond.incoming_data.tg_user
         @encrypt_key = AppConfigurator.new.get_encrypt_key
         @logger = AppConfigurator.new.get_logger
       end
 
       def call_profile
         auth_checker
-        profile = user.load_profile
-        raise "Profile is not loaded" if profile.nil?
+        retries = 0
+        lms_info = authsession.load_profile
+        raise "Profile is not loaded" unless lms_info
 
-        user.update!(first_name: profile["name"],
-                     last_name: profile["last_name"],
-                     tb_id: profile["id"],
-                     phone: profile["phone"],
-                     avatar_url: profile["avatar_url"],
-                     active_courses_count: profile["active_courses_count"],
-                     average_score_percent: profile["average_score_percent"],
-                     archived_courses_count: profile["archived_courses_count"],
-                     total_time_spent: profile['total_time_spent'])
+        @profile = Teachbase::Bot::Profile.find_or_create_by!(user_id: user.id)
+        user.update!(first_name: lms_info["name"],
+                     last_name: lms_info["last_name"],
+                     tb_id: lms_info["id"],
+                     phone: lms_info["phone"],
+                     avatar_url: lms_info["avatar_url"])
+        profile.update!(active_courses_count: lms_info["active_courses_count"],
+                           average_score_percent: lms_info["average_score_percent"],
+                           archived_courses_count: lms_info["archived_courses_count"],
+                           total_time_spent: lms_info['total_time_spent'])
       rescue RuntimeError => e
         @logger.debug "#{e}"
-        auth_checker
+        if (retries += 1) <= MAX_RETRIES
+          appshell.controller.answer.send_out "#{I18n.t('error')} #{e}\n#{I18n.t('retry')} №#{retries}..."
+          sleep(retries)
+          retry
+        else
+          raise "Unexpected error after retries: #{e}"
+          appshell.controller.answer.send_out "#{I18n.t('unexpected_error')} #{e}"
+        end
       end
+
+=begin
 
       def call_course_sessions_list(option)
         raise "No such option for update course sessions list" unless [:active, :archived].include?(option)
@@ -77,7 +88,7 @@ module Teachbase
           section_bd_id = section_bd.id
           section_bd.update!(object_attributes)
           materials = section["materials"]
-          materials.each do |material|
+          materials.each do |material|crypted_passwordcrypted_password
             object_attributes = create_attributes(material_params, material)
             Teachbase::Bot::Material.where(section_id: section_bd_id, id: material["id"], course_session_id: cs_id, user_id: user.id)
             .first_or_create!(object_attributes).update!(object_attributes)
@@ -93,51 +104,70 @@ module Teachbase
         call_course_sessions_list(:active)
         call_course_sessions_list(:archived)
       end
+=end
 
       def auth_checker
-        if apitoken && apitoken.avaliable?
-          user.api_auth(:mobile_v2, access_token: apitoken.value)
-        elsif user.email && user.password
-          login_by_user_data
+        @authsession = Teachbase::Bot::AuthSession.find_or_create_by!(tg_account_id: @tg_user.id, active: true)
+        @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(auth_session_id: authsession.id)
+        if apitoken.avaliable? && authsession.active
+          authsession.api_auth(:mobile_v2, access_token: apitoken.value)
+          @user = authsession.user
         else
-          login_by_user_input
+          authsession.update!(active: false)
+          login_by_user_data
         end
         rescue RuntimeError => e
           @logger.debug "#{e}"
-          answer.send "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+          authsession.update!(active: false)
+          appshell.controller.answer.send_out "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
           retry
+      end
+
+      def unauthorize
+        authsession = Teachbase::Bot::AuthSession.find_by(tg_account_id: @tg_user.id, active: true)
+        raise "Nothing to unauthorize here. tg_account_id: #{@tg_user.id}" unless authsession
+
+        authsession.update!(active: false)
+        rescue RuntimeError => e
+          @logger.debug "#{e}"
       end
 
     private
 
       def login_by_user_data
-        crypted_password = user.password.encrypt(:symmetric, password: @encrypt_key)
-        user.api_auth(:mobile_v2, user_email: user.email, password: crypted_password.decrypt)
-        raise "Can't authorize user id: #{user.id}. Token value: #{user.tb_api.token.value}" unless user.tb_api.token.value
+        user_data = request_user_data
+        return if user_data.any?(nil)
+        
+        email = user_data.first
+        password = user_data.second
+        crypted_password = password.encrypt(:symmetric, password: @encrypt_key)
+        authsession.api_auth(:mobile_v2, user_email: email, password: crypted_password.decrypt)
+        raise "Can't authorize authsession id: #{authsession.id}. Token value: #{authsession.tb_api.token.value}" unless authsession.tb_api.token.value
 
-        @apitoken.update!(user_id: user.id,
-                          version: user.tb_api.token.version,
-                          grant_type: user.tb_api.token.grant_type,
-                          expired_at: user.tb_api.token.expired_at,
-                          value: user.tb_api.token.value,
+        apitoken.update!(version: authsession.tb_api.token.version,
+                          grant_type: authsession.tb_api.token.grant_type,
+                          expired_at: authsession.tb_api.token.expired_at,
+                          value: authsession.tb_api.token.value,
                           active: true)
-        raise "Can't load API Token" unless @apitoken
+        raise "Can't load API Token" unless apitoken
 
-        user.password = crypted_password
-        user.auth_at = Time.now.utc
-        user.save
-        tg_user.user_id = user.id
-        tg_user.save   
-        rescue RuntimeError => e
-          @logger.debug "#{e}"
-          login_by_user_input
+        @user = Teachbase::Bot::User.find_or_create_by!(email: email)
+        user.update!(password: crypted_password)
+        authsession.update!(auth_at: Time.now.utc,
+                            active:true,
+                            api_token_id: apitoken.id,
+                            user_id: user.id)
       end
 
-      def login_by_user_input
-        controller.authorization
-        login_by_user_data        
+      def request_user_data
+        loop do
+          appshell.controller.answer.send_out I18n.t('add_user_email')
+          user_email = appshell.request_data(:string)
+          appshell.controller.answer.send_out I18n.t('add_user_password')
+          user_password = appshell.request_data(:password)
+          break [user_email, user_password] if [user_email, user_password].any?(nil) || [user_email, user_password].all?(String)
+        end
       end
-
 
       def create_attributes(params, source_hash)
         attributes = {}

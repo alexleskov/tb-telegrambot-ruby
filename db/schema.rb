@@ -10,53 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 4) do
+ActiveRecord::Schema.define(version: 0) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "auth_sessions", force: :cascade do |t|
-    t.datetime "auth_at"
-    t.boolean "active", default: false, null: false
-    t.bigint "user_id"
-    t.bigint "tg_account_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["tg_account_id"], name: "index_auth_sessions_on_tg_account_id"
-    t.index ["user_id"], name: "index_auth_sessions_on_user_id"
-  end
-
-  create_table "profiles", force: :cascade do |t|
-    t.integer "active_courses_count", default: 0
-    t.integer "average_score_percent", default: 0
-    t.integer "archived_courses_count", default: 0
-    t.integer "total_time_spent", default: 0
-    t.bigint "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_profiles_on_user_id"
-  end
-
-  create_table "tg_accounts", force: :cascade do |t|
-    t.string "first_name"
-    t.string "last_name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "users", force: :cascade do |t|
-    t.integer "tb_id"
-    t.string "first_name"
-    t.string "last_name"
-    t.string "email"
-    t.string "phone"
-    t.string "password"
-    t.string "avatar_url", default: "https://image.flaticon.com/icons/png/512/149/149071.png"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  add_foreign_key "auth_sessions", "tg_accounts"
-  add_foreign_key "auth_sessions", "users"
-  add_foreign_key "profiles", "users"
 end

@@ -2,15 +2,15 @@ require './controllers/controller'
 
 class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
 
-  def initialize(respond)
-    super(respond, :from)
+  def initialize(params)
+    super(params, :from)
   end
 
   def match_data
     on %r{^touch} do
-      answer.send "Touching"
+      answer.send_out "Touching"
     end
-
+=begin
     on %r{archived_courses} do
       course_sessions_list(:archived)
     end
@@ -32,7 +32,7 @@ class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
       @message_value =~ %r{^cs_id:(\d*)}
       sections_show($1)
     end
-
+=end
   end
 
   private
