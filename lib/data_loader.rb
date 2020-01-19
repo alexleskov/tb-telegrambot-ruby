@@ -10,13 +10,14 @@ require 'encrypted_strings'
 module Teachbase
   module Bot
     class DataLoader
-      MAX_RETRIES = 5.freeze
-      CS_STATES = [:active, :archived]
+      MAX_RETRIES = 5
+      CS_STATES = %i[active archived].freeze
 
       attr_reader :apitoken, :user, :appshell, :authsession
 
       def initialize(appshell)
         raise "'#{appshell}' is not Teachbase::Bot::AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
+
         @appshell = appshell
         @tg_user = appshell.controller.respond.incoming_data.tg_user
         @encrypt_key = AppConfigurator.new.get_encrypt_key
@@ -55,8 +56,8 @@ module Teachbase
         lms_info = authsession.load_profile
         raise "Profile is not loaded" unless lms_info
 
-        user_params = [:last_name, :phone, :avatar_url]
-        profile_params = [:active_courses_count, :average_score_percent, :archived_courses_count, :total_time_spent]
+        user_params = %i[last_name phone avatar_url]
+        profile_params = %i[active_courses_count average_score_percent archived_courses_count total_time_spent]
         profile = Teachbase::Bot::Profile.find_or_create_by!(user_id: user.id)
         user.update!(create_attributes(user_params, lms_info).merge!(tb_id: lms_info["id"], first_name: lms_info["name"]))
         profile.update!(create_attributes(profile_params, lms_info))
@@ -75,16 +76,16 @@ module Teachbase
         raise "No such option for update course sessions list" unless CS_STATES.include?(state)
 
         load_models
-        params = [:name, :icon_url, :bg_url, :deadline, :listeners_count, :progress, :started_at,
-                        :can_download, :success, :started_at, :can_download, :success, :full_access,
-                        :application_status, :navigation, :rating, :has_certificate]
+        params = %i[name icon_url bg_url deadline listeners_count progress started_at
+                    can_download success started_at can_download success full_access
+                    application_status navigation rating has_certificate]
 
         lms_info = authsession.load_course_sessions(state)
         @logger.debug "lms_info: #{lms_info}"
 
         lms_info.each do |course_session|
           Teachbase::Bot::CourseSession.find_or_create_by!(user_id: user.id, tb_id: course_session["id"])
-          .update!(create_attributes(params, course_session).merge!(complete_status: state.to_s, changed_at: course_session["updated_at"]))
+                                       .update!(create_attributes(params, course_session).merge!(complete_status: state.to_s, changed_at: course_session["updated_at"]))
         end
       rescue RuntimeError => e
         if (@retries += 1) <= MAX_RETRIES
@@ -105,15 +106,15 @@ module Teachbase
         lms_info = authsession.load_sections(cs_id)
         sections_lms = lms_info["sections"]
         pos_index = 1
-        section_params = [:name, :opened_at, :is_publish, :is_available]
-        material_params = [:name, :category]
+        section_params = %i[name opened_at is_publish is_available]
+        material_params = %i[name category]
 
         sections_lms.each do |section_lms|
           section_bd = course_session.sections.find_or_create_by!(position: pos_index)
           materials_lms = section_lms["materials"]
           materials_lms.each do |material_lms|
             section_bd.materials.find_or_create_by!(position: material_lms["position"], tb_id: material_lms["id"])
-            .update!(create_attributes(material_params, material_lms).merge!(content_type: material_lms["type"]))
+                      .update!(create_attributes(material_params, material_lms).merge!(content_type: material_lms["type"]))
           end
           section_bd.update!(create_attributes(section_params, section_lms))
           pos_index += 1
@@ -147,8 +148,8 @@ module Teachbase
         raise "Nothing to unauthorize here. tg_account_id: #{@tg_user.id}" unless authsession
 
         authsession.update!(active: false)
-        rescue RuntimeError => e
-          @logger.debug "#{e}"
+      rescue RuntimeError => e
+        @logger.debug e.to_s
       end
 
       def auth_checker
@@ -161,19 +162,19 @@ module Teachbase
           authsession.update!(active: false)
           login_by_user_data
         end
-        rescue RuntimeError => e
-          @logger.debug "#{e}"
-          authsession.update!(active: false)
-          appshell.controller.answer.send_out "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
-          retry
+      rescue RuntimeError => e
+        @logger.debug e.to_s
+        authsession.update!(active: false)
+        appshell.controller.answer.send_out "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+        retry
       end
 
-    private
+      private
 
       def login_by_user_data
         user_data = request_user_data
         return if user_data.any?(nil)
-        
+
         email = user_data.first
         password = user_data.second
         crypted_password = password.encrypt(:symmetric, password: @encrypt_key)
@@ -181,16 +182,16 @@ module Teachbase
         raise "Can't authorize authsession id: #{authsession.id}. Token value: #{authsession.tb_api.token.value}" unless authsession.tb_api.token.value
 
         apitoken.update!(version: authsession.tb_api.token.version,
-                          grant_type: authsession.tb_api.token.grant_type,
-                          expired_at: authsession.tb_api.token.expired_at,
-                          value: authsession.tb_api.token.value,
-                          active: true)
+                         grant_type: authsession.tb_api.token.grant_type,
+                         expired_at: authsession.tb_api.token.expired_at,
+                         value: authsession.tb_api.token.value,
+                         active: true)
         raise "Can't load API Token" unless apitoken
 
         @user = Teachbase::Bot::User.find_or_create_by!(email: email)
         user.update!(password: crypted_password)
         authsession.update!(auth_at: Time.now.utc,
-                            active:true,
+                            active: true,
                             api_token_id: apitoken.id,
                             user_id: user.id)
       end
@@ -210,7 +211,6 @@ module Teachbase
         params.each { |param| attributes.merge!(param => source_hash[param.to_s]) }
         attributes
       end
-
     end
   end
 end

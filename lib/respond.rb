@@ -16,7 +16,7 @@ module Teachbase
       end
 
       def detect_type
-        params = {respond: self}
+        params = { respond: self }
         case incoming_data.message
         when Telegram::Bot::Types::CallbackQuery
           Teachbase::Bot::CallbackController.new(params).match_data

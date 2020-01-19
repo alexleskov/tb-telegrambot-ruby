@@ -5,7 +5,6 @@ require 'gemoji'
 module Teachbase
   module Bot
     class CommandList
-
       @sign_and_emoji = [:signin, Emoji.t(:rocket)],
                         [:sign_out, Emoji.t(:door)],
                         [:settings, Emoji.t(:wrench)],
@@ -32,7 +31,8 @@ module Teachbase
       end
 
       def command_by?(param, data)
-        raise "No such param: #{param}" unless [:key,:emoji,:text,:value].include?(param)
+        raise "No such param: #{param}" unless %i[key emoji text value].include?(param)
+
         all.any? { |command| command.public_send(param) == data }
       end
 

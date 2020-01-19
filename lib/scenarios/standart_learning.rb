@@ -8,7 +8,7 @@ module Teachbase
           base.extend ClassMethods
         end
 
-        module ClassMethods ; end
+        module ClassMethods; end
 
         def show_profile_state
           profile = appshell.profile_state
@@ -18,8 +18,8 @@ module Teachbase
           \n  <a href='#{user.avatar_url}'>#{user.first_name} #{user.last_name}</a>
           \n  #{Emoji.t(:school)} #{I18n.t('average_score_percent')}: #{profile.average_score_percent}%
           \n  #{Emoji.t(:hourglass)} #{I18n.t('total_time_spent')}: #{profile.total_time_spent / 3600} #{I18n.t('hour')}
-          \n  #{Emoji.t(:green_book)} #{I18n.t('courses')}: 
-          #{I18n.t('active_courses')}: #{profile.active_courses_count} 
+          \n  #{Emoji.t(:green_book)} #{I18n.t('courses')}:
+          #{I18n.t('active_courses')}: #{profile.active_courses_count}
           #{I18n.t('archived_courses')}: #{profile.archived_courses_count}"
         end
 
@@ -38,13 +38,13 @@ module Teachbase
             answer.send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
           else
             course_sessions.each do |course_session|
-              buttons = [[text: "#{I18n.t('open')}", callback_data: "cs_sec_by_id:#{course_session.tb_id}"],
-                         [text: "#{I18n.t('course_results')}", callback_data: "cs_info_id:#{course_session.tb_id}"]]
+              buttons = [[text: I18n.t('open').to_s, callback_data: "cs_sec_by_id:#{course_session.tb_id}"],
+                         [text: I18n.t('course_results').to_s, callback_data: "cs_info_id:#{course_session.tb_id}"]]
               menu.create(buttons, :menu_inline, "#{Emoji.t(:book)} <a href='#{course_session.icon_url}'>#{I18n.t('course')}</a>: <b>#{course_session.name}</b>", 2)
             end
           end
         rescue RuntimeError => e
-          answer.send_out "#{I18n.t('error')}" 
+          answer.send_out I18n.t('error').to_s
         end
 
         def show_course_session_info(cs_id)
@@ -53,12 +53,12 @@ module Teachbase
           started_at = course_session.started_at.nil? ? "-" : Time.at(course_session.started_at).utc.strftime("%d.%m.%Y %H:%M")
           answer.send_out "#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{course_session.name} - #{Emoji.t(:information_source)} #{I18n.t('information')}</b>
           \n  #{Emoji.t(:runner)}#{I18n.t('started_at')}: #{started_at}
-          \n  #{Emoji.t(:alarm_clock)}#{I18n.t('deadline')}: #{deadline} 
+          \n  #{Emoji.t(:alarm_clock)}#{I18n.t('deadline')}: #{deadline}
           \n  #{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{course_session.progress}%
           \n  #{Emoji.t(:star2)}#{I18n.t('complete_status')}: #{I18n.t("complete_status_#{course_session.complete_status}")}
           \n  #{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{course_session.success}")}"
         rescue RuntimeError => e
-          answer.send_out "#{I18n.t('error')}" 
+          answer.send_out I18n.t('error').to_s
         end
 
         def show_sections_list_l1(cs_id)
@@ -69,9 +69,9 @@ module Teachbase
                              \n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
           else
             buttons = [[text: "#{I18n.t('find_by_number').capitalize} #{I18n.t('section2')}", callback_data: "show_sections_by_csid:#{cs_id}_param:query"],
-                       [text: "#{I18n.t('show_all').capitalize}", callback_data: "show_sections_by_csid:#{cs_id}_param:all"],
-                       [text: "#{I18n.t('show_avaliable').capitalize}", callback_data: "show_sections_by_csid:#{cs_id}_param:avaliable"],
-                       [text: "#{I18n.t('show_unvaliable').capitalize}", callback_data: "show_sections_by_csid:#{cs_id}_param:unvaliable"]]
+                       [text: I18n.t('show_all').capitalize.to_s, callback_data: "show_sections_by_csid:#{cs_id}_param:all"],
+                       [text: I18n.t('show_avaliable').capitalize.to_s, callback_data: "show_sections_by_csid:#{cs_id}_param:avaliable"],
+                       [text: I18n.t('show_unvaliable').capitalize.to_s, callback_data: "show_sections_by_csid:#{cs_id}_param:unvaliable"]]
             menu.create(buttons, :menu_inline, "#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{cs_name} - #{Emoji.t(:arrow_down)} #{I18n.t('course_sections')} - #{Emoji.t(:page_facing_up)} #{I18n.t('section2').capitalize}</b>
                                               \n#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}", 2)
           end
@@ -90,13 +90,13 @@ module Teachbase
                        section_number = appshell.request_data(:string)
                        sections_bd.where(position: section_number)
                      when :all
-                       title_sign = "#{I18n.t('show_all').capitalize}"
+                       title_sign = I18n.t('show_all').capitalize.to_s
                        sections_bd
                      when :avaliable
-                       title_sign = "#{I18n.t('show_avaliable').capitalize}"
+                       title_sign = I18n.t('show_avaliable').capitalize.to_s
                        sections_bd.where(is_available: true, is_publish: true)
                      when :unvaliable
-                       title_sign = "#{I18n.t('show_unvaliable').capitalize}"
+                       title_sign = I18n.t('show_unvaliable').capitalize.to_s
                        sections_bd.where(is_available: false)
                      else
                        raise "No such param: '#{param}' for showing sections"
@@ -113,10 +113,10 @@ module Teachbase
                         \n<i>#{I18n.t('section_unable')}.</i>"
                      elsif section.is_publish && !section.is_available && section.opened_at
                        "\n#{Emoji.t(:no_entry_sign)} <b>#{I18n.t('section')} #{section.position}:</b> #{section.name}
-                        \n<i>#{I18n.t('section_delayed')} #{Time.at(section.opened_at).utc.strftime("%d.%m.%Y %H:%M")}.</i>"
+                        \n<i>#{I18n.t('section_delayed')} #{Time.at(section.opened_at).utc.strftime('%d.%m.%Y %H:%M')}.</i>"
                      elsif !section.is_publish
-                        "\n#{Emoji.t(:x)} <b>#{I18n.t('section')} #{section.position}:</b> #{section.name}
-                         \n<i>#{I18n.t('section_unpublish')}.</i>"
+                       "\n#{Emoji.t(:x)} <b>#{I18n.t('section')} #{section.position}:</b> #{section.name}
+                        \n<i>#{I18n.t('section_unpublish')}.</i>"
                      end
             mess << string
           end
@@ -124,7 +124,7 @@ module Teachbase
 
           answer.send_out "\n#{mess.join("\n")}"
         rescue RuntimeError => e
-          answer.send_out "#{I18n.t('error')}"
+          answer.send_out I18n.t('error').to_s
         end
 
         def update_course_sessions
@@ -141,7 +141,6 @@ module Teachbase
         end
 
         def match_data
-
           on %r{archived_courses} do
             show_course_sessions_list(:archived)
           end
@@ -156,17 +155,17 @@ module Teachbase
 
           on %r{^cs_info_id:} do
             @message_value =~ %r{^cs_info_id:(\d*)}
-            show_course_session_info($1)
+            show_course_session_info(Regexp.last_match(1))
           end
 
           on %r{^cs_sec_by_id:} do
             @message_value =~ %r{^cs_sec_by_id:(\d*)}
-            show_sections_list_l1($1)
+            show_sections_list_l1(Regexp.last_match(1))
           end
 
           on %r{^show_sections_by_csid:} do
             @message_value =~ %r{^show_sections_by_csid:(\d*)_param:(\w*)}
-            show_sections($1, $2.to_sym)
+            show_sections(Regexp.last_match(1), Regexp.last_match(2).to_sym)
           end
 
           on %r{edit_settings} do
@@ -174,9 +173,9 @@ module Teachbase
           end
         end
 
-        #def match_text_action
+        # def match_text_action
         #
-        #end
+        # end
       end
     end
   end

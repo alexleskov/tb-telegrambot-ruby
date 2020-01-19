@@ -1,7 +1,7 @@
-#require './models/course_session'
-#require './models/section'
-#require './models/material'
-#require './models/auth_session'
+# require './models/course_session'
+# require './models/section'
+# require './models/material'
+# require './models/auth_session'
 require './controllers/controller'
 require './lib/data_loader'
 
@@ -18,6 +18,7 @@ module Teachbase
       def initialize(controller)
         @logger = AppConfigurator.new.get_logger
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
+
         @settings = controller.respond.incoming_data.settings
         @controller = controller
         @data_loader = Teachbase::Bot::DataLoader.new(self)
@@ -67,8 +68,7 @@ module Teachbase
         controller.class.send(:include, "Teachbase::Bot::Scenarios::#{scenario_name}".constantize)
       end
 
-      def change_localization(lang)
-      end
+      def change_localization(lang); end
 
       def request_data(validate_type)
         data = take_data
@@ -102,7 +102,6 @@ module Teachbase
           value.is_a?(String)
         end
       end
-
     end
   end
 end

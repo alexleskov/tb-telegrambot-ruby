@@ -7,12 +7,11 @@ module Teachbase
 
       def avaliable?
         return if value.nil? || value.empty? || !active
-        
+
         self.active = expired_at >= Time.now.utc
         save
         active
       end
-
     end
   end
 end

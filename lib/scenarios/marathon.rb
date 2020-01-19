@@ -8,8 +8,7 @@ module Teachbase
           base.extend ClassMethods
         end
 
-        module ClassMethods ; end
-        
+        module ClassMethods; end
       end
     end
   end

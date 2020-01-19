@@ -18,11 +18,10 @@ telegram_bot_client = Telegram::Bot::Client.new(token)
 
 telegram_bot_client.run do |bot|
   bot.listen do |message|
-    options = { bot: bot, message: message}
+    options = { bot: bot, message: message }
     logger.debug "@#{message.from.username}: #{message}"
     MessageResponder.new(options).respond
-    #rescue => e
+    # rescue => e
     #  logger.debug "Error: #{e}"
   end
 end
-

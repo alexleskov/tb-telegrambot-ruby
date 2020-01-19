@@ -2,16 +2,15 @@ require './lib/message_sender'
 require './lib/answers/answer'
 require './lib/answers/answer_menu'
 require './lib/answers/answer_text'
-#require './models/section'
-#require './models/material'
+# require './models/section'
+# require './models/material'
 require './lib/app_shell'
 require './lib/scenarios.rb'
-
 
 module Teachbase
   module Bot
     class Controller
-      MSG_TYPES = [:text, :data].freeze
+      MSG_TYPES = %i[text data].freeze
 
       attr_reader :respond, :answer, :menu, :appshell
 
@@ -25,34 +24,33 @@ module Teachbase
         @menu = Teachbase::Bot::AnswerMenu.new(appshell, dest)
       rescue RuntimeError => e
         @logger.debug "Initialization Controller error: #{e}"
-        answer.send_out "#{I18n.t('error')}"
+        answer.send_out I18n.t('error').to_s
       end
 
-=begin
+      #
+      #       def section_show_materials(section_position, cs_id)
+      #         materials = Teachbase::Bot::Material
+      #                     .order(id: :asc)
+      #                     .joins(:section).where("sections.course_session_id = :cs_id and sections.position = :sec_position and sections.user_id = :user_id",
+      #                            cs_id: cs_id, sec_position: section_position, user_id: user.id)
+      #         section_name = Teachbase::Bot::Section.select(:name).find_by(course_session_id: cs_id, position: section_position, user_id: user.id).name
+      #         course_session_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: cs_id, user_id: user.id).name
+      #         if materials.empty?
+      #           answer.send_out "\n#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{course_session_name} - #{Emoji.t(:arrow_forward)} #{I18n.t('section')}: #{section_name}</b>
+      #           \n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
+      #         else
+      #           mess = []
+      #           materials.each do |material|
+      #             string = "\n#{Emoji.t(:page_facing_up)}<b>#{I18n.t('material')}:</b> #{material.name}"
+      #             mess << string
+      #           end
+      #           answer_message = mess.join("\n")
+      #           answer.send_out "\n#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{course_session_name} - #{Emoji.t(:arrow_forward)} #{I18n.t('section')}: #{section_name}</b>\n#{answer_message}"
+      #         end
+      #       rescue => e
+      #         answer.send_out "#{I18n.t('error')}"
+      #       end
 
-      def section_show_materials(section_position, cs_id)
-        materials = Teachbase::Bot::Material
-                    .order(id: :asc)
-                    .joins(:section).where("sections.course_session_id = :cs_id and sections.position = :sec_position and sections.user_id = :user_id",
-                           cs_id: cs_id, sec_position: section_position, user_id: user.id)
-        section_name = Teachbase::Bot::Section.select(:name).find_by(course_session_id: cs_id, position: section_position, user_id: user.id).name
-        course_session_name = Teachbase::Bot::CourseSession.select(:name).find_by(id: cs_id, user_id: user.id).name
-        if materials.empty?
-          answer.send_out "\n#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{course_session_name} - #{Emoji.t(:arrow_forward)} #{I18n.t('section')}: #{section_name}</b>
-          \n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
-        else
-          mess = []
-          materials.each do |material|
-            string = "\n#{Emoji.t(:page_facing_up)}<b>#{I18n.t('material')}:</b> #{material.name}"
-            mess << string
-          end
-          answer_message = mess.join("\n")
-          answer.send_out "\n#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{course_session_name} - #{Emoji.t(:arrow_forward)} #{I18n.t('section')}: #{section_name}</b>\n#{answer_message}"
-        end
-      rescue => e
-        answer.send_out "#{I18n.t('error')}" 
-      end
-=end
       protected
 
       def on(command, param, &block)

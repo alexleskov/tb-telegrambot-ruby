@@ -6,7 +6,6 @@ module Teachbase
       has_one :setting, dependent: :destroy
       has_many :auth_sessions, dependent: :destroy
       has_many :users, through: :auth_sessions
-
     end
   end
 end

@@ -1,13 +1,13 @@
 require './lib/answers/answer'
 
 class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
-
   def initialize(appshell, param)
     super(appshell, param)
   end
 
   def send_out(text)
     raise "Can't find answer destination for message #{@respond}" if destination.nil?
+
     MessageSender.new(bot: @respond.incoming_data.bot, chat: destination, text: text).send
   end
 
@@ -22,5 +22,4 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
   def if_empty_msg
     send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
   end
-
 end

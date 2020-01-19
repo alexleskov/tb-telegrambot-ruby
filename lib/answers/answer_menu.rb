@@ -1,7 +1,6 @@
 require './lib/answers/answer'
 
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
-
   def initialize(appshell, param)
     super(appshell, param)
   end
@@ -17,7 +16,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     MessageSender.new(menu_params).send
   end
 
-  def starting(text = "#{I18n.t('start_menu_message')}")
+  def starting(text = I18n.t('start_menu_message').to_s)
     buttons = [@respond.commands.show(:signin), @respond.commands.show(:settings)]
     create(buttons, :menu, text, 2)
   end
@@ -32,6 +31,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
 
   def hide(text)
     raise "Can't find menu destination for message #{@respond.incoming_data}" if destination.nil?
+
     MessageSender.new(bot: @respond.incoming_data.bot, chat: destination,
                       text: text.to_s, hide_kb: true).send
   end
