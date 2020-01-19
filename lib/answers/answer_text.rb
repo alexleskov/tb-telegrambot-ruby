@@ -2,8 +2,8 @@ require './lib/answers/answer'
 
 class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
 
-  def initialize(respond, param)
-    super(respond, param)
+  def initialize(appshell, param)
+    super(appshell, param)
   end
 
   def send_out(text)
@@ -16,7 +16,11 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
   end
 
   def send_out_farewell_message
-    send_out("#{I18n.t('farewell_message')} <b>#{user_fullname_str}</b>")
+    send_out("#{I18n.t('farewell_message')} <b>#{user_fullname_str}!</b>")
+  end
+
+  def if_empty_msg
+    send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
   end
 
 end

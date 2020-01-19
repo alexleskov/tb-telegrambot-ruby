@@ -5,8 +5,9 @@ class Teachbase::Bot::ActionController < Teachbase::Bot::Controller
   def initialize(params)
     super(params, :chat)
   end
-
-  def match_data
+  
+=begin
+  def match_text_action
     on %r{^/start} do
       answer.send_out_greeting_message
       menu.starting
@@ -16,7 +17,7 @@ class Teachbase::Bot::ActionController < Teachbase::Bot::Controller
       menu.hide("<b>#{answer.user_fullname_str}!</b> #{I18n.t('farewell_message')} :'(")
     end
 
-=begin
+
     on %r{^/sec(\d*)_cs(\d*)} do
       @message_value =~ %r{^/sec(\d*)_cs(\d*)}
       section_id = $1
@@ -24,8 +25,10 @@ class Teachbase::Bot::ActionController < Teachbase::Bot::Controller
       answer.send_out "#{section_id} #{course_session_id}"
       section_show_materials(section_id, course_session_id)
     end
-=end 
+
   end
+
+=end
 
 
   private

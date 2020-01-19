@@ -6,14 +6,15 @@ module Teachbase
     class Answer
       MSG_DESTS = [:chat,:from].freeze
 
-      def initialize(respond, param)
+      def initialize(appshell, param)
         raise "No such param '#{param}' for send answer" unless MSG_DESTS.include?(param)
         @param = param
-        @respond = respond
+        @appshell = appshell
+        @respond = appshell.controller.respond
       end
 
       def user_fullname
-        active_authsession = Teachbase::Bot::AuthSession.find_by(tg_account_id: @respond.incoming_data.tg_user.id, active: true)
+        active_authsession = @appshell.data_loader.authsession
         if active_authsession && ![active_authsession.user.first_name, active_authsession.user.last_name].any?(nil)
           [active_authsession.user.first_name, active_authsession.user.last_name]
         else

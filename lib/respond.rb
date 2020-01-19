@@ -24,7 +24,7 @@ module Teachbase
           if command?
             Teachbase::Bot::CommandController.new(params).push_command
           else
-            Teachbase::Bot::ActionController.new(params).match_data
+            Teachbase::Bot::ActionController.new(params).match_text_action
           end
         else
           raise "Don't know such Telegram::Bot::Types: #{incoming_data.message.class}"

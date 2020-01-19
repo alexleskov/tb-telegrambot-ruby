@@ -4,6 +4,8 @@ require './lib/scenarios/marathon.rb'
 
 module Teachbase
   module Bot
-    module Scenarios ; end
+    module Scenarios
+      LIST = ["Base", "StandartLearning", "Marathon"].freeze
+    end
   end
 end

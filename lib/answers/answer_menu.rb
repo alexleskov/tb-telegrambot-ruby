@@ -2,8 +2,8 @@ require './lib/answers/answer'
 
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
 
-  def initialize(respond, param)
-    super(respond, param)
+  def initialize(appshell, param)
+    super(appshell, param)
   end
 
   def create(buttons, type, text, slices_count = nil)
@@ -28,13 +28,6 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
                @respond.commands.show(:settings),
                @respond.commands.show(:sign_out)]
     create(buttons, :menu, I18n.t('start_menu_message'), 2)
-  end
-
-  def course_sessions_choice
-    buttons = [[text: I18n.t('archived_courses').capitalize!, callback_data: "archived_courses"],
-               [text: I18n.t('active_courses').capitalize!, callback_data: "active_courses"],
-               [text: "#{Emoji.find_by_alias('arrows_counterclockwise').raw} #{I18n.t('update_course_sessions')}", callback_data: "update_course_sessions"]]
-    create(buttons, :menu_inline, "#{Emoji.find_by_alias('books').raw}<b>#{I18n.t('show_course_list')}</b>", 2)
   end
 
   def hide(text)

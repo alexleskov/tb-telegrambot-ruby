@@ -1,6 +1,9 @@
 require './models/user'
 require './models/api_token'
 require './models/profile'
+require './models/course_session'
+require './models/section'
+require './models/material'
 
 require 'encrypted_strings'
 
@@ -8,8 +11,9 @@ module Teachbase
   module Bot
     class DataLoader
       MAX_RETRIES = 5.freeze
+      CS_STATES = [:active, :archived]
 
-      attr_reader :apitoken, :user, :appshell, :authsession, :profile
+      attr_reader :apitoken, :user, :appshell, :authsession
 
       def initialize(appshell)
         raise "'#{appshell}' is not Teachbase::Bot::AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
@@ -17,99 +21,140 @@ module Teachbase
         @tg_user = appshell.controller.respond.incoming_data.tg_user
         @encrypt_key = AppConfigurator.new.get_encrypt_key
         @logger = AppConfigurator.new.get_logger
+        @retries = 0
+      end
+
+      def get_cs_info(cs_id)
+        load_models
+        user.course_sessions.find_by(tb_id: cs_id)
+      end
+
+      def get_user_profile
+        load_models
+        user.profile
+      end
+
+      def get_cs_list(state)
+        load_models
+        user.course_sessions.order(name: :asc).where(complete_status: state.to_s)
+      end
+
+      def get_cs_sec_list(cs_id)
+        load_models
+        course_session = get_cs_info(cs_id)
+        course_session.sections.order(position: :asc)
+      end
+
+      def get_cs_section_materials(cs_id, section_position)
+        load_models
+        get_cs_sections(cs_id).materials.find_by(position: section_position)
       end
 
       def call_profile
-        auth_checker
-        retries = 0
+        load_models
         lms_info = authsession.load_profile
         raise "Profile is not loaded" unless lms_info
 
-        @profile = Teachbase::Bot::Profile.find_or_create_by!(user_id: user.id)
-        user.update!(first_name: lms_info["name"],
-                     last_name: lms_info["last_name"],
-                     tb_id: lms_info["id"],
-                     phone: lms_info["phone"],
-                     avatar_url: lms_info["avatar_url"])
-        profile.update!(active_courses_count: lms_info["active_courses_count"],
-                           average_score_percent: lms_info["average_score_percent"],
-                           archived_courses_count: lms_info["archived_courses_count"],
-                           total_time_spent: lms_info['total_time_spent'])
+        user_params = [:last_name, :phone, :avatar_url]
+        profile_params = [:active_courses_count, :average_score_percent, :archived_courses_count, :total_time_spent]
+        profile = Teachbase::Bot::Profile.find_or_create_by!(user_id: user.id)
+        user.update!(create_attributes(user_params, lms_info).merge!(tb_id: lms_info["id"], first_name: lms_info["name"]))
+        profile.update!(create_attributes(profile_params, lms_info))
       rescue RuntimeError => e
-        @logger.debug "#{e}"
-        if (retries += 1) <= MAX_RETRIES
-          appshell.controller.answer.send_out "#{I18n.t('error')} #{e}\n#{I18n.t('retry')} №#{retries}..."
-          sleep(retries)
+        if (@retries += 1) <= MAX_RETRIES
+          appshell.controller.answer.send_out "#{I18n.t('error')} #{e}\n#{I18n.t('retry')} №#{@retries}..."
+          sleep(@retries)
           retry
         else
-          raise "Unexpected error after retries: #{e}"
-          appshell.controller.answer.send_out "#{I18n.t('unexpected_error')} #{e}"
+          @logger.debug "Unexpected error after retries: #{e}"
+          appshell.controller.answer.send_out "#{I18n.t('unexpected_error')}: #{e}"
         end
       end
 
-=begin
+      def call_cs_list(state)
+        raise "No such option for update course sessions list" unless CS_STATES.include?(state)
 
-      def call_course_sessions_list(option)
-        raise "No such option for update course sessions list" unless [:active, :archived].include?(option)
-        auth_checker
-        case option
-        when :active
-          course_sessions = user.load_active_course_sessions
-        when :archived
-          course_sessions = user.load_archived_course_sessions
-        end
-        course_s_params = [:name, :icon_url, :bg_url, :deadline, :listeners_count, :progress, :started_at,
+        load_models
+        params = [:name, :icon_url, :bg_url, :deadline, :listeners_count, :progress, :started_at,
                         :can_download, :success, :started_at, :can_download, :success, :full_access,
-                        :application_status] 
+                        :application_status, :navigation, :rating, :has_certificate]
 
-        course_sessions.each do |course_s|
-          object_attributes = create_attributes(course_s_params, course_s).merge!(complete_status: option.to_s)
-          Teachbase::Bot::CourseSession.where(user_id: user.id, id: course_s["id"])
-          .first_or_create!(object_attributes)
-          .update!(object_attributes)
+        lms_info = authsession.load_course_sessions(state)
+        @logger.debug "lms_info: #{lms_info}"
+
+        lms_info.each do |course_session|
+          Teachbase::Bot::CourseSession.find_or_create_by!(user_id: user.id, tb_id: course_session["id"])
+          .update!(create_attributes(params, course_session).merge!(complete_status: state.to_s, changed_at: course_session["updated_at"]))
         end
       rescue RuntimeError => e
-        @logger.debug "#{e}"
-        auth_checker
+        if (@retries += 1) <= MAX_RETRIES
+          appshell.controller.answer.send_out "#{I18n.t('error')} #{e}\n#{I18n.t('retry')} №#{@retries}..."
+          sleep(@retries)
+          retry
+        else
+          @logger.debug "Unexpected error after retries: #{e}"
+          appshell.controller.answer.send_out "#{I18n.t('unexpected_error')}: #{e}"
+        end
       end
 
-      def call_course_session_section(cs_id)
-        auth_checker
-        course_session = user.load_sections(cs_id)
-        sections = course_session["sections"]
+      def call_cs_sections(cs_id)
+        course_session = Teachbase::Bot::CourseSession.find_by(tb_id: cs_id)
+        raise "No such course_session: #{cs_id}" unless course_session
+
+        load_models
+        lms_info = authsession.load_sections(cs_id)
+        sections_lms = lms_info["sections"]
         pos_index = 1
         section_params = [:name, :opened_at, :is_publish, :is_available]
-        material_params = [:name, :category, :markdown]
+        material_params = [:name, :category]
 
-        sections.each do |section|
-          object_attributes = create_attributes(section_params, section)
-          section_bd = Teachbase::Bot::Section.where(course_session_id: cs_id, position: pos_index, user_id: user.id)
-          .first_or_create!(object_attributes)
-          section_bd_id = section_bd.id
-          section_bd.update!(object_attributes)
-          materials = section["materials"]
-          materials.each do |material|crypted_passwordcrypted_password
-            object_attributes = create_attributes(material_params, material)
-            Teachbase::Bot::Material.where(section_id: section_bd_id, id: material["id"], course_session_id: cs_id, user_id: user.id)
-            .first_or_create!(object_attributes).update!(object_attributes)
+        sections_lms.each do |section_lms|
+          section_bd = course_session.sections.find_or_create_by!(position: pos_index)
+          materials_lms = section_lms["materials"]
+          materials_lms.each do |material_lms|
+            section_bd.materials.find_or_create_by!(position: material_lms["position"], tb_id: material_lms["id"])
+            .update!(create_attributes(material_params, material_lms).merge!(content_type: material_lms["type"]))
           end
+          section_bd.update!(create_attributes(section_params, section_lms))
           pos_index += 1
         end
       rescue RuntimeError => e
-        @logger.debug "#{e}"
-        auth_checker
+        if (@retries += 1) <= MAX_RETRIES
+          appshell.controller.answer.send_out "#{I18n.t('error')} #{e}\n#{I18n.t('retry')} №#{@retries}..."
+          sleep(@retries)
+          retry
+        else
+          @logger.debug "Unexpected error after retries: #{e}"
+          appshell.controller.answer.send_out "#{I18n.t('unexpected_error')}: #{e}"
+        end
       end
 
-      def call_data_course_sessions
-        call_course_sessions_list(:active)
-        call_course_sessions_list(:archived)
+      def load_models
+        @authsession = @tg_user.auth_sessions.find_by(active: true)
+        auth_checker unless authsession
+        @apitoken = authsession.api_token
+        if apitoken.avaliable?
+          authsession.api_auth(:mobile_v2, access_token: apitoken.value)
+          @user = authsession.user
+        else
+          authsession.update!(active: false)
+          auth_checker
+        end
       end
-=end
+
+      def unauthorize
+        authsession = Teachbase::Bot::AuthSession.find_by(tg_account_id: @tg_user.id, active: true)
+        raise "Nothing to unauthorize here. tg_account_id: #{@tg_user.id}" unless authsession
+
+        authsession.update!(active: false)
+        rescue RuntimeError => e
+          @logger.debug "#{e}"
+      end
 
       def auth_checker
         @authsession = Teachbase::Bot::AuthSession.find_or_create_by!(tg_account_id: @tg_user.id, active: true)
         @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(auth_session_id: authsession.id)
-        if apitoken.avaliable? && authsession.active
+        if apitoken.avaliable?
           authsession.api_auth(:mobile_v2, access_token: apitoken.value)
           @user = authsession.user
         else
@@ -121,15 +166,6 @@ module Teachbase
           authsession.update!(active: false)
           appshell.controller.answer.send_out "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
           retry
-      end
-
-      def unauthorize
-        authsession = Teachbase::Bot::AuthSession.find_by(tg_account_id: @tg_user.id, active: true)
-        raise "Nothing to unauthorize here. tg_account_id: #{@tg_user.id}" unless authsession
-
-        authsession.update!(active: false)
-        rescue RuntimeError => e
-          @logger.debug "#{e}"
       end
 
     private
@@ -161,9 +197,9 @@ module Teachbase
 
       def request_user_data
         loop do
-          appshell.controller.answer.send_out I18n.t('add_user_email')
+          appshell.controller.answer.send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_email')}"
           user_email = appshell.request_data(:string)
-          appshell.controller.answer.send_out I18n.t('add_user_password')
+          appshell.controller.answer.send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_password')}"
           user_password = appshell.request_data(:password)
           break [user_email, user_password] if [user_email, user_password].any?(nil) || [user_email, user_password].all?(String)
         end

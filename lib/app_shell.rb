@@ -1,7 +1,7 @@
 #require './models/course_session'
 #require './models/section'
 #require './models/material'
-require './models/auth_session'
+#require './models/auth_session'
 require './controllers/controller'
 require './lib/data_loader'
 
@@ -36,12 +36,39 @@ module Teachbase
         data_loader.unauthorize
       end
 
+      def profile_state
+        data_loader.get_user_profile
+      end
+
+      def course_sessions_list(state)
+        data_loader.call_cs_list(state)
+        data_loader.get_cs_list(state)
+      end
+
+      def update_all_course_sessions_list
+        Teachbase::Bot::DataLoader::CS_STATES.each do |state|
+          data_loader.call_cs_list(state)
+        end
+      end
+
+      def course_session_info(cs_id)
+        data_loader.get_cs_info(cs_id)
+      end
+
+      def course_session_sections(cs_id)
+        data_loader.call_cs_sections(cs_id)
+        data_loader.get_cs_sec_list(cs_id)
+      end
+
       def change_scenario(scenario_name)
+        raise "No such scenario: '#{scenario_name}'" unless Teachbase::Bot::Scenarios::LIST.include?(scenario_name)
+
+        @settings.update!(scenario: scenario_name)
         controller.class.send(:include, "Teachbase::Bot::Scenarios::#{scenario_name}".constantize)
       end
 
-      #def change_localization(lang)
-      #end
+      def change_localization(lang)
+      end
 
       def request_data(validate_type)
         data = take_data

@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
 require 'telegram/bot'
-require 'gemoji'
 
 require './lib/app_configurator'
+require './lib/emoji.rb'
 require './lib/message_responder'
 
 config = AppConfigurator.new
@@ -21,8 +21,8 @@ telegram_bot_client.run do |bot|
     options = { bot: bot, message: message}
     logger.debug "@#{message.from.username}: #{message}"
     MessageResponder.new(options).respond
-    rescue RuntimeError => e
-      logger.debug "#{e}"
+    #rescue => e
+    #  logger.debug "Error: #{e}"
   end
 end
 

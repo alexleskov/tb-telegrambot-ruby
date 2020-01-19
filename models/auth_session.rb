@@ -19,12 +19,8 @@ module Teachbase
         tb_api.request("profile").response.answer
       end
 
-      def load_active_course_sessions
-        tb_api.request("course-sessions", order_by: "progress", order_direction: "asc", filter: "active").response.answer
-      end
-
-      def load_archived_course_sessions
-        tb_api.request("course-sessions", order_by: "progress", order_direction: "asc", filter: "archived").response.answer
+      def load_course_sessions(state)
+        tb_api.request("course-sessions", order_by: "progress", order_direction: "asc", filter: state.to_s).response.answer
       end
 
       def load_sections(course_session_id)

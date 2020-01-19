@@ -16,10 +16,10 @@ class Teachbase::Bot::CommandController < Teachbase::Bot::Controller
 =begin
 
       def update_course_sessions
-        answer.send_out "<b>#{Emoji.find_by_alias('arrows_counterclockwise').raw}#{I18n.t('updating_data')}</b>"
+        answer.send_out "<b>#{Emoji.t(:arrows_counterclockwise)}#{I18n.t('updating_data')}</b>"
         course_sessions = data_loader.call_data_course_sessions
         raise "Course sessions update failed" unless course_sessions
-        answer.send_out "<i>#{Emoji.find_by_alias('+1').raw}#{I18n.t('updating_success')}</i>"
+        answer.send_out "<i>#{Emoji.t(:+1)}#{I18n.t('updating_success')}</i>"
       end
 =end
 

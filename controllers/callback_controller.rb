@@ -6,12 +6,14 @@ class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
     super(params, :from)
   end
 
+=begin
   def match_data
     on %r{^touch} do
       answer.send_out "Touching"
     end
-=begin
+
     on %r{archived_courses} do
+      logger.debug "YO"
       course_sessions_list(:archived)
     end
 
@@ -32,8 +34,9 @@ class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
       @message_value =~ %r{^cs_id:(\d*)}
       sections_show($1)
     end
-=end
+
   end
+=end
 
   private
 
