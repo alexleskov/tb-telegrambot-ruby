@@ -2,7 +2,7 @@ require './lib/reply_markup_formatter'
 require './lib/app_configurator'
 
 class MessageSender
-  attr_reader :bot, :text, :chat, :reply_to_message, :menu, :menu_inline
+  attr_reader :bot, :text, :chat, :reply_to_message_id, :menu, :menu_inline
 
   def initialize(options)
     @bot = options[:bot]

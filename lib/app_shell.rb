@@ -5,6 +5,7 @@
 require './controllers/controller'
 require './lib/data_loader'
 
+
 module Teachbase
   module Bot
     class AppShell
@@ -13,23 +14,24 @@ module Teachbase
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
       BASE_SCENARIO = "Base".freeze
 
-      attr_reader :controller, :data_loader
+      attr_reader :controller, :data_loader, :settings
 
       def initialize(controller)
         @logger = AppConfigurator.new.get_logger
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
 
         @settings = controller.respond.incoming_data.settings
+        #I18n.locale = @settings.localization.to_sym
         @controller = controller
         @data_loader = Teachbase::Bot::DataLoader.new(self)
         set_scenario
         # @logger.debug "mes_res: '#{respond}"
-      rescue RuntimeError => e
-        controller.answer.send_out "#{I18n.t('error')} #{e}"
+      #rescue RuntimeError => e
+      #  controller.answer.send_out "#{I18n.t('error')} #{e}"
       end
 
       def authorization
-        data_loader.auth_checker
+        auth = data_loader.auth_checker
         data_loader.call_profile
       end
 
@@ -68,13 +70,18 @@ module Teachbase
         controller.class.send(:include, "Teachbase::Bot::Scenarios::#{scenario_name}".constantize)
       end
 
-      def change_localization(lang); end
+      def change_localization(lang)
+        @settings.update!(localization: lang)
+        I18n.with_locale settings.localization.to_sym do
+          controller.respond.reload_commands
+        end
+      end
 
       def request_data(validate_type)
         data = take_data
-        return value = nil if data =~ ABORT_ACTION_COMMAND || controller.respond.commands.command_by?(:value, data)
+        return value = nil if !(data =~ ABORT_ACTION_COMMAND).nil? || controller.respond.commands.command_by?(:value, data)
 
-        value = data if validation(validate_type, data)
+        value = data unless validation(validate_type, data).nil?
       end
 
       private

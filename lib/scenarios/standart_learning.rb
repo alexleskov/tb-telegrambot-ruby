@@ -40,7 +40,10 @@ module Teachbase
             course_sessions.each do |course_session|
               buttons = [[text: I18n.t('open').to_s, callback_data: "cs_sec_by_id:#{course_session.tb_id}"],
                          [text: I18n.t('course_results').to_s, callback_data: "cs_info_id:#{course_session.tb_id}"]]
-              menu.create(buttons, :menu_inline, "#{Emoji.t(:book)} <a href='#{course_session.icon_url}'>#{I18n.t('course')}</a>: <b>#{course_session.name}</b>", 2)
+              menu.create(buttons: buttons,
+                          type: :menu_inline,
+                          text: "#{Emoji.t(:book)} <a href='#{course_session.icon_url}'>#{I18n.t('course')}</a>: <b>#{course_session.name}</b>",
+                          slices_count: 2)
             end
           end
         rescue RuntimeError => e
@@ -72,8 +75,11 @@ module Teachbase
                        [text: I18n.t('show_all').capitalize.to_s, callback_data: "show_sections_by_csid:#{cs_id}_param:all"],
                        [text: I18n.t('show_avaliable').capitalize.to_s, callback_data: "show_sections_by_csid:#{cs_id}_param:avaliable"],
                        [text: I18n.t('show_unvaliable').capitalize.to_s, callback_data: "show_sections_by_csid:#{cs_id}_param:unvaliable"]]
-            menu.create(buttons, :menu_inline, "#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{cs_name} - #{Emoji.t(:arrow_down)} #{I18n.t('course_sections')} - #{Emoji.t(:page_facing_up)} #{I18n.t('section2').capitalize}</b>
-                                              \n#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}", 2)
+            menu.create(buttons: buttons,
+                        type: :menu_inline,
+                        text: "#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{cs_name} - #{Emoji.t(:arrow_down)} #{I18n.t('course_sections')} - #{Emoji.t(:page_facing_up)} #{I18n.t('section2').capitalize}</b>
+                               \n#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}",
+                        slices_count: 2)
           end
         end
 
@@ -137,7 +143,10 @@ module Teachbase
           buttons = [[text: I18n.t('active_courses').capitalize, callback_data: "active_courses"],
                      [text: I18n.t('archived_courses').capitalize, callback_data: "archived_courses"],
                      [text: "#{Emoji.t(:arrows_counterclockwise)} #{I18n.t('update_course_sessions')}", callback_data: "update_course_sessions"]]
-          menu.create(buttons, :menu_inline, "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>", 2)
+          menu.create(buttons: buttons,
+                      type: :menu_inline,
+                      text: "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>",
+                      slices_count: 2)
         end
 
         def match_data
@@ -170,6 +179,27 @@ module Teachbase
 
           on %r{edit_settings} do
             edit_settings
+          end
+
+          on %r{^settings:localization} do
+            choose_localization
+          end
+
+          on %r{^language_param:} do
+            @message_value =~ %r{^language_param:(\w*)}
+            lang = Regexp.last_match(1)
+            change_language(lang)
+          end
+
+          on %r{settings:scenario} do
+            choose_scenario
+          end
+
+          on %r{^scenario_param:} do
+            @message_value =~ %r{^scenario_param:(\w*)}
+            mode = Regexp.last_match(1)
+            change_scenario(mode)
+            answer.send_out "#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t('scenario')}: <b>#{I18n.t(mode)}</b>"
           end
         end
 

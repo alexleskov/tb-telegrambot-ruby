@@ -14,6 +14,8 @@ class MessageResponder
   end
 
   def respond
-    Teachbase::Bot::Respond.new(self).detect_type
+    I18n.with_locale settings.localization.to_sym do
+      Teachbase::Bot::Respond.new(self).detect_type
+    end
   end
 end

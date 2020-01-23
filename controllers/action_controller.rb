@@ -12,7 +12,7 @@ class Teachbase::Bot::ActionController < Teachbase::Bot::Controller
   #     end
   #
   #     on %r{^/close} do
-  #       menu.hide("<b>#{answer.user_fullname_str}!</b> #{I18n.t('farewell_message')} :'(")
+  #       menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('farewell_message')} :'(")
   #     end
   #
   #

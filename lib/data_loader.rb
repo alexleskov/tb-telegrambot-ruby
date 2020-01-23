@@ -133,14 +133,10 @@ module Teachbase
       def load_models
         @authsession = @tg_user.auth_sessions.find_by(active: true)
         auth_checker unless authsession
-        @apitoken = authsession.api_token
-        if apitoken.avaliable?
-          authsession.api_auth(:mobile_v2, access_token: apitoken.value)
-          @user = authsession.user
-        else
-          authsession.update!(active: false)
-          auth_checker
-        end
+        @apitoken = Teachbase::Bot::ApiToken.find_by(auth_session_id: authsession.id, active: true)
+        raise unless apitoken
+        authsession.api_auth(:mobile_v2, access_token: apitoken.value)
+        @user = authsession.user
       end
 
       def unauthorize
@@ -162,18 +158,14 @@ module Teachbase
           authsession.update!(active: false)
           login_by_user_data
         end
-      rescue RuntimeError => e
-        @logger.debug e.to_s
-        authsession.update!(active: false)
-        appshell.controller.answer.send_out "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
-        retry
       end
 
       private
 
       def login_by_user_data
         user_data = request_user_data
-        return if user_data.any?(nil)
+        @logger.debug "user_data:#{user_data}"
+        raise if user_data.any?(nil)
 
         email = user_data.first
         password = user_data.second
@@ -194,12 +186,17 @@ module Teachbase
                             active: true,
                             api_token_id: apitoken.id,
                             user_id: user.id)
+      rescue RuntimeError => e
+        @logger.debug e.to_s
+        authsession.update!(active: false)
+        appshell.controller.answer.send_out "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+        retry
       end
 
       def request_user_data
         loop do
           appshell.controller.answer.send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_email')}"
-          user_email = appshell.request_data(:string)
+          user_email = appshell.request_data(:email)
           appshell.controller.answer.send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_password')}"
           user_password = appshell.request_data(:password)
           break [user_email, user_password] if [user_email, user_password].any?(nil) || [user_email, user_password].all?(String)

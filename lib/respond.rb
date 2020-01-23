@@ -31,6 +31,10 @@ module Teachbase
         end
       end
 
+      def reload_commands
+        @commands = Teachbase::Bot::CommandList.new
+      end
+
       private
 
       def command?

@@ -5,18 +5,24 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
     super(appshell, param)
   end
 
-  def send_out(text)
-    raise "Can't find answer destination for message #{@respond}" if destination.nil?
+  def create(options)
+    super(options)
+    msg_params = { bot: @respond.incoming_data.bot,
+                   chat: destination,
+                   text: text }
+    MessageSender.new(msg_params).send
+  end
 
-    MessageSender.new(bot: @respond.incoming_data.bot, chat: destination, text: text).send
+  def send_out(text)
+    create(text: text)
   end
 
   def send_out_greeting_message
-    send_out("#{I18n.t('greeting_message')} <b>#{user_fullname_str}!</b>")
+    send_out("#{I18n.t('greeting_message')} <b>#{user_fullname(:string)}!</b>")
   end
 
   def send_out_farewell_message
-    send_out("#{I18n.t('farewell_message')} <b>#{user_fullname_str}!</b>")
+    send_out("#{I18n.t('farewell_message')} <b>#{user_fullname(:string)}!</b>")
   end
 
   def if_empty_msg
