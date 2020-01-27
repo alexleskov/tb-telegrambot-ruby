@@ -7,7 +7,24 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     super(appshell, param)
   end
 
-  def self.create_inline_buttons(buttons_names, command_prefix = "")
+  def create(options)
+    super(options)
+    buttons = options[:buttons]
+    type = options[:type]
+
+    raise "No such menu type: #{type}" unless MENU_TYPES.include?(type)
+    raise "Buttons is #{buttons.class} but must be an Array" unless buttons.is_a?(Array)
+
+    slices_count = options[:slices_count] || nil
+    mode = options[:mode]
+    
+    @msg_params[:menu_type] = type
+    @msg_params[:mode] = mode
+    @msg_params[:menu_data] = init_menu_params(buttons, slices_count)
+    MessageSender.new(msg_params).send
+  end
+
+  def create_inline_buttons(buttons_names, command_prefix = "")
     raise "'buttons' must be Array" unless buttons_names.is_a?(Array)
 
     buttons = []
@@ -16,17 +33,6 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
       buttons << [text: I18n.t(button_name.to_s), callback_data: "#{command_prefix}#{button_name.to_s}"]
     end
     buttons    
-  end
-
-  def create(options)
-    super(options)
-    raise "Buttons is #{buttons.class} but must be an Array" unless buttons.is_a?(Array)
-    raise "No such menu type: #{type}" unless MENU_TYPES.include?(type)
-
-    menu_params = { bot: @respond.incoming_data.bot,
-                    chat: destination,
-                    text: text, type => { buttons: buttons, slices: slices_count } }
-    MessageSender.new(menu_params).send
   end
 
   def starting(text = I18n.t('start_menu_message').to_s)
@@ -46,6 +52,13 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     raise "Can't find menu destination for message #{@respond.incoming_data}" if destination.nil?
 
     MessageSender.new(bot: @respond.incoming_data.bot, chat: destination,
-                      text: text.to_s, hide_kb: true).send
+                      text: text.to_s, type: :hide_kb).send
   end
+
+  private
+
+  def init_menu_params(buttons, slices_count)
+    {buttons: buttons, slices: slices_count }
+  end
+
 end

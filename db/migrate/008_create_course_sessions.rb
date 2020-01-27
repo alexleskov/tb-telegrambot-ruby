@@ -7,6 +7,7 @@ class CreateCourseSessions < ActiveRecord::Migration[5.2]
       t.string :application_status
       t.string :complete_status
       t.string :navigation
+      t.string :scenario_mode, default: "standart_learning"
       t.integer :tb_id, null: false
       t.integer :deadline
       t.integer :listeners_count

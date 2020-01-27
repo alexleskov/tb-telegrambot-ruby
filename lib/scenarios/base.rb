@@ -10,11 +10,13 @@ module Teachbase
 
         def signin
           answer.send_out "#{Emoji.t(:rocket)}<b>#{I18n.t('enter')} #{I18n.t('in_teachbase')}</b>"
-          appshell.authorization
+          auth = appshell.authorization
+          return unless auth
+
           menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('greetings')} #{I18n.t('in_teachbase')}!")
           menu.after_auth
-        #rescue RuntimeError => e
-        #  answer.send_out "#{I18n.t('error')} #{e}"
+        rescue RuntimeError => e
+          answer.send_out "#{I18n.t('error')} #{e}"
         end
 
         def sign_out
@@ -37,25 +39,28 @@ module Teachbase
         end
 
         def edit_settings
-          buttons = Teachbase::Bot::AnswerMenu.
+          buttons = menu.
                     create_inline_buttons(Teachbase::Bot::Setting::PARAMS, command_prefix = "settings:")
           menu.create(buttons: buttons,
+                      mode: :edit_msg,
                       type: :menu_inline,
                       text: "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>",
                       slices_count: 2)
         end
 
         def choose_localization
-          buttons = Teachbase::Bot::AnswerMenu.
+          buttons = menu.
                     create_inline_buttons(Teachbase::Bot::Setting::LOCALIZATION_PARAMS, command_prefix = "language_param:")
+          buttons << [text: "Back", callback_data: "edit_settings"] # TODO: Take from last_message
           menu.create(buttons: buttons,
+                      mode: :edit_msg,
                       type: :menu_inline,
                       text: "<b>#{Emoji.t(:abc)} #{I18n.t('choose_localization')}</b>",
                       slices_count: 2)
         end
 
         def choose_scenario
-          buttons = Teachbase::Bot::AnswerMenu.
+          buttons = menu.
                     create_inline_buttons(Teachbase::Bot::Setting::SCENARIO_PARAMS, command_prefix = "scenario_param:")
           menu.create(buttons: buttons,
                       type: :menu_inline,
@@ -72,7 +77,7 @@ module Teachbase
         end
 
         def change_scenario(mode)
-          appshell.change_scenario(mode.to_s.split('_').collect(&:capitalize).join)
+          appshell.change_scenario(mode)
         end
 
         def match_data
@@ -86,8 +91,7 @@ module Teachbase
 
           on %r{^language_param:} do
             @message_value =~ %r{^language_param:(\w*)}
-            lang = Regexp.last_match(1)
-            change_language(lang)
+            change_language($1)
           end
 
           on %r{settings:scenario} do
@@ -96,7 +100,7 @@ module Teachbase
 
           on %r{^scenario_param:} do
             @message_value =~ %r{^scenario_param:(\w*)}
-            mode = Regexp.last_match(1)
+            mode = $1
             change_scenario(mode)
             answer.send_out "#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t('scenario')}: <b>#{I18n.t(mode)}</b>"
           end
@@ -105,8 +109,12 @@ module Teachbase
 
         def match_text_action
           on %r{^/start} do
-            answer.send_out_greeting_message
+            answer.greeting_message
             menu.starting
+          end
+
+          on %r{^/settings} do
+            settings
           end
 
           on %r{^/close} do

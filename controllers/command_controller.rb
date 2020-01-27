@@ -11,12 +11,4 @@ class Teachbase::Bot::CommandController < Teachbase::Bot::Controller
 
     public_send(command)
   end
-
-  #
-  #       def update_course_sessions
-  #         answer.send_out "<b>#{Emoji.t(:arrows_counterclockwise)}#{I18n.t('updating_data')}</b>"
-  #         course_sessions = data_loader.call_data_course_sessions
-  #         raise "Course sessions update failed" unless course_sessions
-  #         answer.send_out "<i>#{Emoji.t(:+1)}#{I18n.t('updating_success')}</i>"
-  #       end
 end

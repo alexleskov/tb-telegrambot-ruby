@@ -4,6 +4,9 @@ require './models/profile'
 require './models/course_session'
 require './models/section'
 require './models/material'
+require './models/quiz'
+require './models/scorm_package'
+require './models/task'
 
 require 'encrypted_strings'
 
@@ -37,7 +40,8 @@ module Teachbase
 
       def get_cs_list(state)
         load_models
-        user.course_sessions.order(name: :asc).where(complete_status: state.to_s)
+        user.course_sessions.order(name: :asc).where(complete_status: state.to_s,
+                                                     scenario_mode: appshell.settings.scenario)
       end
 
       def get_cs_sec_list(cs_id)
@@ -108,14 +112,15 @@ module Teachbase
         pos_index = 1
         section_params = %i[name opened_at is_publish is_available]
         material_params = %i[name category]
+        scorm_params = %i[title]
+        quiz_params = task_params = %i[name]
 
         sections_lms.each do |section_lms|
-          section_bd = course_session.sections.find_or_create_by!(position: pos_index)
-          materials_lms = section_lms["materials"]
-          materials_lms.each do |material_lms|
-            section_bd.materials.find_or_create_by!(position: material_lms["position"], tb_id: material_lms["id"])
-                      .update!(create_attributes(material_params, material_lms).merge!(content_type: material_lms["type"]))
-          end
+          section_bd = course_session.sections.find_or_create_by!(position: pos_index, user_id: user.id)
+          fetch_content("materials", section_lms, section_bd, material_params, {content_type: "type"})
+          fetch_content("scorm_packages", section_lms, section_bd, scorm_params)
+          fetch_content("quizzes", section_lms, section_bd, quiz_params)
+          fetch_content("tasks", section_lms, section_bd, task_params)
           section_bd.update!(create_attributes(section_params, section_lms))
           pos_index += 1
         end
@@ -135,6 +140,7 @@ module Teachbase
         auth_checker unless authsession
         @apitoken = Teachbase::Bot::ApiToken.find_by(auth_session_id: authsession.id, active: true)
         raise unless apitoken
+
         authsession.api_auth(:mobile_v2, access_token: apitoken.value)
         @user = authsession.user
       end
@@ -153,18 +159,38 @@ module Teachbase
         @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(auth_session_id: authsession.id)
         if apitoken.avaliable?
           authsession.api_auth(:mobile_v2, access_token: apitoken.value)
-          @user = authsession.user
         else
           authsession.update!(active: false)
           login_by_user_data
         end
+        @user = authsession.user
       end
 
       private
 
+      def fetch_content(conten_type, section_lms, section_bd, params, custom_params = {})
+        raise "No such content type: #{conten_type}." unless section_bd.respond_to? conten_type
+
+        lms_data = section_lms[conten_type.to_s]
+        lms_data.each do |object|
+          custom_data = custom_params.empty? ? {} : create_custom_params(custom_params, object)
+          section_bd.public_send(conten_type)
+                    .find_or_create_by!(position: object["position"], tb_id: object["id"],
+                                        course_session_id: section_bd.course_session.id, user_id: user.id)
+                    .update!(create_attributes(params, object).merge!(custom_data))
+        end
+      end
+
+      def create_custom_params(custom_params, lms_data)
+        custom_data = {}
+        custom_params.each do |key, value|
+          custom_data.merge!({key => lms_data[value.to_s]})
+        end
+        custom_data
+      end
+
       def login_by_user_data
         user_data = request_user_data
-        @logger.debug "user_data:#{user_data}"
         raise if user_data.any?(nil)
 
         email = user_data.first
@@ -190,7 +216,7 @@ module Teachbase
         @logger.debug e.to_s
         authsession.update!(active: false)
         appshell.controller.answer.send_out "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
-        retry
+        #retry
       end
 
       def request_user_data

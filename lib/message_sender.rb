@@ -2,39 +2,69 @@ require './lib/reply_markup_formatter'
 require './lib/app_configurator'
 
 class MessageSender
-  attr_reader :bot, :text, :chat, :reply_to_message_id, :menu, :menu_inline
 
-  def initialize(options)
-    @bot = options[:bot]
-    @text = options[:text]
-    @chat = options[:chat]
-    @menu = options[:menu]
-    @menu_inline = options[:menu_inline]
-    @parse_mode = options[:parse_mode]
-    @reply_to_message_id = options[:reply_to_message_id]
-    @force_reply = options[:force_reply]
-    @hide_kb = options[:hide_kb]
+  class << self
+    attr_accessor :last_msg
+  end
 
+  attr_reader :bot, :text, :chat, :reply_to_message_id, :parse_mode, :mode, :menu_data, :menu_type
+
+  def initialize(msg_params)
     @logger = AppConfigurator.new.get_logger
+
+    @bot = msg_params[:bot]
+    @text = msg_params[:text]
+    @chat = msg_params[:chat]
+    @parse_mode = msg_params[:parse_mode]
+    @reply_to_message_id = msg_params[:reply_to_message_id]
+    @menu_type = msg_params[:menu_type]
+    @menu_data = msg_params[:menu_data]
+    @mode = msg_params[:mode]
   end
 
   def send
     params = { chat_id: chat.id, text: text }
-    params[:reply_markup] = reply_markup unless menu.nil?
-    params[:reply_to_message_id] = @reply_to_message_id if @reply_to_message_id
-    params[:reply_markup] = force_reply_markup if @force_reply
-    params[:reply_markup] = hide_markup if @hide_kb
-    params[:reply_markup] = inline_markup unless menu_inline.nil?
-    params[:parse_mode] ||= AppConfigurator.new.get_parse_mode
+    params[:parse_mode] = parse_mode || AppConfigurator.new.get_parse_mode
+    params[:reply_to_message_id] = @reply_to_message_id if reply_to_message_id
+    params[:reply_markup] = create_menu(menu_type)
+    self.class.last_msg = create_message(mode, params)
 
-    resp = bot.api.send_message(params)
-    @logger.debug "sending '#{text}' to #{chat.username}"
+     @logger.debug "sending '#{text}' to #{chat.username}"
+     @logger.debug "last_message '#{last_message}'"
+  end
+
+  def last_message
+    self.class.last_msg
   end
 
   private
 
+  def create_menu(menu_type)
+    case menu_type
+    when :menu_inline
+      inline_markup
+    when :menu
+      reply_markup
+    when :hide_kb
+      hide_markup
+    when :force_reply
+      force_reply_markup
+    end
+  end
+
+  def create_message(mode, params)
+    case mode
+    when :edit_msg
+      raise "Can't find last message for editing" unless last_message  
+      params[:message_id] = last_message["result"]["message_id"]
+      msg = bot.api.edit_message_text(params)
+    else
+      bot.api.send_message(params)
+    end    
+  end
+
   def reply_markup
-    ReplyMarkupFormatter.new(menu).get_markup if menu.include?(:buttons)
+    ReplyMarkupFormatter.new(menu_data).get_markup if menu_data.include?(:buttons)
   end
 
   def hide_markup
@@ -42,7 +72,7 @@ class MessageSender
   end
 
   def inline_markup
-    ReplyMarkupFormatter.new(menu_inline).get_inline_markup if menu_inline.include?(:buttons)
+    ReplyMarkupFormatter.new(menu_data).get_inline_markup if menu_data.include?(:buttons)
   end
 
   def force_reply_markup

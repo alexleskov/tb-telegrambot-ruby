@@ -31,7 +31,8 @@ module Teachbase
             answer.send_out "#{Emoji.t(:green_book)}<b>#{I18n.t('active_courses').capitalize}</b>"
           when :archived
             answer.send_out "#{Emoji.t(:closed_book)}<b>#{I18n.t('archived_courses').capitalize}</b>"
-          else raise
+          else
+            raise "No such course state: #{state}"
           end
 
           if course_sessions.empty?
@@ -71,10 +72,10 @@ module Teachbase
             answer.send_out "\n#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{cs_name} - #{Emoji.t(:arrow_down)} #{I18n.t('course_sections')}</b>
                              \n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
           else
-            buttons = [[text: "#{I18n.t('find_by_number').capitalize} #{I18n.t('section2')}", callback_data: "show_sections_by_csid:#{cs_id}_param:query"],
-                       [text: I18n.t('show_all').capitalize.to_s, callback_data: "show_sections_by_csid:#{cs_id}_param:all"],
-                       [text: I18n.t('show_avaliable').capitalize.to_s, callback_data: "show_sections_by_csid:#{cs_id}_param:avaliable"],
-                       [text: I18n.t('show_unvaliable').capitalize.to_s, callback_data: "show_sections_by_csid:#{cs_id}_param:unvaliable"]]
+            params = %i[find_by_query_num show_all show_avaliable show_unvaliable]
+            buttons = menu.
+                      create_inline_buttons(params, command_prefix = "show_sections_by_csid:#{cs_id}_param:")
+            @logger.debug "buttons: #{buttons}"
             menu.create(buttons: buttons,
                         type: :menu_inline,
                         text: "#{Emoji.t(:book)} <b>#{I18n.t('course')}: #{cs_name} - #{Emoji.t(:arrow_down)} #{I18n.t('course_sections')} - #{Emoji.t(:page_facing_up)} #{I18n.t('section2').capitalize}</b>
@@ -85,23 +86,23 @@ module Teachbase
 
         def show_sections(cs_id, param)
           sections_bd = appshell.data_loader.get_cs_sec_list(cs_id)
-          return answer.if_empty_msg if sections_bd.empty?
+          return answer.empty_message if sections_bd.empty?
 
           cs_name = appshell.course_session_info(cs_id).name
           mess = []
           sections = case param
-                     when :query
-                       title_sign = "#{I18n.t('find_by_number').capitalize} #{I18n.t('section2')}"
+                     when :find_by_query_num
+                       title_sign = "#{I18n.t('find_by_query_num').capitalize} #{I18n.t('section2')}"
                        answer.send_out "#{Emoji.t(:pencil2)} <b>#{I18n.t('enter_the_number')} #{I18n.t('section2')}:</b> "
                        section_number = appshell.request_data(:string)
                        sections_bd.where(position: section_number)
-                     when :all
+                     when :show_all
                        title_sign = I18n.t('show_all').capitalize.to_s
                        sections_bd
-                     when :avaliable
+                     when :show_avaliable
                        title_sign = I18n.t('show_avaliable').capitalize.to_s
                        sections_bd.where(is_available: true, is_publish: true)
-                     when :unvaliable
+                     when :show_unvaliable
                        title_sign = I18n.t('show_unvaliable').capitalize.to_s
                        sections_bd.where(is_available: false)
                      else
@@ -126,7 +127,7 @@ module Teachbase
                      end
             mess << string
           end
-          return answer.if_empty_msg if mess.empty?
+          return answer.empty_message if mess.empty?
 
           answer.send_out "\n#{mess.join("\n")}"
         rescue RuntimeError => e
@@ -164,17 +165,17 @@ module Teachbase
 
           on %r{^cs_info_id:} do
             @message_value =~ %r{^cs_info_id:(\d*)}
-            show_course_session_info(Regexp.last_match(1))
+            show_course_session_info($1)
           end
 
           on %r{^cs_sec_by_id:} do
             @message_value =~ %r{^cs_sec_by_id:(\d*)}
-            show_sections_list_l1(Regexp.last_match(1))
+            show_sections_list_l1($1)
           end
 
           on %r{^show_sections_by_csid:} do
             @message_value =~ %r{^show_sections_by_csid:(\d*)_param:(\w*)}
-            show_sections(Regexp.last_match(1), Regexp.last_match(2).to_sym)
+            show_sections($1, $2.to_sym)
           end
 
           on %r{edit_settings} do
@@ -187,7 +188,7 @@ module Teachbase
 
           on %r{^language_param:} do
             @message_value =~ %r{^language_param:(\w*)}
-            lang = Regexp.last_match(1)
+            lang = $1
             change_language(lang)
           end
 
@@ -197,7 +198,7 @@ module Teachbase
 
           on %r{^scenario_param:} do
             @message_value =~ %r{^scenario_param:(\w*)}
-            mode = Regexp.last_match(1)
+            mode = $1
             change_scenario(mode)
             answer.send_out "#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t('scenario')}: <b>#{I18n.t(mode)}</b>"
           end

@@ -10,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 10) do
+ActiveRecord::Schema.define(version: 13) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -46,6 +47,7 @@ ActiveRecord::Schema.define(version: 10) do
     t.string "application_status"
     t.string "complete_status"
     t.string "navigation"
+    t.string "scenario_mode", default: "standart_learning"
     t.integer "tb_id", null: false
     t.integer "deadline"
     t.integer "listeners_count"
@@ -90,6 +92,34 @@ ActiveRecord::Schema.define(version: 10) do
     t.index ["user_id"], name: "index_profiles_on_user_id"
   end
 
+  create_table "quizzes", force: :cascade do |t|
+    t.integer "tb_id", null: false
+    t.integer "position", null: false
+    t.string "name"
+    t.bigint "section_id"
+    t.bigint "course_session_id"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_session_id"], name: "index_quizzes_on_course_session_id"
+    t.index ["section_id"], name: "index_quizzes_on_section_id"
+    t.index ["user_id"], name: "index_quizzes_on_user_id"
+  end
+
+  create_table "scorm_packages", force: :cascade do |t|
+    t.integer "tb_id", null: false
+    t.integer "position", null: false
+    t.string "title"
+    t.bigint "section_id"
+    t.bigint "course_session_id"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_session_id"], name: "index_scorm_packages_on_course_session_id"
+    t.index ["section_id"], name: "index_scorm_packages_on_section_id"
+    t.index ["user_id"], name: "index_scorm_packages_on_user_id"
+  end
+
   create_table "sections", force: :cascade do |t|
     t.boolean "is_publish"
     t.boolean "is_available"
@@ -106,11 +136,25 @@ ActiveRecord::Schema.define(version: 10) do
 
   create_table "settings", force: :cascade do |t|
     t.string "localization", default: "ru"
-    t.string "scenario", default: "StandartLearning"
+    t.string "scenario", default: "standart_learning"
     t.bigint "tg_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["tg_account_id"], name: "index_settings_on_tg_account_id"
+  end
+
+  create_table "tasks", force: :cascade do |t|
+    t.integer "tb_id", null: false
+    t.integer "position", null: false
+    t.string "name"
+    t.bigint "section_id"
+    t.bigint "course_session_id"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_session_id"], name: "index_tasks_on_course_session_id"
+    t.index ["section_id"], name: "index_tasks_on_section_id"
+    t.index ["user_id"], name: "index_tasks_on_user_id"
   end
 
   create_table "tg_accounts", force: :cascade do |t|
@@ -141,7 +185,16 @@ ActiveRecord::Schema.define(version: 10) do
   add_foreign_key "materials", "sections"
   add_foreign_key "materials", "users"
   add_foreign_key "profiles", "users"
+  add_foreign_key "quizzes", "course_sessions"
+  add_foreign_key "quizzes", "sections"
+  add_foreign_key "quizzes", "users"
+  add_foreign_key "scorm_packages", "course_sessions"
+  add_foreign_key "scorm_packages", "sections"
+  add_foreign_key "scorm_packages", "users"
   add_foreign_key "sections", "course_sessions"
   add_foreign_key "sections", "users"
   add_foreign_key "settings", "tg_accounts"
+  add_foreign_key "tasks", "course_sessions"
+  add_foreign_key "tasks", "sections"
+  add_foreign_key "tasks", "users"
 end

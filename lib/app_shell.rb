@@ -12,7 +12,6 @@ module Teachbase
       EMAIL_MASK = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i.freeze
       PASSWORD_MASK = /[\w|._#*^!+=@-]{6,40}$/.freeze
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
-      BASE_SCENARIO = "Base".freeze
 
       attr_reader :controller, :data_loader, :settings
 
@@ -21,7 +20,6 @@ module Teachbase
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
 
         @settings = controller.respond.incoming_data.settings
-        #I18n.locale = @settings.localization.to_sym
         @controller = controller
         @data_loader = Teachbase::Bot::DataLoader.new(self)
         set_scenario
@@ -31,7 +29,9 @@ module Teachbase
       end
 
       def authorization
-        auth = data_loader.auth_checker
+        user = data_loader.auth_checker
+        return unless user.is_a?(Teachbase::Bot::User)
+
         data_loader.call_profile
       end
 
@@ -67,7 +67,8 @@ module Teachbase
         raise "No such scenario: '#{scenario_name}'" unless Teachbase::Bot::Scenarios::LIST.include?(scenario_name)
 
         @settings.update!(scenario: scenario_name)
-        controller.class.send(:include, "Teachbase::Bot::Scenarios::#{scenario_name}".constantize)
+        mode = scenario_name.to_s.split('_').collect(&:capitalize).join
+        controller.class.send(:include, "Teachbase::Bot::Scenarios::#{mode}".constantize)
       end
 
       def change_localization(lang)

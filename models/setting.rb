@@ -3,7 +3,7 @@ require 'active_record'
 module Teachbase
   module Bot
     class Setting < ActiveRecord::Base
-      belongs_to :tg_account, dependent: :destroy
+      belongs_to :tg_account
       
       PARAMS = %i[localization scenario].freeze
       LOCALIZATION_PARAMS = %i[ru en].freeze

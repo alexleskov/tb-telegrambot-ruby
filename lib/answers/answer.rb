@@ -6,7 +6,7 @@ module Teachbase
     class Answer
       MSG_DESTS = %i[chat from].freeze
 
-      attr_reader :buttons, :type, :text, :slices_count
+      attr_reader :msg_params
 
       def initialize(appshell, param)
         raise "No such param '#{param}' for send answer" unless MSG_DESTS.include?(param)
@@ -14,18 +14,21 @@ module Teachbase
         @param = param
         @appshell = appshell
         @respond = appshell.controller.respond
+        @logger = AppConfigurator.new.get_logger
+        @msg_params = {}
       end
 
       def create(options)
-        raise "Can't find menu destination for message #{@respond.incoming_data}" if destination.nil?
-        @buttons = options[:buttons]
-        @type = options[:type]
-        @text = options[:text]
-        @slices_count = options[:slices_count] || nil
-        raise "Option 'text' is missing" unless text
+        @msg_params[:text] = options[:text]
+
+        raise "Can't find menu destination for message #{@respond.incoming_data}" unless destination
+        raise "Option 'text' is missing" unless @msg_params[:text]
+
+        @msg_params[:bot] = @respond.incoming_data.bot
+        @msg_params[:chat] = destination
       end
 
-      def user_fullname(option)
+      def user_fullname(option) # TODO: move to appshell by DataLoader
         active_authsession = @appshell.data_loader.authsession
         user_name = if active_authsession && [active_authsession.user.first_name, active_authsession.user.last_name].none?(nil)
                       [active_authsession.user.first_name, active_authsession.user.last_name]
