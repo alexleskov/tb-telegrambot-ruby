@@ -19,6 +19,8 @@ module Teachbase
         raise "Respond not found" unless respond
 
         @logger = AppConfigurator.new.get_logger
+        @tg_user = respond.incoming_data.tg_user
+        @message = respond.incoming_data.message
         @appshell = Teachbase::Bot::AppShell.new(self)
         @answer = Teachbase::Bot::AnswerText.new(appshell, dest)
         @menu = Teachbase::Bot::AnswerMenu.new(appshell, dest)
@@ -52,6 +54,13 @@ module Teachbase
       #       end
 
       protected
+
+      def save_message(result_data = {})
+        return unless @tg_user || @message
+        return if result_data.empty?
+
+        @tg_user.tg_account_messages.create!(result_data)
+      end
 
       def on(command, param, &block)
         raise "No such param '#{param}'. Must be a one of #{MSG_TYPES}" unless MSG_TYPES.include?(param)

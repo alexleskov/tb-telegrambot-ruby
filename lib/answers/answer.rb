@@ -14,16 +14,18 @@ module Teachbase
         @param = param
         @appshell = appshell
         @respond = appshell.controller.respond
+        @tg_user = @respond.incoming_data.tg_user
         @logger = AppConfigurator.new.get_logger
         @msg_params = {}
       end
 
       def create(options)
-        @msg_params[:text] = options[:text]
+        @msg_params[:text] = options[:text].squeeze(" ")
 
         raise "Can't find menu destination for message #{@respond.incoming_data}" unless destination
         raise "Option 'text' is missing" unless @msg_params[:text]
 
+        @msg_params[:tg_user] = @tg_user
         @msg_params[:bot] = @respond.incoming_data.bot
         @msg_params[:chat] = destination
       end

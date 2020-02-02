@@ -32,6 +32,7 @@ module Teachbase
           buttons = [[text: "#{I18n.t('edit')} #{I18n.t('settings').downcase}", callback_data: "edit_settings"]]
           menu.create(buttons: buttons,
                       type: :menu_inline,
+                      mode: :none,
                       text: "<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
                              \n #{Emoji.t(:video_game)} #{I18n.t('scenario')}: #{I18n.t(snakecase(respond.incoming_data.settings.scenario))}
                              \n #{Emoji.t(:ab)} #{I18n.t('localization')}: #{I18n.t(respond.incoming_data.settings.localization)}",
@@ -40,32 +41,33 @@ module Teachbase
 
         def edit_settings
           buttons = menu.
-                    create_inline_buttons(Teachbase::Bot::Setting::PARAMS, command_prefix = "settings:")
+                    create_inline_buttons(Teachbase::Bot::Setting::PARAMS,
+                    command_prefix = "settings:")
           menu.create(buttons: buttons,
-                      mode: :edit_msg,
                       type: :menu_inline,
                       text: "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>",
-                      slices_count: 2)
+                      slices_count: 3)
         end
 
         def choose_localization
           buttons = menu.
-                    create_inline_buttons(Teachbase::Bot::Setting::LOCALIZATION_PARAMS, command_prefix = "language_param:")
-          buttons << [text: "Back", callback_data: "edit_settings"] # TODO: Take from last_message
+                    create_inline_buttons(Teachbase::Bot::Setting::LOCALIZATION_PARAMS,
+                    command_prefix = "language_param:") << menu.inline_back_button
+          buttons 
           menu.create(buttons: buttons,
-                      mode: :edit_msg,
                       type: :menu_inline,
                       text: "<b>#{Emoji.t(:abc)} #{I18n.t('choose_localization')}</b>",
-                      slices_count: 2)
+                      slices_count: 3)
         end
 
         def choose_scenario
           buttons = menu.
-                    create_inline_buttons(Teachbase::Bot::Setting::SCENARIO_PARAMS, command_prefix = "scenario_param:")
+                    create_inline_buttons(Teachbase::Bot::Setting::SCENARIO_PARAMS,
+                    command_prefix = "scenario_param:") << menu.inline_back_button
           menu.create(buttons: buttons,
                       type: :menu_inline,
-                      text: "<b>#{Emoji.t(:abc)} #{I18n.t('choose_scenario')}</b>",
-                      slices_count: 2)          
+                      text: "<b>#{Emoji.t(:video_game)} #{I18n.t('choose_scenario')}</b>",
+                      slices_count: 3)          
         end
 
         def change_language(lang)
@@ -81,6 +83,10 @@ module Teachbase
         end
 
         def match_data
+          on %r{signin} do
+            signin
+          end
+
           on %r{edit_settings} do
             edit_settings
           end

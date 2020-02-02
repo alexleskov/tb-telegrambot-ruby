@@ -23,7 +23,7 @@ module Teachbase
         tb_api.request("course-sessions", order_by: "progress", order_direction: "asc", filter: state.to_s).response.answer
       end
 
-      def load_sections(course_session_id)
+      def load_cs_info(course_session_id)
         tb_api.request("course-sessions_/", id: course_session_id).response.answer
       end
 

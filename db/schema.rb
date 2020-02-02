@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 13) do
+ActiveRecord::Schema.define(version: 15) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -38,6 +38,19 @@ ActiveRecord::Schema.define(version: 13) do
     t.index ["api_token_id"], name: "index_auth_sessions_on_api_token_id"
     t.index ["tg_account_id"], name: "index_auth_sessions_on_tg_account_id"
     t.index ["user_id"], name: "index_auth_sessions_on_user_id"
+  end
+
+  create_table "bot_messages", force: :cascade do |t|
+    t.integer "message_id", null: false
+    t.integer "chat_id", null: false
+    t.integer "date", null: false
+    t.integer "edit_date"
+    t.string "text", null: false
+    t.jsonb "inline_keyboard", default: "{}"
+    t.bigint "tg_account_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tg_account_id"], name: "index_bot_messages_on_tg_account_id"
   end
 
   create_table "course_sessions", force: :cascade do |t|
@@ -157,6 +170,17 @@ ActiveRecord::Schema.define(version: 13) do
     t.index ["user_id"], name: "index_tasks_on_user_id"
   end
 
+  create_table "tg_account_messages", force: :cascade do |t|
+    t.integer "message_id"
+    t.string "data"
+    t.string "text"
+    t.string "message_type"
+    t.bigint "tg_account_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tg_account_id"], name: "index_tg_account_messages_on_tg_account_id"
+  end
+
   create_table "tg_accounts", force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
@@ -180,6 +204,7 @@ ActiveRecord::Schema.define(version: 13) do
   add_foreign_key "auth_sessions", "api_tokens"
   add_foreign_key "auth_sessions", "tg_accounts"
   add_foreign_key "auth_sessions", "users"
+  add_foreign_key "bot_messages", "tg_accounts"
   add_foreign_key "course_sessions", "users"
   add_foreign_key "materials", "course_sessions"
   add_foreign_key "materials", "sections"
@@ -197,4 +222,5 @@ ActiveRecord::Schema.define(version: 13) do
   add_foreign_key "tasks", "course_sessions"
   add_foreign_key "tasks", "sections"
   add_foreign_key "tasks", "users"
+  add_foreign_key "tg_account_messages", "tg_accounts"
 end

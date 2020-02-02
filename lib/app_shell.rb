@@ -1,7 +1,3 @@
-# require './models/course_session'
-# require './models/section'
-# require './models/material'
-# require './models/auth_session'
 require './controllers/controller'
 require './lib/data_loader'
 
@@ -11,6 +7,7 @@ module Teachbase
     class AppShell
       EMAIL_MASK = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i.freeze
       PASSWORD_MASK = /[\w|._#*^!+=@-]{6,40}$/.freeze
+      PHONE_MASK = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/.freeze
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
 
       attr_reader :controller, :data_loader, :settings
@@ -84,6 +81,15 @@ module Teachbase
 
         value = data unless validation(validate_type, data).nil?
       end
+      
+      def kind_of_login(user_login)
+        case user_login
+        when EMAIL_MASK
+          :email
+        when PHONE_MASK
+          :phone
+        end
+      end
 
       private
 
@@ -102,8 +108,12 @@ module Teachbase
         return unless value
 
         case type
+        when :login
+          value =~ EMAIL_MASK || PHONE_MASK
         when :email
           value =~ EMAIL_MASK
+        when :phone
+          value =~ PHONE_MASK
         when :password
           value =~ PASSWORD_MASK
         when :string

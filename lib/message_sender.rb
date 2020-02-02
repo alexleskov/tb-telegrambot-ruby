@@ -3,15 +3,12 @@ require './lib/app_configurator'
 
 class MessageSender
 
-  class << self
-    attr_accessor :last_msg
-  end
-
   attr_reader :bot, :text, :chat, :reply_to_message_id, :parse_mode, :mode, :menu_data, :menu_type
 
   def initialize(msg_params)
     @logger = AppConfigurator.new.get_logger
 
+    @tg_user = msg_params[:tg_user]
     @bot = msg_params[:bot]
     @text = msg_params[:text]
     @chat = msg_params[:chat]
@@ -27,17 +24,29 @@ class MessageSender
     params[:parse_mode] = parse_mode || AppConfigurator.new.get_parse_mode
     params[:reply_to_message_id] = @reply_to_message_id if reply_to_message_id
     params[:reply_markup] = create_menu(menu_type)
-    self.class.last_msg = create_message(mode, params)
-
-     @logger.debug "sending '#{text}' to #{chat.username}"
-     @logger.debug "last_message '#{last_message}'"
-  end
-
-  def last_message
-    self.class.last_msg
+    @mode = :edit_msg if menu_type == :menu_inline && mode != :none
+    sending_message = create_message(mode, params)
+    save_message(sending_message["result"]) if sending_message["result"]["reply_markup"]
   end
 
   private
+
+  def last_message
+    @tg_user.bot_messages.order(created_at: :desc).first
+  end
+
+  def save_message(result)
+    return unless @tg_user
+
+    result_data = { message_id: result["message_id"],
+                    chat_id: result["chat"]["id"],
+                    date: result["date"],
+                    edit_date: result["edit_date"],
+                    text: result["text"],
+                    inline_keyboard: result["reply_markup"]["inline_keyboard"] }
+
+    @tg_user.bot_messages.create!(result_data)
+  end
 
   def create_menu(menu_type)
     case menu_type
@@ -55,9 +64,9 @@ class MessageSender
   def create_message(mode, params)
     case mode
     when :edit_msg
-      raise "Can't find last message for editing" unless last_message  
-      params[:message_id] = last_message["result"]["message_id"]
-      msg = bot.api.edit_message_text(params)
+      raise "Can't find last message for editing" unless last_message 
+      params[:message_id] = last_message.message_id
+      bot.api.edit_message_text(params)
     else
       bot.api.send_message(params)
     end    
