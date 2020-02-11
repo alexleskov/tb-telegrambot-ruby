@@ -30,7 +30,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
       button_name.to_s
       buttons << [text: I18n.t(button_name.to_s), callback_data: "#{command_prefix}#{button_name.to_s}"]
     end
-    buttons    
+    buttons
   end
 
   def create_nums_buttons(numbers, options = {})
@@ -56,7 +56,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     @logger.debug "cb_for_back_button: #{callback}"
     return unless callback
 
-    [text: I18n.t('inline_back_button'), callback_data: callback]
+    [text: "#{Emoji.t(:arrow_left)} #{I18n.t('back')}", callback_data: callback]
   end
 
   def starting(text = I18n.t('start_menu_message').to_s)

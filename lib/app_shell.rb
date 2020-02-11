@@ -45,12 +45,6 @@ module Teachbase
         data_loader.get_cs_list(state)
       end
 
-      def update_all_course_sessions_list
-        Teachbase::Bot::DataLoader::CS_STATES.each do |state|
-          data_loader.call_cs_list(state)
-        end
-      end
-
       def course_session_info(cs_id)
         data_loader.get_cs_info(cs_id)
       end
@@ -60,12 +54,25 @@ module Teachbase
         data_loader.get_cs_sec_list(cs_id)
       end
 
+      def course_session_section_contents(section_position, cs_id)
+        section_bd = data_loader.get_cs_sec(section_position, cs_id)
+        return unless section_bd
+        
+        { section: section_bd,
+          section_content: data_loader.get_cs_sec_content(section_bd) }
+      end
+
+      def update_all_course_sessions_list
+        Teachbase::Bot::DataLoader::CS_STATES.each do |state|
+          data_loader.call_cs_list(state)
+        end
+      end
+
       def change_scenario(scenario_name)
         raise "No such scenario: '#{scenario_name}'" unless Teachbase::Bot::Scenarios::LIST.include?(scenario_name)
 
         @settings.update!(scenario: scenario_name)
-        mode = scenario_name.to_s.split('_').collect(&:capitalize).join
-        controller.class.send(:include, "Teachbase::Bot::Scenarios::#{mode}".constantize)
+        controller.class.send(:include, "Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}".constantize)
       end
 
       def change_localization(lang)
@@ -81,7 +88,7 @@ module Teachbase
 
         value = data unless validation(validate_type, data).nil?
       end
-      
+
       def kind_of_login(user_login)
         case user_login
         when EMAIL_MASK
@@ -92,6 +99,10 @@ module Teachbase
       end
 
       private
+
+      def to_camelize(string)
+        string.to_s.split('_').collect(&:capitalize).join
+      end
 
       def set_scenario
         change_scenario(@settings.scenario)

@@ -21,13 +21,13 @@ module Teachbase
 
       def create(options)
         @msg_params[:text] = options[:text].squeeze(" ")
-
-        raise "Can't find menu destination for message #{@respond.incoming_data}" unless destination
+        raise "Can't find destination for message #{@respond.incoming_data}" unless destination
         raise "Option 'text' is missing" unless @msg_params[:text]
 
         @msg_params[:tg_user] = @tg_user
+        @msg_params[:reply_to_tg_id] = options[:reply_to_tg_id]
         @msg_params[:bot] = @respond.incoming_data.bot
-        @msg_params[:chat] = destination
+        @msg_params[:chat] = destination # TODO: Add option options[:to_chat_id]
       end
 
       def user_fullname(option) # TODO: move to appshell by DataLoader

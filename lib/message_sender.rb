@@ -3,7 +3,7 @@ require './lib/app_configurator'
 
 class MessageSender
 
-  attr_reader :bot, :text, :chat, :reply_to_message_id, :parse_mode, :mode, :menu_data, :menu_type
+  attr_reader :bot, :text, :chat, :reply_to_tg_id, :reply_to_message_id, :parse_mode, :mode, :menu_data, :menu_type
 
   def initialize(msg_params)
     @logger = AppConfigurator.new.get_logger
@@ -14,13 +14,15 @@ class MessageSender
     @chat = msg_params[:chat]
     @parse_mode = msg_params[:parse_mode]
     @reply_to_message_id = msg_params[:reply_to_message_id]
+    @reply_to_tg_id = msg_params[:reply_to_tg_id]
     @menu_type = msg_params[:menu_type]
     @menu_data = msg_params[:menu_data]
     @mode = msg_params[:mode]
   end
 
   def send
-    params = { chat_id: chat.id, text: text }
+    params = {text: text}
+    params[:chat_id] = reply_to_tg_id || chat.id
     params[:parse_mode] = parse_mode || AppConfigurator.new.get_parse_mode
     params[:reply_to_message_id] = @reply_to_message_id if reply_to_message_id
     params[:reply_markup] = create_menu(menu_type)
@@ -38,14 +40,7 @@ class MessageSender
   def save_message(result)
     return unless @tg_user
 
-    result_data = { message_id: result["message_id"],
-                    chat_id: result["chat"]["id"],
-                    date: result["date"],
-                    edit_date: result["edit_date"],
-                    text: result["text"],
-                    inline_keyboard: result["reply_markup"]["inline_keyboard"] }
-
-    @tg_user.bot_messages.create!(result_data)
+    @tg_user.bot_messages.create!(fetch_msg_result_data(result))
   end
 
   def create_menu(menu_type)
@@ -64,7 +59,8 @@ class MessageSender
   def create_message(mode, params)
     case mode
     when :edit_msg
-      raise "Can't find last message for editing" unless last_message 
+      raise "Can't find last message for editing" unless last_message
+
       params[:message_id] = last_message.message_id
       bot.api.edit_message_text(params)
     else
@@ -86,5 +82,16 @@ class MessageSender
 
   def force_reply_markup
     Telegram::Bot::Types::ForceReply.new(force_reply: true)
+  end
+
+  private
+
+  def fetch_msg_result_data(result)
+    { message_id: result["message_id"],
+                        chat_id: result["chat"]["id"],
+                        date: result["date"],
+                        edit_date: result["edit_date"],
+                        text: result["text"],
+                        inline_keyboard: result["reply_markup"]["inline_keyboard"] }
   end
 end

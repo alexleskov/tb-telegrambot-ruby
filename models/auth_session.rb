@@ -27,9 +27,9 @@ module Teachbase
         tb_api.request("course-sessions_/", id: course_session_id).response.answer
       end
 
-      # def load_material
-      #
-      # end
+      def load_material(course_session_id, material_id)
+        tb_api.request("course-sessions_materials", cs_id: course_session_id, m_id: material_id).response.answer
+      end
     end
   end
 end

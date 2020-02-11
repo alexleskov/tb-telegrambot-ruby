@@ -84,6 +84,10 @@ ActiveRecord::Schema.define(version: 15) do
     t.string "name"
     t.string "content_type"
     t.string "category"
+    t.string "source"
+    t.boolean "editor_js", default: false
+    t.boolean "markdown", default: false
+    t.jsonb "content", default: "{}"
     t.bigint "section_id"
     t.bigint "course_session_id"
     t.bigint "user_id"
@@ -122,7 +126,7 @@ ActiveRecord::Schema.define(version: 15) do
   create_table "scorm_packages", force: :cascade do |t|
     t.integer "tb_id", null: false
     t.integer "position", null: false
-    t.string "title"
+    t.string "name"
     t.bigint "section_id"
     t.bigint "course_session_id"
     t.bigint "user_id"

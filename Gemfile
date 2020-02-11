@@ -10,3 +10,4 @@ gem 'rake', '>= 10.0'
 gem 'rest-client'
 gem 'standalone_migrations', '~> 5.2', '>= 5.2.7'
 gem 'telegram-bot-ruby'
+gem "async"

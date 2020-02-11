@@ -6,6 +6,10 @@ class CreateMaterials < ActiveRecord::Migration[5.2]
       t.string :name
       t.string :content_type
       t.string :category
+      t.string :source
+      t.boolean :editor_js, default: false
+      t.boolean :markdown, default: false
+      t.jsonb :content, default: '{}'
       t.references :section, foreign_key: true
       t.references :course_session, foreign_key: true
       t.references :user, foreign_key: true

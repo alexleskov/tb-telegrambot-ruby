@@ -43,7 +43,7 @@ module Teachbase
       #         else
       #           mess = []
       #           materials.each do |material|
-      #             string = "\n#{Emoji.t(:page_facing_up)}<b>#{I18n.t('material')}:</b> #{material.name}"
+      #             string = "\n#{Emoji.t(:open_file_folder)}<b>#{I18n.t('material')}:</b> #{material.name}"
       #             mess << string
       #           end
       #           answer_message = mess.join("\n")
