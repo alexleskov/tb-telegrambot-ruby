@@ -53,10 +53,15 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
 
   def inline_back_button
     callback = cb_for_back_button
-    @logger.debug "cb_for_back_button: #{callback}"
     return unless callback
 
     [text: "#{Emoji.t(:arrow_left)} #{I18n.t('back')}", callback_data: callback]
+  end
+
+  def show_more_button(callback)
+    return unless callback
+
+    [text: "#{Emoji.t(:arrow_double_down)} #{I18n.t('show_more')}", callback_data: callback]
   end
 
   def starting(text = I18n.t('start_menu_message').to_s)

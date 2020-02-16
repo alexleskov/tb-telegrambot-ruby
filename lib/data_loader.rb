@@ -46,8 +46,8 @@ module Teachbase
         get_data { user.profile }
       end
 
-      def get_cs_list(state)
-        get_data { user.course_sessions.order(name: :asc).where(complete_status: state.to_s,
+      def get_cs_list(state, limit_count, offset_num)
+        get_data { user.course_sessions.order(name: :asc).limit(limit_count).offset(offset_num).where(complete_status: state.to_s,
                                                      scenario_mode: appshell.settings.scenario) }
       end
 
@@ -85,7 +85,7 @@ module Teachbase
       end
 
       def call_cs_list(state)
-        raise "No such option for update course sessions list" unless CS_STATES.include?(state)
+        raise "No such option for update course sessions list" unless CS_STATES.include?(state.to_sym)
 
         call_data do
           lms_info = authsession.load_course_sessions(state)
@@ -136,7 +136,7 @@ module Teachbase
         auth_checker unless authsession?
         @apitoken = Teachbase::Bot::ApiToken.find_by(auth_session_id: authsession.id, active: true)
         raise unless apitoken
-
+        
         authsession.api_auth(:mobile_v2, access_token: apitoken.value)
         @user = authsession.user
       rescue RuntimeError

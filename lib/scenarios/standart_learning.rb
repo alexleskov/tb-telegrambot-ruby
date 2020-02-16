@@ -23,10 +23,14 @@ module Teachbase
                           #{I18n.t('archived_courses')}: #{profile.archived_courses_count}"
         end
 
-        def show_course_sessions_list(state)
-          raise "No such course state: #{state}" unless [:active, :archived].include?(state)
+        def show_course_sessions_list(state, limit_count = 5, offset_num = 0)
+          raise "No such course state: #{state}" unless [:active, :archived].include?(state.to_sym)
 
-          course_sessions = appshell.course_sessions_list(state)
+          course_sessions_count = appshell.profile_state.public_send("#{state}_courses_count").to_i
+          offset_num = offset_num.to_i
+          limit_count = limit_count.to_i
+          course_sessions = appshell.course_sessions_list(state, limit_count, offset_num)
+          answer.send_out "#{Emoji.t(:books)} <b>#{I18n.t("#{state}_courses").capitalize}</b>"
           if course_sessions.empty?
             answer.send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
           else
@@ -35,15 +39,24 @@ module Teachbase
                          [text: I18n.t('course_results').to_s, callback_data: "cs_info_id:#{cs.tb_id}"]]
               menu.create(buttons: buttons,
                           type: :menu_inline,
-                          text: "#{Emoji.t(:book)} <b>#{I18n.t("#{state}_courses").capitalize}</b>
-                                 \n#{show_breadcrumbs(:course, [:name],
-                                                      course_icon_url: cs.icon_url,
-                                                      course_name: cs.name)}",
+                          mode: :none,
+                          text: "#{show_breadcrumbs(:course, [:name],
+                                                    course_icon_url: cs.icon_url,
+                                                    course_name: cs.name)}",
                           slices_count: 2)
             end
+            offset_num += limit_count
+            unless offset_num >= course_sessions_count
+              callback = "show_course_sessions_list:#{state}_lim:#{limit_count}_offset:#{offset_num}"
+              @logger.debug "callback: #{callback}"
+              menu.create(buttons: [menu.show_more_button(callback)],
+                          type: :menu_inline,
+                          mode: :none,
+                          text: "#{I18n.t('show_more')}")
+            end
           end
-        rescue RuntimeError => e
-          answer.send_out I18n.t('error').to_s
+        #rescue RuntimeError => e
+        #  answer.send_out I18n.t('error').to_s
         end
 
         def show_course_session_info(cs_id)
@@ -180,6 +193,11 @@ module Teachbase
 
           on %r{active_courses} do
             show_course_sessions_list(:active)
+          end
+
+          on %r{show_course_sessions_list} do
+            @message_value =~ %r{^show_course_sessions_list:(\w*)_lim:(\d*)_offset:(\d*)}
+            show_course_sessions_list($1, $2, $3)
           end
 
           on %r{update_course_sessions} do

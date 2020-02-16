@@ -17,7 +17,6 @@ logger.debug 'Starting telegram bot'
 
 telegram_bot_client = Telegram::Bot::Client.new(token)
 
-=begin
 telegram_bot_client.run do |bot|
   bot.listen do |message|
     #Async do |task|
@@ -29,4 +28,3 @@ telegram_bot_client.run do |bot|
     #end
   end
 end
-=end

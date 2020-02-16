@@ -40,9 +40,9 @@ module Teachbase
         data_loader.get_user_profile
       end
 
-      def course_sessions_list(state)
+      def course_sessions_list(state, limit_count, offset_num)
         data_loader.call_cs_list(state)
-        data_loader.get_cs_list(state)
+        data_loader.get_cs_list(state, limit_count, offset_num)
       end
 
       def course_session_info(cs_id)
