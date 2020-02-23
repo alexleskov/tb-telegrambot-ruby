@@ -3,6 +3,7 @@ module Teachbase
     module Scenarios
       module StandartLearning
         include Teachbase::Bot::Scenarios::Base
+        LIMIT_COUNT_PAGINAION = 3
 
         def self.included(base)
           base.extend ClassMethods
@@ -23,7 +24,7 @@ module Teachbase
                           #{I18n.t('archived_courses')}: #{profile.archived_courses_count}"
         end
 
-        def show_course_sessions_list(state, limit_count = 5, offset_num = 0)
+        def show_course_sessions_list(state, limit_count = LIMIT_COUNT_PAGINAION, offset_num = 0)
           raise "No such course state: #{state}" unless [:active, :archived].include?(state.to_sym)
 
           course_sessions_count = appshell.profile_state.public_send("#{state}_courses_count").to_i
@@ -78,9 +79,9 @@ module Teachbase
 
         def show_sections_list_l1(cs_id)
           sections = appshell.course_session_sections(cs_id)
-          cs_name = appshell.course_session_info(cs_id).name
+          cs = appshell.course_session_info(cs_id)
           if sections.empty?
-            answer.send_out "\n#{show_breadcrumbs(:course, [:name, :contents], course_name: cs_name)}
+            answer.send_out "\n#{show_breadcrumbs(:course, [:name, :contents], course_name: cs.name)}
                              \n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
           else
             params = %i[find_by_query_num show_avaliable show_unvaliable show_all]
@@ -88,7 +89,7 @@ module Teachbase
                       create_inline_buttons(params, "show_sections_by_csid:#{cs_id}_param:") << menu.inline_back_button
             menu.create(buttons: buttons,
                         type: :menu_inline,
-                        text: "#{show_breadcrumbs(:course, [:name, :contents, :sections], course_name: cs_name)}
+                        text: "#{show_breadcrumbs(:course, [:name, :contents, :sections], course_name: cs.name)}
                                \n#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}",
                         slices_count: 3)
           end

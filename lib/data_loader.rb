@@ -84,21 +84,19 @@ module Teachbase
         end
       end
 
-      def call_cs_list(state)
+      def call_cs_list(state, mode = :normal)
         raise "No such option for update course sessions list" unless CS_STATES.include?(state.to_sym)
+        
+        user.course_sessions.where(complete_status: state.to_s).destroy_all if mode == :with_reload
 
         call_data do
           lms_info = authsession.load_course_sessions(state)
           #@logger.debug "lms_info: #{lms_info}"
           lms_info.each do |course_session|
-            cs = user.course_sessions.find_by(tb_id: course_session["id"],
-                                              changed_at: course_session["updated_at"])
-            unless cs
-              user.course_sessions.create!(create_attributes(OBJECTS[:course_session], course_session)
-                                  .merge!(tb_id: course_session["id"],
-                                          changed_at: course_session["updated_at"],
-                                          complete_status: state.to_s))
-            end
+            cs = user.course_sessions.find_or_create_by!(tb_id: course_session["id"])
+            cs.update!(create_attributes(OBJECTS[:course_session], course_session).merge!(tb_id: course_session["id"],
+                                                                                          changed_at: course_session["updated_at"],
+                                                                                          complete_status: state.to_s))
           end
         end
       end
@@ -113,7 +111,8 @@ module Teachbase
         call_data do
           return if course_session_last_version?(cs_id) && !course_session_last_version?(cs_id).sections.empty?
 
-          course_session = user.course_sessions.find_or_create_by!(tb_id: cs_id, user_id: user.id)
+          course_session = user.course_sessions.find_by!(tb_id: cs_id, user_id: user.id)
+          course_session.sections.destroy_all
           #@request_loader = Async do |task|
             authsession.load_cs_info(cs_id)["sections"].each_with_index do |section_lms, ind|
               section_bd = course_session.sections.find_or_create_by!(position: ind + 1)
@@ -137,7 +136,7 @@ module Teachbase
         @apitoken = Teachbase::Bot::ApiToken.find_by(auth_session_id: authsession.id, active: true)
         raise unless apitoken
         
-        authsession.api_auth(:mobile_v2, access_token: apitoken.value)
+        authsession.api_auth(:mobile, 2, access_token: apitoken.value)
         @user = authsession.user
       rescue RuntimeError
         auth_checker
@@ -154,7 +153,7 @@ module Teachbase
         authsession?(:with_create)
         @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(auth_session_id: authsession.id)
         if apitoken.avaliable?
-          authsession.api_auth(:mobile_v2, access_token: apitoken.value)
+          authsession.api_auth(:mobile, 2, access_token: apitoken.value)
         else
           authsession.update!(active: false)
           login_by_user_data
@@ -227,10 +226,11 @@ module Teachbase
         login = user_data.first
         password = user_data.second
         crypted_password = password.encrypt(:symmetric, password: @encrypt_key)
-        authsession.api_auth(:mobile_v2, user_login: login, password: crypted_password.decrypt)
+        authsession.api_auth(:mobile, 2, user_login: login, password: crypted_password.decrypt)
         raise "Can't authorize authsession id: #{authsession.id}. Token value: #{authsession.tb_api.token.value}" unless authsession.tb_api.token.value
 
-        apitoken.update!(version: authsession.tb_api.token.version,
+        apitoken.update!(version: authsession.tb_api.token.api_version,
+                         api_type: authsession.tb_api.token.api_type,
                          grant_type: authsession.tb_api.token.grant_type,
                          expired_at: authsession.tb_api.token.expired_at,
                          value: authsession.tb_api.token.value,

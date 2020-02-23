@@ -2,6 +2,7 @@ class CreateApiTokens < ActiveRecord::Migration[5.2]
   def change
     create_table :api_tokens do |t|
       t.string :version
+      t.string :api_type
       t.string :grant_type
       t.string :expired_at
       t.string :value

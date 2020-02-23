@@ -17,6 +17,7 @@ ActiveRecord::Schema.define(version: 15) do
 
   create_table "api_tokens", force: :cascade do |t|
     t.string "version"
+    t.string "api_type"
     t.string "grant_type"
     t.string "expired_at"
     t.string "value"

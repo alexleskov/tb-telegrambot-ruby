@@ -64,7 +64,7 @@ module Teachbase
 
       def update_all_course_sessions_list
         Teachbase::Bot::DataLoader::CS_STATES.each do |state|
-          data_loader.call_cs_list(state)
+          data_loader.call_cs_list(state, :with_reload)
         end
       end
 
