@@ -2,6 +2,7 @@
 
 require 'telegram/bot'
 require 'async'
+require 'encrypted_strings'
 
 require './lib/app_configurator'
 require './lib/emoji.rb'

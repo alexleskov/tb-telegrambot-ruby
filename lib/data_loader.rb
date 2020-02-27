@@ -8,23 +8,20 @@ require './models/quiz'
 require './models/scorm_package'
 require './models/task'
 
-require 'encrypted_strings'
-
 module Teachbase
   module Bot
     class DataLoader
       MAX_RETRIES = 3
       CS_STATES = %i[active archived].freeze
-      SECTIONS_CONTENT = { materials: %i[name category],
-                           scorm_packages: %i[],
-                           quizzes: %i[name],
-                           tasks: %i[name] }.freeze
-      OBJECTS = { user: %i[last_name phone email avatar_url],
-                  profile: %i[active_courses_count average_score_percent archived_courses_count total_time_spent],
-                  course_session: %i[name icon_url bg_url deadline listeners_count progress started_at
-                                     can_download success started_at can_download success full_access
-                                     application_status navigation rating has_certificate],
-                  sections: %i[name opened_at is_publish is_available] }.freeze
+      SECTION_OBJECTS = [ :materials, :scorm_packages, :quizzes, :tasks ].freeze
+      SECTION_OBJECTS_CUSTOM_PARAMS = { materials: { "type" => :content_type },
+                                        scorm_packages: { "title" => :name } }.freeze
+      MAIN_OBJECTS_CUSTOM_PARAMS = { users: { "name" => :first_name },
+                                     course_sessions: { "updated_at" => :changed_at } }.freeze
+      SECTION_OBJECT_TYPES = { materials: :material,
+                       scorm_packages: :scorm_package,
+                       quizzes: :quiz,
+                       tasks: :task}
 
       attr_reader :apitoken, :user, :appshell, :authsession
 
@@ -64,13 +61,13 @@ module Teachbase
       def get_cs_sec_content(section_bd)
         return unless section_bd
 
-        section_content = {}
+        section_objects = {}
         get_data do
-          SECTIONS_CONTENT.keys.each do |content_type|
-            section_content[content_type] = section_bd.public_send(content_type).order(position: :asc)
+          SECTION_OBJECTS.each do |content_type|
+            section_objects[content_type] = section_bd.public_send(content_type).order(position: :asc)
           end
         end
-        section_content
+        section_objects
       end
 
       def call_profile
@@ -79,8 +76,11 @@ module Teachbase
           raise "Profile is not loaded" unless lms_info
 
           profile = Teachbase::Bot::Profile.find_or_create_by!(user_id: user.id)
-          user.update!(create_attributes(OBJECTS[:user], lms_info).merge!(tb_id: lms_info["id"], first_name: lms_info["name"]))
-          profile.update!(create_attributes(OBJECTS[:profile], lms_info))
+          user_params = create_attributes(Teachbase::Bot::User.attribute_names, lms_info, MAIN_OBJECTS_CUSTOM_PARAMS[:users])
+          user_params[:tb_id] = lms_info["id"]
+          profile_params = create_attributes(Teachbase::Bot::Profile.attribute_names, lms_info)
+          user.update!(user_params)
+          profile.update!(profile_params)
         end
       end
 
@@ -92,11 +92,14 @@ module Teachbase
         call_data do
           lms_info = authsession.load_course_sessions(state)
           #@logger.debug "lms_info: #{lms_info}"
-          lms_info.each do |course_session|
-            cs = user.course_sessions.find_or_create_by!(tb_id: course_session["id"])
-            cs.update!(create_attributes(OBJECTS[:course_session], course_session).merge!(tb_id: course_session["id"],
-                                                                                          changed_at: course_session["updated_at"],
-                                                                                          complete_status: state.to_s))
+
+          lms_info.each do |course_session_lms|
+            cs = user.course_sessions.find_or_create_by!(tb_id: course_session_lms["id"])
+            course_session_params = create_attributes(Teachbase::Bot::CourseSession.attribute_names,
+                                                      course_session_lms,
+                                                      MAIN_OBJECTS_CUSTOM_PARAMS[:course_sessions])
+            course_session_params[:complete_status] = state.to_s
+            cs.update!(course_session_params)
           end
         end
       end
@@ -111,25 +114,37 @@ module Teachbase
         call_data do
           return if course_session_last_version?(cs_id) && !course_session_last_version?(cs_id).sections.empty?
 
-          course_session = user.course_sessions.find_by!(tb_id: cs_id, user_id: user.id)
-          course_session.sections.destroy_all
+          cs = user.course_sessions.find_by!(tb_id: cs_id)
+          user_id = user.id
+          cs.sections.destroy_all if cs
+
+          custom_params = { materials: { content_type: "type" },
+                            scorm_packages: { name: "title" } }
+
           #@request_loader = Async do |task|
             authsession.load_cs_info(cs_id)["sections"].each_with_index do |section_lms, ind|
-              section_bd = course_session.sections.find_or_create_by!(position: ind + 1)
-              SECTIONS_CONTENT.keys.each do |type|
-                custom_params = case type
-                                when :materials
-                                  {content_type: "type"}
-                                when :scorm_packages
-                                  {name: "title"}
-                                end
-                fetch_content(type.to_s, section_lms, section_bd, SECTIONS_CONTENT[type], param = custom_params || {})
+              section_bd = cs.sections.find_or_create_by!(position: ind + 1)
+              SECTION_OBJECTS.each do |type|
+                fetch_section_objects(type, section_lms, section_bd)
               end
-              section_bd.update!(create_attributes(OBJECTS[:sections], section_lms).merge!(user_id: user.id))
+              section_params = create_attributes(Teachbase::Bot::Section.attribute_names, section_lms)
+              section_bd.update!(section_params)
             end
           #end
         end
       end
+
+      def fetch_section_objects(conten_type, section_lms, section_bd)
+        raise "No such content type: #{conten_type}." unless section_bd.respond_to?(conten_type)
+
+        content_params = to_constantize(SECTION_OBJECT_TYPES[conten_type], "Teachbase::Bot").public_send(:attribute_names)        
+        section_lms[conten_type.to_s].each do |content_type_hash|
+          attributes = create_attributes(content_params, content_type_hash, SECTION_OBJECTS_CUSTOM_PARAMS[conten_type])
+          section_bd.public_send(conten_type)
+                    .find_or_create_by!(position: content_type_hash["position"], tb_id: content_type_hash["id"])
+                    .update!(attributes)
+        end
+      end  
 
       def load_models
         auth_checker unless authsession?
@@ -199,47 +214,25 @@ module Teachbase
         user.course_sessions.find_by(tb_id: cs_id, changed_at: call_cs_info(cs_id)["updated_at"])
       end
 
-      def fetch_content(conten_type, section_lms, section_bd, params, custom_params = {})
-        raise "No such content type: #{conten_type}." unless section_bd.respond_to? conten_type
-
-        section_lms[conten_type.to_s].each do |object|
-          custom_data = custom_params.empty? ? {} : create_custom_params(custom_params, object)
-          section_bd.public_send(conten_type)
-                    .find_or_create_by!(position: object["position"], tb_id: object["id"],
-                                        course_session_id: section_bd.course_session.id, user_id: user.id)
-                    .update!(create_attributes(params, object).merge!(custom_data))
-        end
-      end
-
-      def create_custom_params(custom_params, lms_data_object)
-        custom_data = {}
-        custom_params.each do |key, value|
-          custom_data.merge!({key => lms_data_object[value.to_s]})
-        end
-        custom_data
-      end
-
       def login_by_user_data
-        user_data = request_user_data
-        raise if user_data.any?(nil)
+        user_auth_data = appshell.request_user_data
+        raise if user_auth_data.empty?
 
-        login = user_data.first
-        password = user_data.second
-        crypted_password = password.encrypt(:symmetric, password: @encrypt_key)
-        authsession.api_auth(:mobile, 2, user_login: login, password: crypted_password.decrypt)
-        raise "Can't authorize authsession id: #{authsession.id}. Token value: #{authsession.tb_api.token.value}" unless authsession.tb_api.token.value
+        authsession.api_auth(:mobile, 2, user_login: user_auth_data[:login], password: user_auth_data[:crypted_password].decrypt)
+        raise "Can't authorize authsession id: #{authsession.id}. User auth data: #{user_auth_data}" unless authsession.tb_api.token.value
 
-        apitoken.update!(version: authsession.tb_api.token.api_version,
-                         api_type: authsession.tb_api.token.api_type,
-                         grant_type: authsession.tb_api.token.grant_type,
-                         expired_at: authsession.tb_api.token.expired_at,
-                         value: authsession.tb_api.token.value,
+        token = authsession.tb_api.token
+        apitoken.update!(version: token.api_version,
+                         api_type: token.api_type,
+                         grant_type: token.grant_type,
+                         expired_at: token.expired_at,
+                         value: token.value,
                          active: true)
         raise "Can't load API Token" unless apitoken
 
-        @user = Teachbase::Bot::User.find_or_create_by!(appshell.kind_of_login(login) => login)
+        @user = Teachbase::Bot::User.find_or_create_by!(user_auth_data[:login_type] => user_auth_data[:login])
 
-        user.update!(password: crypted_password)
+        user.update!(password: user_auth_data[:crypted_password])
         authsession.update!(auth_at: Time.now.utc,
                             active: true,
                             api_token_id: apitoken.id,
@@ -249,23 +242,38 @@ module Teachbase
         authsession.update!(active: false)
       end
 
-      def request_user_data
-        loop do
-          appshell.controller.answer.send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_login')}:"
-          user_login = appshell.request_data(:login)
-          appshell.controller.answer.send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_password')}:"
-          user_password = appshell.request_data(:password)
-          break [user_login, user_password] if [user_login, user_password].any?(nil) || [user_login, user_password].all?(String)
+      def create_attributes(params, object_type_hash, custom_params = {})
+        raise "Params must be an Array. Your params: #{params} is #{params.class}." unless params.is_a?(Array)
+
+        attributes = {}
+        replace_key_names(custom_params, object_type_hash) if custom_params && !custom_params.empty?
+
+        @logger.debug "object_type_hash: #{object_type_hash}"
+
+        params.each do |param|
+          unless object_type_hash[param.to_s].nil? && [:id, :position].include?(param.to_sym)
+            attributes[param.to_sym] = object_type_hash[param.to_s]
+          end
+        end
+        attributes
+      end
+
+      def replace_key_names(mapping, initial_hash)
+        mapping.each do |old_key, new_key|
+          initial_hash[new_key.to_s] = initial_hash.delete(old_key)
         end
       end
 
-      def create_attributes(params, source_hash)
-        return {} if params.empty?
-
-        attributes = {}
-        params.each { |param| attributes.merge!(param => source_hash[param.to_s]) }
-        attributes
+      def to_camelize(string)
+        string.to_s.split("_").collect(&:capitalize).join
       end
+
+      def to_constantize(data, prefix = "")
+        Kernel.const_get("#{prefix}::#{to_camelize(data)}")
+      end
+
     end
   end
 end
+
+

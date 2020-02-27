@@ -53,7 +53,7 @@ module Teachbase
               menu.create(buttons: [menu.show_more_button(callback)],
                           type: :menu_inline,
                           mode: :none,
-                          text: "#{I18n.t('show_more')}")
+                          text: "#{I18n.t('show_more')} (#{course_sessions_count - offset_num})")
             end
           end
         #rescue RuntimeError => e

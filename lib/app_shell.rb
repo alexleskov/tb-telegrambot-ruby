@@ -1,7 +1,6 @@
 require './controllers/controller'
 require './lib/data_loader'
 
-
 module Teachbase
   module Bot
     class AppShell
@@ -16,6 +15,7 @@ module Teachbase
         @logger = AppConfigurator.new.get_logger
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
 
+        @encrypt_key = AppConfigurator.new.get_encrypt_key
         @settings = controller.respond.incoming_data.settings
         @controller = controller
         @data_loader = Teachbase::Bot::DataLoader.new(self)
@@ -89,6 +89,23 @@ module Teachbase
         value = data unless validation(validate_type, data).nil?
       end
 
+      def request_user_data
+        user_data = loop do
+                      controller.answer.send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_login')}:"
+                      user_login = request_data(:login)
+                      controller.answer.send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_password')}:"
+                      user_password = request_data(:password)
+                      break [user_login, user_password] if [user_login, user_password].any?(nil) || [user_login, user_password].all?(String)
+                    end
+        raise if user_data.any?(nil)
+
+        { login: user_data.first,
+          login_type: kind_of_login(user_data.first),
+          crypted_password: user_data.second.encrypt(:symmetric, password: @encrypt_key) }
+      end
+
+      private
+
       def kind_of_login(user_login)
         case user_login
         when EMAIL_MASK
@@ -97,8 +114,6 @@ module Teachbase
           :phone
         end
       end
-
-      private
 
       def to_camelize(string)
         string.to_s.split('_').collect(&:capitalize).join
@@ -110,8 +125,9 @@ module Teachbase
 
       def take_data
         controller.respond.incoming_data.bot.listen do |message|
-          @logger.debug "taking data: @#{message.from.username}: #{message.text}"
-          break message.text
+          msg = message.respond_to?(:text) ? message.text : message.data # for debugger 
+          @logger.debug "taking data: @#{message.from.username}: #{msg}"
+          break message.text if message.respond_to?(:text)
         end
       end
 
