@@ -28,7 +28,7 @@ module Teachbase
       end
 
       def load_material(cs_id, material_id)
-        tb_api.request(:materials, :course_sessions, session_id: cs_id, id: material_id).get
+        tb_api.request(:materials, :course_sessions_materials, session_id: cs_id, id: material_id).get
       end
     end
   end

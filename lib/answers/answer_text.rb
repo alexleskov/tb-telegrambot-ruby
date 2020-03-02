@@ -7,6 +7,8 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
 
   def create(options)
     super(options)
+    raise "Option 'text' is missing" unless options[:text]
+    
     MessageSender.new(msg_params).send
   end
 

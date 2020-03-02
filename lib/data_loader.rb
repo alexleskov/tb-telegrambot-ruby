@@ -1,5 +1,5 @@
-require './models/user'
-require './models/api_token'
+#require './models/user'
+#require './models/api_token'
 require './models/profile'
 require './models/course_session'
 require './models/section'
@@ -22,15 +22,14 @@ module Teachbase
                        scorm_packages: :scorm_package,
                        quizzes: :quiz,
                        tasks: :task}
+      CONTENT_VIDEO_FORMAT = "mp4".freeze
 
-      attr_reader :apitoken, :user, :appshell, :authsession
+      attr_reader :user, :authsession
 
       def initialize(appshell)
         raise "'#{appshell}' is not Teachbase::Bot::AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
 
         @appshell = appshell
-        @tg_user = appshell.controller.respond.incoming_data.tg_user
-        @encrypt_key = AppConfigurator.new.get_encrypt_key
         @logger = AppConfigurator.new.get_logger
         @retries = 0
       end
@@ -45,16 +44,21 @@ module Teachbase
 
       def get_cs_list(state, limit_count, offset_num)
         get_data { user.course_sessions.order(name: :asc).limit(limit_count).offset(offset_num).where(complete_status: state.to_s,
-                                                     scenario_mode: appshell.settings.scenario) }
+                                                     scenario_mode: @appshell.settings.scenario) }
       end
 
       def get_cs_sec_list(cs_id)
         get_data { get_cs_info(cs_id).sections.order(position: :asc) }
       end
 
-      def get_cs_sec(section_position, cs_id)
+      def get_cs_sec_by(option, param, cs_id)
         get_data do
-          user.course_sessions.find_by(tb_id: cs_id).sections.find_by(position: section_position)
+          case option
+          when :position
+            user.course_sessions.find_by(tb_id: cs_id).sections.find_by(position: param)
+          when :id
+            user.course_sessions.find_by(tb_id: cs_id).sections.find_by(id: param)
+          end
         end
       end
 
@@ -68,6 +72,14 @@ module Teachbase
           end
         end
         section_objects
+      end
+
+      def get_cs_sec_content_open(content_type, cs_tb_id, sec_id, content_tb_id)
+        get_data do
+          user.course_sessions.find_by(tb_id: cs_tb_id)
+              .sections.find_by(id: sec_id)
+              .public_send(content_type).find_by(tb_id: content_tb_id)
+        end
       end
 
       def call_profile
@@ -115,7 +127,6 @@ module Teachbase
           return if course_session_last_version?(cs_id) && !course_session_last_version?(cs_id).sections.empty?
 
           cs = user.course_sessions.find_by!(tb_id: cs_id)
-          user_id = user.id
           cs.sections.destroy_all if cs
 
           custom_params = { materials: { content_type: "type" },
@@ -123,7 +134,7 @@ module Teachbase
 
           #@request_loader = Async do |task|
             authsession.load_cs_info(cs_id)["sections"].each_with_index do |section_lms, ind|
-              section_bd = cs.sections.find_or_create_by!(position: ind + 1)
+              section_bd = cs.sections.find_or_create_by!(position: ind + 1, user_id: user.id)
               SECTION_OBJECTS.each do |type|
                 fetch_section_objects(type, section_lms, section_bd)
               end
@@ -134,67 +145,52 @@ module Teachbase
         end
       end
 
+      def call_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
+        section_bd = get_cs_sec_by(:id, sec_id, cs_tb_id)
+        call_data do
+          case content_type.to_sym
+          when :materials
+            lms_info = authsession.load_material(cs_tb_id, content_tb_id)
+
+            @logger.debug "lms_info: #{lms_info}"
+
+            unless lms_info["type"] == "video"
+              attributes = create_attributes(%w[source content], lms_info)
+            else
+              attributes = { source: lms_info["source"][CONTENT_VIDEO_FORMAT] }
+            end
+            section_bd.materials.find_by!(tb_id: content_tb_id).update!(attributes)
+          end
+        end
+      end
+
       def fetch_section_objects(conten_type, section_lms, section_bd)
         raise "No such content type: #{conten_type}." unless section_bd.respond_to?(conten_type)
 
-        content_params = to_constantize(SECTION_OBJECT_TYPES[conten_type], "Teachbase::Bot").public_send(:attribute_names)        
+        content_params = to_constantize(SECTION_OBJECT_TYPES[conten_type], "Teachbase::Bot").public_send(:attribute_names)
+        cs_id = section_bd.course_session.id        
         section_lms[conten_type.to_s].each do |content_type_hash|
           attributes = create_attributes(content_params, content_type_hash, SECTION_OBJECTS_CUSTOM_PARAMS[conten_type])
           section_bd.public_send(conten_type)
-                    .find_or_create_by!(position: content_type_hash["position"], tb_id: content_type_hash["id"])
+                    .find_or_create_by!(position: content_type_hash["position"],
+                                        tb_id: content_type_hash["id"],
+                                        user_id: user.id,
+                                        course_session_id: cs_id)
                     .update!(attributes)
         end
-      end  
-
-      def load_models
-        auth_checker unless authsession?
-        @apitoken = Teachbase::Bot::ApiToken.find_by(auth_session_id: authsession.id, active: true)
-        raise unless apitoken
-        
-        authsession.api_auth(:mobile, 2, access_token: apitoken.value)
-        @user = authsession.user
-      rescue RuntimeError
-        auth_checker
-        retry
-      end
-
-      def unauthorize
-        return unless authsession?
-
-        authsession.update!(active: false)
-      end
-
-      def auth_checker
-        authsession?(:with_create)
-        @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(auth_session_id: authsession.id)
-        if apitoken.avaliable?
-          authsession.api_auth(:mobile, 2, access_token: apitoken.value)
-        else
-          authsession.update!(active: false)
-          login_by_user_data
-        end
-        return unless authsession.active?
-        @user = authsession.user
       end
 
       private
 
-      def authsession?(option = {})
-        @authsession = case option
-                       when :with_create
-                         @tg_user.auth_sessions.find_or_create_by!(active: true)
-                       else
-                         @tg_user.auth_sessions.find_by(active: true)
-                       end
-      end
-
       def get_data
-        load_models
+        @authsession = @appshell.authorizer.call_authsession(:without_api)
+        @user = authsession.user
         yield
       end
 
       def call_data
-        load_models
+        @authsession = @appshell.authorizer.call_authsession
+        @user = authsession.user
         yield
       rescue RuntimeError => e
         if e.http_code == 401 || e.http_code == 403
@@ -206,7 +202,6 @@ module Teachbase
           retry
         else
           @logger.debug "Unexpected error after retries: #{e}. code: #{e.http_code}"
-          appshell.controller.answer.send_out "#{I18n.t('unexpected_error')}: #{e}"
         end
       end
 
@@ -214,44 +209,13 @@ module Teachbase
         user.course_sessions.find_by(tb_id: cs_id, changed_at: call_cs_info(cs_id)["updated_at"])
       end
 
-      def login_by_user_data
-        user_auth_data = appshell.request_user_data
-        raise if user_auth_data.empty?
-
-        authsession.api_auth(:mobile, 2, user_login: user_auth_data[:login], password: user_auth_data[:crypted_password].decrypt)
-        raise "Can't authorize authsession id: #{authsession.id}. User auth data: #{user_auth_data}" unless authsession.tb_api.token.value
-
-        token = authsession.tb_api.token
-        apitoken.update!(version: token.api_version,
-                         api_type: token.api_type,
-                         grant_type: token.grant_type,
-                         expired_at: token.expired_at,
-                         value: token.value,
-                         active: true)
-        raise "Can't load API Token" unless apitoken
-
-        @user = Teachbase::Bot::User.find_or_create_by!(user_auth_data[:login_type] => user_auth_data[:login])
-
-        user.update!(password: user_auth_data[:crypted_password])
-        authsession.update!(auth_at: Time.now.utc,
-                            active: true,
-                            api_token_id: apitoken.id,
-                            user_id: user.id)
-      rescue RuntimeError => e
-        @logger.debug e.to_s
-        authsession.update!(active: false)
-      end
-
       def create_attributes(params, object_type_hash, custom_params = {})
         raise "Params must be an Array. Your params: #{params} is #{params.class}." unless params.is_a?(Array)
 
         attributes = {}
         replace_key_names(custom_params, object_type_hash) if custom_params && !custom_params.empty?
-
-        @logger.debug "object_type_hash: #{object_type_hash}"
-
         params.each do |param|
-          unless object_type_hash[param.to_s].nil? && [:id, :position].include?(param.to_sym)
+          if !object_type_hash[param.to_s].nil? && ![:id, :position].include?(param.to_sym)
             attributes[param.to_sym] = object_type_hash[param.to_s]
           end
         end

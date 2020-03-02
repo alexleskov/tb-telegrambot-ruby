@@ -1,4 +1,5 @@
 require './controllers/controller'
+require './lib/authorizer'
 require './lib/data_loader'
 
 module Teachbase
@@ -9,15 +10,15 @@ module Teachbase
       PHONE_MASK = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/.freeze
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
 
-      attr_reader :controller, :data_loader, :settings
+      attr_reader :controller, :data_loader, :settings, :authorizer
 
       def initialize(controller)
         @logger = AppConfigurator.new.get_logger
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
-
+        @controller = controller
         @encrypt_key = AppConfigurator.new.get_encrypt_key
         @settings = controller.respond.incoming_data.settings
-        @controller = controller
+        @authorizer = Teachbase::Bot::Authorizer.new(self)
         @data_loader = Teachbase::Bot::DataLoader.new(self)
         set_scenario
         # @logger.debug "mes_res: '#{respond}"
@@ -26,14 +27,14 @@ module Teachbase
       end
 
       def authorization
-        user = data_loader.auth_checker
-        return unless user.is_a?(Teachbase::Bot::User)
+        authsession = authorizer.call_authsession
+        return unless authsession.is_a?(Teachbase::Bot::AuthSession)
 
         data_loader.call_profile
       end
 
       def logout
-        data_loader.unauthorize
+        authorizer.unauthorize
       end
 
       def profile_state
@@ -55,11 +56,16 @@ module Teachbase
       end
 
       def course_session_section_contents(section_position, cs_id)
-        section_bd = data_loader.get_cs_sec(section_position, cs_id)
+        section_bd = data_loader.get_cs_sec_by(:position, section_position, cs_id)
         return unless section_bd
         
         { section: section_bd,
           section_content: data_loader.get_cs_sec_content(section_bd) }
+      end
+
+      def course_session_section_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
+        data_loader.call_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
+        data_loader.get_cs_sec_content_open(content_type, cs_tb_id, sec_id, content_tb_id)
       end
 
       def update_all_course_sessions_list
@@ -71,12 +77,12 @@ module Teachbase
       def change_scenario(scenario_name)
         raise "No such scenario: '#{scenario_name}'" unless Teachbase::Bot::Scenarios::LIST.include?(scenario_name)
 
-        @settings.update!(scenario: scenario_name)
+        settings.update!(scenario: scenario_name)
         controller.class.send(:include, "Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}".constantize)
       end
 
       def change_localization(lang)
-        @settings.update!(localization: lang)
+        settings.update!(localization: lang)
         I18n.with_locale settings.localization.to_sym do
           controller.respond.reload_commands
         end
@@ -120,7 +126,7 @@ module Teachbase
       end
 
       def set_scenario
-        change_scenario(@settings.scenario)
+        change_scenario(settings.scenario)
       end
 
       def take_data

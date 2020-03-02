@@ -9,17 +9,17 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
 
   def create(options)
     super(options)
+    #raise "Option 'text' is missing" unless options[:text]
+
     buttons = options[:buttons]
-    type = options[:type]
     @logger = AppConfigurator.new.get_logger
 
-    raise "No such menu type: #{type}" unless MENU_TYPES.include?(type)
+    raise "No such menu type: #{options[:type]}" unless MENU_TYPES.include?(options[:type])
     raise "Buttons is #{buttons.class} but must be an Array" unless buttons.is_a?(Array)
 
     slices_count = options[:slices_count] || nil
-    mode = options[:mode]
-    @msg_params[:menu_type] = type
-    @msg_params[:mode] = mode
+    @msg_params[:menu_type] = options[:type]
+    @msg_params[:mode] = options[:mode]
     @msg_params[:menu_data] = init_menu_params(buttons, slices_count)
     MessageSender.new(msg_params).send
   end
@@ -58,10 +58,10 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     [text: "#{Emoji.t(:arrow_left)} #{I18n.t('back')}", callback_data: callback]
   end
 
-  def show_more_button(callback)
+  def show_more_button(callback, text = "")
     return unless callback
 
-    [text: "#{Emoji.t(:arrow_double_down)} #{I18n.t('show_more')}", callback_data: callback]
+    [text: "#{Emoji.t(:arrow_double_down)} #{I18n.t('show_more')} #{text}", callback_data: callback]
   end
 
   def starting(text = I18n.t('start_menu_message').to_s)

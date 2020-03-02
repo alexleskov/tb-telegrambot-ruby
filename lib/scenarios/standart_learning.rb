@@ -46,14 +46,13 @@ module Teachbase
                                                     course_name: cs.name)}",
                           slices_count: 2)
             end
-            offset_num += limit_count
+            offset_num += limit_count # TODO: Convert to Module Pagination
             unless offset_num >= course_sessions_count
               callback = "show_course_sessions_list:#{state}_lim:#{limit_count}_offset:#{offset_num}"
-              @logger.debug "callback: #{callback}"
               menu.create(buttons: [menu.show_more_button(callback)],
                           type: :menu_inline,
                           mode: :none,
-                          text: "#{I18n.t('show_more')} (#{course_sessions_count - offset_num})")
+                          text: "#{I18n.t('show_more')} (#{course_sessions_count - offset_num})?")
             end
           end
         #rescue RuntimeError => e
@@ -133,13 +132,41 @@ module Teachbase
           contents[:section_content].keys.each do |content_type|
             emoji = attach_emoji(content_type)
             contents[:section_content][content_type].each do |object|
-              buttons << [text: "#{emoji} #{object.name}", callback_data: "open_content:#{content_type}_by_csid:#{object.course_session_id}_secid:#{object.section_id}_objid:#{object.tb_id}"]
+              callback = "open_content:#{content_type}_by_csid:#{cs_id}_secid:#{object.section_id}_objid:#{object.tb_id}"
+              buttons << [text: "#{emoji} #{object.name}", callback_data: callback]
+              @logger.debug "callback: #{callback}"
             end
           end
           menu.create(buttons: buttons << menu.inline_back_button,
                       mode: :none,
                       type: :menu_inline,
                       text: "#{show_breadcrumbs(:course, [:name, :contents, :section], course_name: cs_name, section: contents[:section])}")
+        end
+
+        def open_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
+          content = appshell.course_session_section_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
+          return answer.empty_message unless content
+
+          cs_name = content.course_session.name
+          section_bd = content.section
+          content_body = content.source
+=begin          
+          content_body = case content.content_type.to_sym
+                         when :image
+                           answer_content.photo(content.source)
+                         when :video
+                           answer_content.video(content.source)
+                         end
+=end
+          menu.create(buttons: [menu.inline_back_button],
+                      type: :menu_inline,
+                      text: "#{show_breadcrumbs(:course,
+                                                [:name, :contents, :section, :content],
+                                                course_name: cs_name,
+                                                section: section_bd,
+                                                content_type: content_type,
+                                                content_name: content.name)}\n
+                                                <a href='#{content_body}'>OPEN IT</a>")
         end
 
         def update_course_sessions
@@ -254,12 +281,16 @@ module Teachbase
           course_icon_url = params[:course_icon_url] || ""
           section_menu = params[:section_menu] || ""
           section = params[:section] || ""
+          content_name = params[:content_name] || ""
+          content_type = params[:content_type] || ""
+          content_source = params[:content_source] || ""
           { course: { name: "#{Emoji.t(:book)} <a href='#{course_icon_url}'>#{I18n.t('course')}</a>: #{course_name}",
                       info: "#{Emoji.t(:information_source)} #{I18n.t('information')}",
                       contents: "#{Emoji.t(:arrow_down)} #{I18n.t('course_sections')}",
                       section_menu: "#{Emoji.t(:open_file_folder)} #{section_menu_title(section_menu)}",
                       section: "#{section_title(section, :string)}",
-                      sections: "#{Emoji.t(:open_file_folder)} #{I18n.t('section2').capitalize}" }
+                      sections: "#{Emoji.t(:open_file_folder)} #{I18n.t('section2').capitalize}",
+                      content: "#{attach_emoji(content_type.to_sym)} #{I18n.t('content').capitalize}: #{content_name}" }
           }
         end
 

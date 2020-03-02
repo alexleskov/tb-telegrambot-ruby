@@ -20,10 +20,13 @@ module Teachbase
       end
 
       def create(options)
-        @msg_params[:text] = options[:text].squeeze(" ")
         raise "Can't find destination for message #{@respond.incoming_data}" unless destination
-        raise "Option 'text' is missing" unless @msg_params[:text]
 
+        @msg_params[:text] = options[:text].squeeze(" ") if options[:text]
+        @msg_params[:photo] = options[:photo] if options[:photo]
+        @msg_params[:video] = options[:video] if options[:video]
+        @msg_params[:document] = options[:document] if options[:document]
+        @msg_params[:voice] = options[:voice] if options[:voice]
         @msg_params[:tg_user] = @tg_user
         @msg_params[:reply_to_tg_id] = options[:reply_to_tg_id]
         @msg_params[:bot] = @respond.incoming_data.bot
