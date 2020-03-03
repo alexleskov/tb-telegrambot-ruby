@@ -22,8 +22,8 @@ class Teachbase::Bot::AnswerContent < Teachbase::Bot::Answer
     create(document: param)
   end
 
-  def voice(param)
-    create(voice: param)
+  def audio(param)
+    create(audio: param)
   end
 
 end

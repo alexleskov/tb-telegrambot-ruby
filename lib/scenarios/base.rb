@@ -16,7 +16,7 @@ module Teachbase
           menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('greetings')} #{I18n.t('in_teachbase')}!")
           menu.after_auth
         rescue RuntimeError => e
-          menu.create(buttons: menu.create_inline_buttons(["signin"]),
+          menu.create(buttons: menu.inline_buttons(["signin"]),
                     mode: :none,
                     type: :menu_inline,
                     text: "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}")
@@ -44,7 +44,7 @@ module Teachbase
 
         def edit_settings
           buttons = menu.
-                    create_inline_buttons(Teachbase::Bot::Setting::PARAMS,
+                    inline_buttons(Teachbase::Bot::Setting::PARAMS,
                     command_prefix = "settings:")
           menu.create(buttons: buttons,
                       type: :menu_inline,
@@ -54,7 +54,7 @@ module Teachbase
 
         def choose_localization
           buttons = menu.
-                    create_inline_buttons(Teachbase::Bot::Setting::LOCALIZATION_PARAMS,
+                    inline_buttons(Teachbase::Bot::Setting::LOCALIZATION_PARAMS,
                     command_prefix = "language_param:") << menu.inline_back_button
           buttons 
           menu.create(buttons: buttons,
@@ -65,7 +65,7 @@ module Teachbase
 
         def choose_scenario
           buttons = menu.
-                    create_inline_buttons(Teachbase::Bot::Setting::SCENARIO_PARAMS,
+                    inline_buttons(Teachbase::Bot::Setting::SCENARIO_PARAMS,
                     command_prefix = "scenario_param:") << menu.inline_back_button
           menu.create(buttons: buttons,
                       type: :menu_inline,

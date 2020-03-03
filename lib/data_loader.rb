@@ -47,7 +47,7 @@ module Teachbase
                                                      scenario_mode: @appshell.settings.scenario) }
       end
 
-      def get_cs_sec_list(cs_id)
+      def get_cs_sections(cs_id)
         get_data { get_cs_info(cs_id).sections.order(position: :asc) }
       end
 
@@ -74,7 +74,7 @@ module Teachbase
         section_objects
       end
 
-      def get_cs_sec_content_open(content_type, cs_tb_id, sec_id, content_tb_id)
+      def get_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
         get_data do
           user.course_sessions.find_by(tb_id: cs_tb_id)
               .sections.find_by(id: sec_id)
@@ -99,7 +99,7 @@ module Teachbase
       def call_cs_list(state, mode = :normal)
         raise "No such option for update course sessions list" unless CS_STATES.include?(state.to_sym)
         
-        user.course_sessions.where(complete_status: state.to_s).destroy_all if mode == :with_reload
+        delete_course_sessions(state) if mode == :with_reload
 
         call_data do
           lms_info = authsession.load_course_sessions(state)
@@ -117,8 +117,14 @@ module Teachbase
       end
 
       def call_cs_info(cs_id)
+        cs = user.course_sessions.find_by!(tb_id: cs_id)
         call_data do
-          authsession.load_cs_info(cs_id)
+          lms_info = authsession.load_cs_info(cs_id)
+          course_session_params = create_attributes(Teachbase::Bot::CourseSession.attribute_names,
+                                                    lms_info,
+                                                    MAIN_OBJECTS_CUSTOM_PARAMS[:course_sessions])
+          cs.update!(course_session_params)
+          cs
         end
       end
 
@@ -128,9 +134,6 @@ module Teachbase
 
           cs = user.course_sessions.find_by!(tb_id: cs_id)
           cs.sections.destroy_all if cs
-
-          custom_params = { materials: { content_type: "type" },
-                            scorm_packages: { name: "title" } }
 
           #@request_loader = Async do |task|
             authsession.load_cs_info(cs_id)["sections"].each_with_index do |section_lms, ind|
@@ -150,18 +153,89 @@ module Teachbase
         call_data do
           case content_type.to_sym
           when :materials
-            lms_info = authsession.load_material(cs_tb_id, content_tb_id)
+            lms_data = authsession.load_material(cs_tb_id, content_tb_id)
+            @logger.debug "lms_data: #{lms_data}"
 
-            @logger.debug "lms_info: #{lms_info}"
-
-            unless lms_info["type"] == "video"
-              attributes = create_attributes(%w[source content], lms_info)
-            else
-              attributes = { source: lms_info["source"][CONTENT_VIDEO_FORMAT] }
-            end
+            attributes = fetch_content_material(lms_data)
             section_bd.materials.find_by!(tb_id: content_tb_id).update!(attributes)
+          when :tasks
+            # TO DO: Some logics
+          when :quizzes
+            # TO DO: Some logics
+          when :scorm_packages
+            # TO DO: Some logics
+          else
+            raise "Can't open such content type: '#{content_type}'"
           end
         end
+      end
+
+      def delete_course_sessions(state)
+        get_data do
+          user.course_sessions.where(complete_status: state.to_s).destroy_all
+        end
+      end
+
+      private
+
+      def get_data
+        @authsession = @appshell.authorizer.call_authsession(:without_api)
+        @user = authsession.user
+        yield
+      end
+
+      def call_data
+        @authsession = @appshell.authorizer.call_authsession(:with_api)
+        @user = authsession.user
+        yield
+      rescue RuntimeError => e
+        if e.http_code == 401 || e.http_code == 403
+          retry
+        elsif (@retries += 1) <= MAX_RETRIES
+          @logger.debug "#{e}\n#{I18n.t('retry')} №#{@retries}.."
+          sleep(@retries)
+          retry
+        else
+          @logger.debug "Unexpected error after retries: #{e}. code: #{e.http_code}"
+        end
+      end
+
+      def course_session_last_version?(cs_id)
+        user.course_sessions.find_by(tb_id: cs_id, changed_at: call_cs_info(cs_id).changed_at)
+      end
+
+      def fetch_content_material(material_lms)
+        attributes = {}
+
+        case material_lms["type"]
+        when "video"
+          attributes = { source: material_lms["source"][CONTENT_VIDEO_FORMAT] }
+        when "vimeo", "youtube", "image", "audio", "pdf", "iframe"
+          attributes = create_attributes(%w[source], material_lms)
+        when "text"
+            attributes = create_attributes(%w[content], material_lms)
+          if material_lms["editor_js"]
+            attributes[:editor_js] = material_lms["editor_js"]
+          elsif material_lms["markdown"]
+            attributes[:markdown] = material_lms["markdown"]
+          end
+        else 
+          raise "Can't fetch such material type: '#{material_lms["type"]}'"
+        end
+        attributes
+      end
+
+      def create_attributes(params, object_type_hash, custom_params = {})
+        raise "Params must be an Array. Your params: #{params} is #{params.class}." unless params.is_a?(Array)
+
+        attributes = {}
+        replace_key_names(custom_params, object_type_hash) if custom_params && !custom_params.empty?
+        params.each do |param|
+          if !object_type_hash[param.to_s].nil? && ![:id, :position].include?(param.to_sym)
+            attributes[param.to_sym] = object_type_hash[param.to_s]
+          end
+        end
+        attributes
       end
 
       def fetch_section_objects(conten_type, section_lms, section_bd)
@@ -178,48 +252,6 @@ module Teachbase
                                         course_session_id: cs_id)
                     .update!(attributes)
         end
-      end
-
-      private
-
-      def get_data
-        @authsession = @appshell.authorizer.call_authsession(:without_api)
-        @user = authsession.user
-        yield
-      end
-
-      def call_data
-        @authsession = @appshell.authorizer.call_authsession
-        @user = authsession.user
-        yield
-      rescue RuntimeError => e
-        if e.http_code == 401 || e.http_code == 403
-          auth_checker
-          retry
-        elsif (@retries += 1) <= MAX_RETRIES
-          @logger.debug "#{e}\n#{I18n.t('retry')} №#{@retries}.."
-          sleep(@retries)
-          retry
-        else
-          @logger.debug "Unexpected error after retries: #{e}. code: #{e.http_code}"
-        end
-      end
-
-      def course_session_last_version?(cs_id)
-        user.course_sessions.find_by(tb_id: cs_id, changed_at: call_cs_info(cs_id)["updated_at"])
-      end
-
-      def create_attributes(params, object_type_hash, custom_params = {})
-        raise "Params must be an Array. Your params: #{params} is #{params.class}." unless params.is_a?(Array)
-
-        attributes = {}
-        replace_key_names(custom_params, object_type_hash) if custom_params && !custom_params.empty?
-        params.each do |param|
-          if !object_type_hash[param.to_s].nil? && ![:id, :position].include?(param.to_sym)
-            attributes[param.to_sym] = object_type_hash[param.to_s]
-          end
-        end
-        attributes
       end
 
       def replace_key_names(mapping, initial_hash)

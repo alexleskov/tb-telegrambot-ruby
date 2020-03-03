@@ -12,8 +12,9 @@ module Teachbase
         module ClassMethods; end
 
         def show_profile_state
-          profile = appshell.profile_state
-          user = appshell.data_loader.user
+          appshell.user_info
+          profile = appshell.profile
+          user = appshell.user
 
           answer.send_out "<b>#{Emoji.t(:mortar_board)} #{I18n.t('profile_state')}</b>
                           \n  <a href='#{user.avatar_url}'>#{user.first_name} #{user.last_name}</a>
@@ -25,35 +26,31 @@ module Teachbase
         end
 
         def show_course_sessions_list(state, limit_count = LIMIT_COUNT_PAGINAION, offset_num = 0)
-          raise "No such course state: #{state}" unless [:active, :archived].include?(state.to_sym)
-
-          course_sessions_count = appshell.profile_state.public_send("#{state}_courses_count").to_i
           offset_num = offset_num.to_i
           limit_count = limit_count.to_i
           course_sessions = appshell.course_sessions_list(state, limit_count, offset_num)
+          сs_count = appshell.cs_count_by(state) 
           answer.send_out "#{Emoji.t(:books)} <b>#{I18n.t("#{state}_courses").capitalize}</b>"
-          if course_sessions.empty?
-            answer.send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
-          else
-            course_sessions.each do |cs|
-              buttons = [[text: I18n.t('open').to_s, callback_data: "cs_sec_by_id:#{cs.tb_id}"],
-                         [text: I18n.t('course_results').to_s, callback_data: "cs_info_id:#{cs.tb_id}"]]
-              menu.create(buttons: buttons,
-                          type: :menu_inline,
-                          mode: :none,
-                          text: "#{show_breadcrumbs(:course, [:name],
-                                                    course_icon_url: cs.icon_url,
-                                                    course_name: cs.name)}",
-                          slices_count: 2)
-            end
-            offset_num += limit_count # TODO: Convert to Module Pagination
-            unless offset_num >= course_sessions_count
-              callback = "show_course_sessions_list:#{state}_lim:#{limit_count}_offset:#{offset_num}"
-              menu.create(buttons: [menu.show_more_button(callback)],
-                          type: :menu_inline,
-                          mode: :none,
-                          text: "#{I18n.t('show_more')} (#{course_sessions_count - offset_num})?")
-            end
+          return answer.send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if course_sessions.empty?
+          
+          course_sessions.each do |cs|
+            buttons = [[text: I18n.t('open').to_s, callback_data: "cs_sec_by_id:#{cs.tb_id}"],
+                       [text: I18n.t('course_results').to_s, callback_data: "cs_info_id:#{cs.tb_id}"]]
+            menu.create(buttons: buttons,
+                        type: :menu_inline,
+                        mode: :none,
+                        text: "#{show_breadcrumbs(:course, [:name],
+                                                  course_icon_url: cs.icon_url,
+                                                  course_name: cs.name)}",
+                        slices_count: 2)
+          end
+
+          offset_num += limit_count
+          unless offset_num >= сs_count
+            menu.inline_more_button(limit: limit_count,
+                                    offset: offset_num,
+                                    sum: сs_count,
+                                    cb_prefix: "show_course_sessions_list:#{state}")
           end
         #rescue RuntimeError => e
         #  answer.send_out I18n.t('error').to_s
@@ -61,8 +58,10 @@ module Teachbase
 
         def show_course_session_info(cs_id)
           cs = appshell.course_session_info(cs_id)
-          deadline = cs.deadline.nil? ? "\u221e" : Time.at(cs.deadline).utc.strftime("%d.%m.%Y %H:%M")
-          started_at = cs.started_at.nil? ? "-" : Time.at(cs.started_at).utc.strftime("%d.%m.%Y %H:%M")
+          deadline = cs.deadline.nil? ? "\u221e" : Time.parse(Time.at(cs.deadline).strftime("%d.%m.%Y %H:%M"))
+                                                       .strftime("%d.%m.%Y %H:%M")
+          started_at = cs.started_at.nil? ? "-" : Time.parse(Time.at(cs.started_at).strftime("%d.%m.%Y %H:%M"))
+                                                      .strftime("%d.%m.%Y %H:%M")
           text = "#{show_breadcrumbs(:course, [:name, :info], course_name: cs.name)}
                   \n  #{Emoji.t(:runner)}#{I18n.t('started_at')}: #{started_at}
                   \n  #{Emoji.t(:alarm_clock)}#{I18n.t('deadline')}: #{deadline}
@@ -84,9 +83,8 @@ module Teachbase
                              \n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
           else
             params = %i[find_by_query_num show_avaliable show_unvaliable show_all]
-            buttons = menu.
-                      create_inline_buttons(params, "show_sections_by_csid:#{cs_id}_param:") << menu.inline_back_button
-            menu.create(buttons: buttons,
+            buttons = menu.inline_buttons(params, "show_sections_by_csid:#{cs_id}_param:")
+            menu.create(buttons: buttons << menu.inline_back_button,
                         type: :menu_inline,
                         text: "#{show_breadcrumbs(:course, [:name, :contents, :sections], course_name: cs.name)}
                                \n#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}",
@@ -95,7 +93,7 @@ module Teachbase
         end
 
         def show_sections(cs_id, param)
-          sections_bd = appshell.data_loader.get_cs_sec_list(cs_id)
+          sections_bd = appshell.course_session_sections(cs_id, :without_api)
           return answer.empty_message if sections_bd.empty?
 
           cs_name = appshell.course_session_info(cs_id).name
@@ -148,16 +146,22 @@ module Teachbase
           return answer.empty_message unless content
 
           cs_name = content.course_session.name
-          section_bd = content.section
-          content_body = content.source
-=begin          
+          section_bd = content.section        
           content_body = case content.content_type.to_sym
                          when :image
                            answer_content.photo(content.source)
                          when :video
                            answer_content.video(content.source)
+                         when :pdf
+                           answer_content.document(content.source)
+                         when :audio
+                           answer_content.audio(content.sourse)
+                         when :vimeo, :youtube, :iframe
+                           answer.send_out "<a href='#{content.source}'>OPEN IT</a>"
+                         else
+                           answer.send_out "Can't show such content type: #{content.content_type}"
                          end
-=end
+
           menu.create(buttons: [menu.inline_back_button],
                       type: :menu_inline,
                       text: "#{show_breadcrumbs(:course,
@@ -165,13 +169,12 @@ module Teachbase
                                                 course_name: cs_name,
                                                 section: section_bd,
                                                 content_type: content_type,
-                                                content_name: content.name)}\n
-                                                <a href='#{content_body}'>OPEN IT</a>")
+                                                content_name: content.name)}")
         end
 
         def update_course_sessions
           answer.send_out "#{Emoji.t(:arrows_counterclockwise)} <b>#{I18n.t('updating_data')}</b>"
-          appshell.update_all_course_sessions_list
+          appshell.update_all_course_sessions
           answer.send_out "#{Emoji.t(:thumbsup)} #{I18n.t('updating_success')}"
         end
 

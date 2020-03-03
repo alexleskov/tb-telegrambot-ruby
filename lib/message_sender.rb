@@ -2,7 +2,7 @@ require './lib/reply_markup_formatter'
 require './lib/app_configurator'
 
 class MessageSender
-  MSG_TYPES = [:text, :photo, :video, :document, :voice]
+  MSG_TYPES = [:text, :photo, :video, :document, :audio]
 
   attr_reader :bot,
               :msg_data,
@@ -102,8 +102,8 @@ class MessageSender
         bot.api.send_video(params)
       when :document
         bot.api.send_document(params)
-      when :voice
-        bot.api.send_voice(params)
+      when :audio
+        bot.api.send_audio(params)
       else
         raise "Can't find such message type for sending: '#{type}'. Avaliable: '#{MSG_TYPES}'"
       end

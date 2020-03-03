@@ -26,7 +26,7 @@ module Teachbase
         @msg_params[:photo] = options[:photo] if options[:photo]
         @msg_params[:video] = options[:video] if options[:video]
         @msg_params[:document] = options[:document] if options[:document]
-        @msg_params[:voice] = options[:voice] if options[:voice]
+        @msg_params[:audio] = options[:audio] if options[:audio]
         @msg_params[:tg_user] = @tg_user
         @msg_params[:reply_to_tg_id] = options[:reply_to_tg_id]
         @msg_params[:bot] = @respond.incoming_data.bot

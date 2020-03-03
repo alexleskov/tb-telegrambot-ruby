@@ -24,7 +24,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     MessageSender.new(msg_params).send
   end
 
-  def create_inline_buttons(buttons_names, command_prefix = "")
+  def inline_buttons(buttons_names, command_prefix = "")
     buttons = []
     buttons_names.each do |button_name|
       button_name.to_s
@@ -33,7 +33,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     buttons
   end
 
-  def create_nums_buttons(numbers, options = {})
+  def inline_nums_buttons(numbers, options = {})
     raise "Can't find numbers for 'num_navigation'" unless numbers
 
     num_buttons = []
@@ -43,7 +43,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     back_button = options[:back_button] || false
     numbers.each_with_index { |item, i| num_buttons << i.to_s }
 
-    buttons = create_inline_buttons(num_buttons, prefix)
+    buttons = inline_buttons(num_buttons, prefix)
     buttons << inline_back_button if back_button
     create(buttons: buttons,
            type: type,
@@ -58,10 +58,22 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     [text: "#{Emoji.t(:arrow_left)} #{I18n.t('back')}", callback_data: callback]
   end
 
-  def show_more_button(callback, text = "")
+
+  def inline_more_button(options)
+    text = options[:text] || ""
+    sum = options[:sum]
+    limit = options[:limit]
+    offset = options[:offset]
+    cb_prefix = options[:cb_prefix]
+    callback = cb_for_more_button(cb_prefix, limit, offset)
     return unless callback
 
-    [text: "#{Emoji.t(:arrow_double_down)} #{I18n.t('show_more')} #{text}", callback_data: callback]
+    button = [ text: "#{Emoji.t(:arrow_double_down)} #{I18n.t('show_more')} #{text}",
+           callback_data: callback ]
+    create(buttons: [button],
+           type: :menu_inline,
+           mode: :none,
+           text: "#{I18n.t('show_more')} (#{sum - offset})?")
   end
 
   def starting(text = I18n.t('start_menu_message').to_s)
@@ -85,6 +97,10 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
   end
 
   private
+
+  def cb_for_more_button(prefix, limit, offset)
+    "#{prefix}_lim:#{limit}_offset:#{offset}"
+  end
 
   def cb_for_back_button
     callbacks = @tg_user.tg_account_messages.order(created_at: :desc).where(message_type: "callback_data").select(:data)

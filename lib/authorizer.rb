@@ -16,7 +16,9 @@ module Teachbase
         @encrypt_key = AppConfigurator.new.get_encrypt_key
       end
 
-      def call_authsession(mode = :with_api)
+      def call_authsession(access_mode)
+        mode = access_mode || @appshell.access_mode
+
         auth_checker unless authsession?
 
         @apitoken = Teachbase::Bot::ApiToken.find_by!(auth_session_id: authsession.id)
@@ -26,14 +28,13 @@ module Teachbase
         
           authsession.api_auth(:mobile, 2, access_token: apitoken.value)
         else
-          raise unless authsession
+          raise unless authsession?
         end
 
         @user = authsession.user
         authsession
       rescue RuntimeError
         auth_checker
-        retry
       end
 
       def unauthorize
@@ -57,11 +58,13 @@ module Teachbase
         authsession
       end
 
-      def authsession?(option = {})
+      def authsession?
         @authsession = @tg_user.auth_sessions.find_by(active: true)
       end
 
       def login_by_user_data
+        raise "You are not in ':with_api' access mode in AppShell" unless @appshell.access_mode == :with_api
+
         user_auth_data = @appshell.request_user_data
         raise if user_auth_data.empty?
 

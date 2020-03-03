@@ -10,49 +10,55 @@ module Teachbase
       PHONE_MASK = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/.freeze
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
 
-      attr_reader :controller, :data_loader, :settings, :authorizer
+      attr_reader :access_mode, :controller, :data_loader, :settings, :authorizer, :profile, :user
 
-      def initialize(controller)
+      def initialize(controller, access_mode = :with_api)
         @logger = AppConfigurator.new.get_logger
+        @access_mode = access_mode
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
+
         @controller = controller
         @encrypt_key = AppConfigurator.new.get_encrypt_key
         @settings = controller.respond.incoming_data.settings
         @authorizer = Teachbase::Bot::Authorizer.new(self)
         @data_loader = Teachbase::Bot::DataLoader.new(self)
         set_scenario
-        # @logger.debug "mes_res: '#{respond}"
-      #rescue RuntimeError => e
-      #  controller.answer.send_out "#{I18n.t('error')} #{e}"
       end
 
-      def authorization
-        authsession = authorizer.call_authsession
+      def user_info
+        data_loader.call_profile #if access_mode == :with_api
+        @profile = data_loader.get_user_profile
+        @user = data_loader.user
+
+        return if [profile, user].any?(nil)
+      end
+
+      def authorization(mode = nil)
+        authsession = authorizer.call_authsession(mode)
         return unless authsession.is_a?(Teachbase::Bot::AuthSession)
 
-        data_loader.call_profile
+        user_info
+        authsession
       end
 
       def logout
         authorizer.unauthorize
       end
 
-      def profile_state
-        data_loader.get_user_profile
-      end
-
       def course_sessions_list(state, limit_count, offset_num)
-        data_loader.call_cs_list(state)
+        data_loader.call_cs_list(state) if access_mode == :with_api
         data_loader.get_cs_list(state, limit_count, offset_num)
       end
 
       def course_session_info(cs_id)
+        data_loader.call_cs_info(cs_id) if access_mode == :with_api
         data_loader.get_cs_info(cs_id)
       end
 
-      def course_session_sections(cs_id)
-        data_loader.call_cs_sections(cs_id)
-        data_loader.get_cs_sec_list(cs_id)
+      def course_session_sections(cs_id, mode = nil)
+        mode ||= access_mode
+        data_loader.call_cs_sections(cs_id) if mode == :with_api
+        data_loader.get_cs_sections(cs_id)
       end
 
       def course_session_section_contents(section_position, cs_id)
@@ -64,11 +70,13 @@ module Teachbase
       end
 
       def course_session_section_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
-        data_loader.call_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
-        data_loader.get_cs_sec_content_open(content_type, cs_tb_id, sec_id, content_tb_id)
+        data_loader.call_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id) if access_mode == :with_api
+        data_loader.get_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
       end
 
-      def update_all_course_sessions_list
+      def update_all_course_sessions
+        return unless access_mode == :with_api
+
         Teachbase::Bot::DataLoader::CS_STATES.each do |state|
           data_loader.call_cs_list(state, :with_reload)
         end
@@ -108,6 +116,11 @@ module Teachbase
         { login: user_data.first,
           login_type: kind_of_login(user_data.first),
           crypted_password: user_data.second.encrypt(:symmetric, password: @encrypt_key) }
+      end
+
+      def cs_count_by(state)
+        user_info
+        profile.public_send("#{state}_courses_count").to_i
       end
 
       private
