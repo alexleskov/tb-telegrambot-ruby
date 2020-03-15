@@ -11,6 +11,8 @@ require './models/task'
 module Teachbase
   module Bot
     class DataLoader
+      include Formatter
+
       MAX_RETRIES = 3
       CS_STATES = %i[active archived].freeze
       SECTION_OBJECTS = [ :materials, :scorm_packages, :quizzes, :tasks ].freeze
@@ -62,7 +64,7 @@ module Teachbase
         end
       end
 
-      def get_cs_sec_content(section_bd)
+      def get_cs_sec_contents(section_bd)
         return unless section_bd
 
         section_objects = {}
@@ -74,7 +76,7 @@ module Teachbase
         section_objects
       end
 
-      def get_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
+      def get_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
         get_data do
           user.course_sessions.find_by(tb_id: cs_tb_id)
               .sections.find_by(id: sec_id)
@@ -117,8 +119,8 @@ module Teachbase
       end
 
       def call_cs_info(cs_id)
-        cs = user.course_sessions.find_by!(tb_id: cs_id)
         call_data do
+          cs = user.course_sessions.find_by!(tb_id: cs_id)
           lms_info = authsession.load_cs_info(cs_id)
           course_session_params = create_attributes(Teachbase::Bot::CourseSession.attribute_names,
                                                     lms_info,
@@ -148,7 +150,7 @@ module Teachbase
         end
       end
 
-      def call_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
+      def call_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
         section_bd = get_cs_sec_by(:id, sec_id, cs_tb_id)
         call_data do
           case content_type.to_sym
@@ -159,11 +161,11 @@ module Teachbase
             attributes = fetch_content_material(lms_data)
             section_bd.materials.find_by!(tb_id: content_tb_id).update!(attributes)
           when :tasks
-            # TO DO: Some logics
+            # TO DO: Some logic
           when :quizzes
-            # TO DO: Some logics
+            # TO DO: Some logic
           when :scorm_packages
-            # TO DO: Some logics
+            # TO DO: Some logic
           else
             raise "Can't open such content type: '#{content_type}'"
           end
@@ -241,7 +243,8 @@ module Teachbase
       def fetch_section_objects(conten_type, section_lms, section_bd)
         raise "No such content type: #{conten_type}." unless section_bd.respond_to?(conten_type)
 
-        content_params = to_constantize(SECTION_OBJECT_TYPES[conten_type], "Teachbase::Bot").public_send(:attribute_names)
+        content_params = to_constantize(to_camelize(SECTION_OBJECT_TYPES[conten_type]), "Teachbase::Bot::")
+                                 .public_send(:attribute_names)
         cs_id = section_bd.course_session.id        
         section_lms[conten_type.to_s].each do |content_type_hash|
           attributes = create_attributes(content_params, content_type_hash, SECTION_OBJECTS_CUSTOM_PARAMS[conten_type])
@@ -259,15 +262,6 @@ module Teachbase
           initial_hash[new_key.to_s] = initial_hash.delete(old_key)
         end
       end
-
-      def to_camelize(string)
-        string.to_s.split("_").collect(&:capitalize).join
-      end
-
-      def to_constantize(data, prefix = "")
-        Kernel.const_get("#{prefix}::#{to_camelize(data)}")
-      end
-
     end
   end
 end

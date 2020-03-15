@@ -18,9 +18,7 @@ module Teachbase
 
       def call_authsession(access_mode)
         mode = access_mode || @appshell.access_mode
-
         auth_checker unless authsession?
-
         @apitoken = Teachbase::Bot::ApiToken.find_by!(auth_session_id: authsession.id)
 
         if mode == :with_api
@@ -33,8 +31,6 @@ module Teachbase
 
         @user = authsession.user
         authsession
-      rescue RuntimeError
-        auth_checker
       end
 
       def unauthorize

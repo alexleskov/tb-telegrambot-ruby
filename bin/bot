@@ -1,11 +1,14 @@
 #!/usr/bin/env ruby
 
 require 'telegram/bot'
+require 'gemoji'
 require 'async'
 require 'encrypted_strings'
 
 require './lib/app_configurator'
-require './lib/emoji.rb'
+require './lib/emoji'
+require './lib/menu_button'
+require './lib/formatter'
 require './lib/message_responder'
 
 config = AppConfigurator.new
@@ -23,7 +26,12 @@ telegram_bot_client.run do |bot|
   bot.listen do |message|
     #Async do |task|
       options = { bot: bot, message: message }
-      logger.debug "#{message.from.id} - @#{message.from.username}: #{message}"
+
+      if message.respond_to?(:data)
+        logger.debug "#{message.from.id} - @#{message.from.username}: #{message.data}"
+      else
+        logger.debug "#{message.from.id} - @#{message.from.username}: #{message}"
+      end
       MessageResponder.new(options).respond
       #rescue => e
         #logger.debug "Error: #{e}"

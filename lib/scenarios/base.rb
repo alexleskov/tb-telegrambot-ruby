@@ -16,10 +16,10 @@ module Teachbase
           menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('greetings')} #{I18n.t('in_teachbase')}!")
           menu.after_auth
         rescue RuntimeError => e
-          menu.create(buttons: menu.inline_buttons(["signin"]),
-                    mode: :none,
-                    type: :menu_inline,
-                    text: "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}")
+          menu.create(buttons: MenuButton.t(:inline_cb, buttons_sign: [:signin]),
+                      mode: :none,
+                      type: :menu_inline,
+                      text: "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}")
         end
 
         def sign_out
@@ -32,45 +32,37 @@ module Teachbase
         end
 
         def settings
-          buttons = [[text: "#{I18n.t('edit')} #{I18n.t('settings').downcase}", callback_data: "edit_settings"]]
+          buttons = MenuButton.t(:inline_cb,
+                                  buttons_sign: [:settings],
+                                  command_prefix: "edit_",
+                                  text: "#{I18n.t('edit')} #{I18n.t('settings').downcase}")
           menu.create(buttons: buttons,
                       type: :menu_inline,
                       mode: :none,
                       text: "<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
-                             \n #{Emoji.t(:video_game)} #{I18n.t('scenario')}: #{I18n.t(snakecase(respond.incoming_data.settings.scenario))}
+                             \n #{Emoji.t(:video_game)} #{I18n.t('scenario')}: #{I18n.t(to_snakecase(respond.incoming_data.settings.scenario))}
                              \n #{Emoji.t(:ab)} #{I18n.t('localization')}: #{I18n.t(respond.incoming_data.settings.localization)}",
                       slices_count: 1)
         end
 
         def edit_settings
-          buttons = menu.
-                    inline_buttons(Teachbase::Bot::Setting::PARAMS,
-                    command_prefix = "settings:")
+          buttons = MenuButton.t(:inline_cb,
+                                  buttons_sign: Teachbase::Bot::Setting::PARAMS,
+                                  command_prefix: "settings:",
+                                  back_button: true,
+                                  sent_messages: @tg_user.tg_account_messages)
           menu.create(buttons: buttons,
                       type: :menu_inline,
                       text: "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>",
-                      slices_count: 3)
+                      slices_count: 2)
         end
 
         def choose_localization
-          buttons = menu.
-                    inline_buttons(Teachbase::Bot::Setting::LOCALIZATION_PARAMS,
-                    command_prefix = "language_param:") << menu.inline_back_button
-          buttons 
-          menu.create(buttons: buttons,
-                      type: :menu_inline,
-                      text: "<b>#{Emoji.t(:abc)} #{I18n.t('choose_localization')}</b>",
-                      slices_count: 3)
+          choose_menu("Setting", :localization)
         end
 
         def choose_scenario
-          buttons = menu.
-                    inline_buttons(Teachbase::Bot::Setting::SCENARIO_PARAMS,
-                    command_prefix = "scenario_param:") << menu.inline_back_button
-          menu.create(buttons: buttons,
-                      type: :menu_inline,
-                      text: "<b>#{Emoji.t(:video_game)} #{I18n.t('choose_scenario')}</b>",
-                      slices_count: 3)          
+          choose_menu("Setting", :scenario)  
         end
 
         def change_language(lang)
@@ -96,73 +88,23 @@ module Teachbase
           stage_names.each do |stage_name|
             result << breadcrumbs[level.to_sym][stage_name]
           end
-          do_bolder(result.last)
+          to_bolder(result.last)
           result.join(delimeter)
-
-         # "#{Emoji.t(:book)} #{I18n.t('course')}: #{cs_name} - #{Emoji.t(:arrow_down)} #{I18n.t('course_sections')} - #{Emoji.t(:open_file_folder)} <b>#{title_sign}</b>"
-         # "#{Emoji.t(:book)} #{I18n.t('course')}: #{cs_name} - #{Emoji.t(:arrow_down)} #{I18n.t('course_sections')} - #{Emoji.t(:open_file_folder)} <b>#{I18n.t('section2').capitalize}</b>"
-         # "{Emoji.t(:book)} #{I18n.t('course')}: #{course_session.name} - #{Emoji.t(:information_source)} <b>#{I18n.t('information')}</b>"
-        end
-
-        def match_data
-          on %r{signin} do
-            signin
-          end
-
-          on %r{edit_settings} do
-            edit_settings
-          end
-
-          on %r{^settings:localization} do
-            choose_localization
-          end
-
-          on %r{^language_param:} do
-            @message_value =~ %r{^language_param:(\w*)}
-            change_language($1)
-          end
-
-          on %r{settings:scenario} do
-            choose_scenario
-          end
-
-          on %r{^scenario_param:} do
-            @message_value =~ %r{^scenario_param:(\w*)}
-            mode = $1
-            change_scenario(mode)
-            answer.send_out "#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t('scenario')}: <b>#{I18n.t(mode)}</b>"
-          end
-
-        end
-
-        def match_text_action
-          on %r{^/start} do
-            answer.greeting_message
-            menu.starting
-          end
-
-          on %r{^/settings} do
-            settings
-          end
-
-          on %r{^/close} do
-            menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('farewell_message')} :'(")
-          end
         end
 
         private
 
-        def do_bolder(string)
-          string.insert(0, "<b>").insert(-1, "</b>")
-        end
-
-        def snakecase(string)
-          string.to_s.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
-          gsub(/([a-z\d])([A-Z])/,'\1_\2').
-          tr('-', '_').
-          gsub(/\s/, '_').
-          gsub(/__+/, '_').
-          downcase
+        def choose_menu(type, param_name)
+          buttons_sign = to_constantize("#{param_name.upcase}_PARAMS", "Teachbase::Bot::#{type.capitalize}::")
+          buttons = MenuButton.t(:inline_cb,
+                                  buttons_sign: buttons_sign,
+                                  command_prefix: "#{param_name.downcase}_param:",
+                                  back_button: true,
+                                  sent_messages: @tg_user.tg_account_messages)
+          menu.create(buttons: buttons,
+                      type: :menu_inline,
+                      text: "<b>#{Emoji.t(:abc)} #{I18n.t("choose_#{param_name.downcase}")}</b>",
+                      slices_count: 2)
         end
       end
     end

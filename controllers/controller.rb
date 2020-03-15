@@ -9,6 +9,8 @@ require './lib/scenarios.rb'
 module Teachbase
   module Bot
     class Controller
+      include Formatter
+
       MSG_TYPES = %i[text data].freeze
 
       attr_reader :respond, :answer, :menu, :answer_content, :appshell

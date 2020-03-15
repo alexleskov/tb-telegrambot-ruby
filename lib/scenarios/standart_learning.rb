@@ -34,8 +34,8 @@ module Teachbase
           return answer.send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if course_sessions.empty?
           
           course_sessions.each do |cs|
-            buttons = [[text: I18n.t('open').to_s, callback_data: "cs_sec_by_id:#{cs.tb_id}"],
-                       [text: I18n.t('course_results').to_s, callback_data: "cs_info_id:#{cs.tb_id}"]]
+            buttons = init_course_session_buttons(cs)
+            @logger.debug "cs_buttons: #{buttons}"
             menu.create(buttons: buttons,
                         type: :menu_inline,
                         mode: :none,
@@ -47,13 +47,15 @@ module Teachbase
 
           offset_num += limit_count
           unless offset_num >= сs_count
-            menu.inline_more_button(limit: limit_count,
-                                    offset: offset_num,
-                                    sum: сs_count,
-                                    cb_prefix: "show_course_sessions_list:#{state}")
+            more_button = MenuButton.t(:inline_more,
+                                        command_prefix: "show_course_sessions_list:#{state}",
+                                        limit: limit_count,
+                                        offset: offset_num)
+            menu.create(buttons: more_button,
+                        type: :menu_inline,
+                        mode: :none,
+                        text: "#{Emoji.t(:point_right)} #{I18n.t('show_more')} (#{сs_count - offset_num})?")
           end
-        #rescue RuntimeError => e
-        #  answer.send_out I18n.t('error').to_s
         end
 
         def show_course_session_info(cs_id)
@@ -68,11 +70,10 @@ module Teachbase
                   \n  #{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{cs.progress}%
                   \n  #{Emoji.t(:star2)}#{I18n.t('complete_status')}: #{I18n.t("complete_status_#{cs.complete_status}")}
                   \n  #{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{cs.success}")}"
-          menu.create(buttons: [menu.inline_back_button],
+          buttons = MenuButton.t(:inline_back, sent_messages: @tg_user.tg_account_messages)
+          menu.create(buttons: buttons,
                       type: :menu_inline,
                       text: text)
-        rescue RuntimeError => e
-          answer.send_out I18n.t('error').to_s
         end
 
         def show_sections_list_l1(cs_id)
@@ -83,8 +84,13 @@ module Teachbase
                              \n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
           else
             params = %i[find_by_query_num show_avaliable show_unvaliable show_all]
-            buttons = menu.inline_buttons(params, "show_sections_by_csid:#{cs_id}_param:")
-            menu.create(buttons: buttons << menu.inline_back_button,
+            buttons = MenuButton.t(:inline_cb,
+                                    buttons_sign: params,
+                                    command_prefix: "show_sections_by_csid:#{cs_id}_param:",
+                                    back_button: true,
+                                    sent_messages: @tg_user.tg_account_messages)
+
+            menu.create(buttons: buttons,
                         type: :menu_inline,
                         text: "#{show_breadcrumbs(:course, [:name, :contents, :sections], course_name: cs.name)}
                                \n#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}",
@@ -111,58 +117,41 @@ module Teachbase
                      else
                        raise "No such param: '#{param}' for showing sections"
                      end
-
-          menu.create(buttons: [menu.inline_back_button],
+          buttons = MenuButton.t(:inline_back, sent_messages: @tg_user.tg_account_messages)
+          menu.create(buttons: buttons,
                       mode: menu_mode || :edit_msg,
                       type: :menu_inline,
-                      text: "#{show_breadcrumbs(:course, [:name, :contents, :section_menu], course_name: cs_name, section_menu: param)}
+                      text: "#{show_breadcrumbs(:course,
+                                                [:name, :contents, :section_menu],
+                                                course_name: cs_name,
+                                                section_menu: param)}
                              #{group_sections_by_status(sections, cs_id)}")
-        rescue RuntimeError => e
-          answer.send_out I18n.t('error').to_s
         end
 
         def show_section_contents(section_position, cs_id)
           contents = appshell.course_session_section_contents(section_position, cs_id)
+          cs_name = appshell.course_session_info(cs_id, :no_api).name
           return answer.empty_message unless contents
 
-          cs_name = contents[:section].course_session.name
-          buttons = []
-          contents[:section_content].keys.each do |content_type|
-            emoji = attach_emoji(content_type)
-            contents[:section_content][content_type].each do |object|
-              callback = "open_content:#{content_type}_by_csid:#{cs_id}_secid:#{object.section_id}_objid:#{object.tb_id}"
-              buttons << [text: "#{emoji} #{object.name}", callback_data: callback]
-              @logger.debug "callback: #{callback}"
-            end
-          end
-          menu.create(buttons: buttons << menu.inline_back_button,
+          buttons = init_content_buttons(contents, cs_id)
+          menu.create(buttons: buttons,
                       mode: :none,
                       type: :menu_inline,
-                      text: "#{show_breadcrumbs(:course, [:name, :contents, :section], course_name: cs_name, section: contents[:section])}")
+                      text: "#{show_breadcrumbs(:course,
+                                                [:name, :contents, :section],
+                                                course_name: cs_name,
+                                                section: contents[:section])}")
         end
 
         def open_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
-          content = appshell.course_session_section_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
+          content = appshell.course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
           return answer.empty_message unless content
 
           cs_name = content.course_session.name
-          section_bd = content.section        
-          content_body = case content.content_type.to_sym
-                         when :image
-                           answer_content.photo(content.source)
-                         when :video
-                           answer_content.video(content.source)
-                         when :pdf
-                           answer_content.document(content.source)
-                         when :audio
-                           answer_content.audio(content.sourse)
-                         when :vimeo, :youtube, :iframe
-                           answer.send_out "<a href='#{content.source}'>OPEN IT</a>"
-                         else
-                           answer.send_out "Can't show such content type: #{content.content_type}"
-                         end
-
-          menu.create(buttons: [menu.inline_back_button],
+          section_bd = content.section
+          show_content_by_type(content)
+          back_button = MenuButton.t(:inline_back, sent_messages: @tg_user.tg_account_messages)
+          menu.create(buttons: back_button,
                       type: :menu_inline,
                       text: "#{show_breadcrumbs(:course,
                                                 [:name, :contents, :section, :content],
@@ -202,8 +191,8 @@ module Teachbase
             choose_localization
           end
 
-          on %r{^language_param:} do
-            @message_value =~ %r{^language_param:(\w*)}
+          on %r{^localization_param:} do
+            @message_value =~ %r{^localization_param:(\w*)}
             change_language($1)
           end
 
@@ -278,6 +267,14 @@ module Teachbase
         
         private
 
+        def init_open_url_button(object)
+          buttons = MenuButton.t(:inline_url, text: "#{I18n.t('open').capitalize}", url: object.source)
+          menu.create(buttons: buttons,
+                      mode: :none,
+                      type: :menu_inline,
+                      text: object.name)
+        end
+
         def init_breadcrumbs(params)
           # TODO: Convert in Breadcrumbs class
           course_name = params[:course_name] || ""
@@ -297,6 +294,33 @@ module Teachbase
           }
         end
 
+        def init_course_session_buttons(cs)
+          buttons_sign = ["open", "course_results"]
+          callbacks_data = ["cs_sec_by_id:#{cs.tb_id}", "cs_info_id:#{cs.tb_id}"]
+          MenuButton.t(:inline_cb,
+                       buttons_sign: buttons_sign,
+                       callbacks_data: callbacks_data)
+        end
+
+        def init_content_buttons(contents, cs_id)
+          buttons_sign = []
+          callbacks_data = []
+          contents[:section_content].keys.each do |content_type|
+            emoji = attach_emoji(content_type)
+            content_type_group = contents[:section_content][content_type]
+            content_type_group.each do |content|
+              buttons_sign << "#{emoji} #{content.name}"
+              callbacks_data << "open_content:#{content_type}_by_csid:#{cs_id}_secid:#{content.section_id}_objid:#{content.tb_id}"
+            end
+          end
+          MenuButton.t(:inline_cb,
+                        buttons_sign: buttons_sign,
+                        callbacks_data: callbacks_data,
+                        i18n: :no_translate,
+                        back_button: true,
+                        sent_messages: @tg_user.tg_account_messages)
+        end
+
         def section_menu_title(menu_state)
           case menu_state
           when :find_by_query_num
@@ -313,29 +337,35 @@ module Teachbase
         def section_title(section_object, style)
           return unless section_object.is_a?(Teachbase::Bot::Section)
 
-          emoji = [:open, :section_unable, :section_delayed, :section_unpublish].include?(style) ? attach_emoji(style) : Emoji.t(:open_file_folder)
+          emoji = if [:open, :section_unable, :section_delayed, :section_unpublish].include?(style)
+                    attach_emoji(style)
+                  else
+                    Emoji.t(:open_file_folder)
+                  end
           "#{emoji} <b>#{I18n.t('section')} #{section_object.position}:</b> #{section_object.name}"
         end
 
-        def attach_emoji(param)
-          case param
-          when :open
-            Emoji.t(:arrow_forward)
-          when :section_unable
-            Emoji.t(:no_entry_sign)
-          when :section_delayed
-            Emoji.t(:no_entry_sign)
-          when :section_unpublish
-            Emoji.t(:x)
-          when :materials
-            Emoji.t(:page_facing_up)
-          when :tasks
-            Emoji.t(:memo)
-          when :quizzes
-            Emoji.t(:bar_chart)
-          when :scorm_packages
-            Emoji.t(:computer)
+        def show_content_by_type(content)
+          case content.content_type.to_sym
+          when :image
+            answer_content.photo(content.source)
+          when :video
+            answer_content.video(content.source)
+          when :pdf
+            answer_content.document(content.source)
+          when :audio
+            answer_content.audio(content.sourse)
+          when :vimeo, :youtube, :iframe
+            init_open_url_button(content)
+          else
+            answer.send_out "Can't show such content type: #{content.content_type}"
           end
+        rescue Telegram::Bot::Exceptions::ResponseError => e
+          if e.error_code == 400
+            init_open_url_button(content)
+          else
+            answer.send_out(I18n.t('unexpected_error'))
+          end   
         end
 
         def group_sections_by_status(sections, cs_id)

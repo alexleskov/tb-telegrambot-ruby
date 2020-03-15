@@ -5,6 +5,8 @@ require './lib/data_loader'
 module Teachbase
   module Bot
     class AppShell
+      include Formatter
+      
       EMAIL_MASK = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i.freeze
       PASSWORD_MASK = /[\w|._#*^!+=@-]{6,40}$/.freeze
       PHONE_MASK = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/.freeze
@@ -50,8 +52,9 @@ module Teachbase
         data_loader.get_cs_list(state, limit_count, offset_num)
       end
 
-      def course_session_info(cs_id)
-        data_loader.call_cs_info(cs_id) if access_mode == :with_api
+      def course_session_info(cs_id, mode = nil)
+         mode ||= access_mode
+        data_loader.call_cs_info(cs_id) if mode == :with_api
         data_loader.get_cs_info(cs_id)
       end
 
@@ -66,12 +69,12 @@ module Teachbase
         return unless section_bd
         
         { section: section_bd,
-          section_content: data_loader.get_cs_sec_content(section_bd) }
+          section_content: data_loader.get_cs_sec_contents(section_bd) }
       end
 
-      def course_session_section_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
-        data_loader.call_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id) if access_mode == :with_api
-        data_loader.get_cs_sec_open_content(content_type, cs_tb_id, sec_id, content_tb_id)
+      def course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
+        data_loader.call_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id) if access_mode == :with_api
+        data_loader.get_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
       end
 
       def update_all_course_sessions
@@ -86,7 +89,7 @@ module Teachbase
         raise "No such scenario: '#{scenario_name}'" unless Teachbase::Bot::Scenarios::LIST.include?(scenario_name)
 
         settings.update!(scenario: scenario_name)
-        controller.class.send(:include, "Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}".constantize)
+        controller.class.send(:include, to_constantize("Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}"))
       end
 
       def change_localization(lang)
@@ -132,10 +135,6 @@ module Teachbase
         when PHONE_MASK
           :phone
         end
-      end
-
-      def to_camelize(string)
-        string.to_s.split('_').collect(&:capitalize).join
       end
 
       def set_scenario

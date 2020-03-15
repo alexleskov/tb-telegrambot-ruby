@@ -2,7 +2,7 @@ require './lib/reply_markup_formatter'
 require './lib/app_configurator'
 
 class MessageSender
-  MSG_TYPES = [:text, :photo, :video, :document, :audio]
+  MSG_TYPES = [:photo, :video, :document, :audio, :menu]
 
   attr_reader :bot,
               :msg_data,
@@ -12,32 +12,33 @@ class MessageSender
               :reply_to_message_id,
               :parse_mode,
               :mode,
+              :text,
               :menu_data,
               :menu_type
 
   def initialize(msg_params)
     @logger = AppConfigurator.new.get_logger
-    @tg_user = msg_params[:tg_user]
     @bot = msg_params[:bot]
-    @msg_type = find_msg_type(msg_params)
-    @msg_data = msg_params[msg_type]
     @chat = msg_params[:chat]
+    @tg_user = msg_params[:tg_user]
+    @text = msg_params[:text]
+    @menu_type = msg_params[:menu]
     @parse_mode = msg_params[:parse_mode]
     @reply_to_message_id = msg_params[:reply_to_message_id]
-    @reply_to_tg_id = msg_params[:reply_to_tg_id]
-    @menu_type = msg_params[:menu_type]
+    @reply_to_tg_id = msg_params[:reply_to_tg_id]    
     @menu_data = msg_params[:menu_data]
     @mode = msg_params[:mode] || find_menu_mode
+    @msg_type = find_msg_type(msg_params)
+    @msg_data = find_msg_data(msg_params)
   end
 
   def send
-    params = {}
-    params[msg_type] = msg_data
+    msg_type_sign = msg_type == :menu ? :reply_markup : msg_type
+    params = { text: text, msg_type_sign => msg_data}
     params[:chat_id] = reply_to_tg_id || chat.id
     params[:parse_mode] = parse_mode || AppConfigurator.new.get_parse_mode
     params[:reply_to_message_id] = reply_to_message_id if reply_to_message_id
-    params[:reply_markup] = create_menu if menu_type
-    sending_message = create_message(params, msg_type)
+    sending_message = create_message(params)
     save_message(sending_message["result"]) if sending_message["result"]["reply_markup"]
   end
 
@@ -51,10 +52,20 @@ class MessageSender
     end
   end
 
-  def find_msg_type(params)
-    MSG_TYPES.each do |type_of_msg|
-      break type_of_msg if params.keys.include?(type_of_msg)
+  def find_msg_data(msg_params)
+    if msg_type == :menu
+      create_menu
+    else
+      msg_params[msg_type]
     end
+  end
+
+  def find_msg_type(msg_params)
+    type = MSG_TYPES.each do |type_of_msg|
+             break type_of_msg if msg_params.keys.include?(type_of_msg)
+           end
+    type = :text unless type.is_a?(Symbol)
+    type
   end
 
   def last_message
@@ -77,23 +88,26 @@ class MessageSender
       hide_markup
     when :force_reply
       force_reply_markup
+    else
+      raise "Can't find menu type. Given: '#{menu_type}'"
     end
   end
 
-  def create_message(params, type)
+  def create_message(params)
     case mode
     when :edit_msg
       raise "Can't find last message for editing" unless last_message
 
       params[:message_id] = last_message.message_id
-
-      if type == :text
+      if [:text, :menu].include?(msg_type)
         bot.api.edit_message_text(params)
       else
         bot.api.edit_message_media(params)
       end
     else
-      case type
+      case msg_type
+      when :menu
+        bot.api.send_message(params)
       when :text
         bot.api.send_message(params)
       when :photo
@@ -105,7 +119,7 @@ class MessageSender
       when :audio
         bot.api.send_audio(params)
       else
-        raise "Can't find such message type for sending: '#{type}'. Avaliable: '#{MSG_TYPES}'"
+        raise "Can't find such message type for sending: '#{msg_type}'. Avaliable: '#{MSG_TYPES}'"
       end
     end    
   end
