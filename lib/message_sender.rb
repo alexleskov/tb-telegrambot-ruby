@@ -1,5 +1,4 @@
 require './lib/reply_markup_formatter'
-require './lib/app_configurator'
 
 class MessageSender
   MSG_TYPES = [:photo, :video, :document, :audio, :menu]

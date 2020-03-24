@@ -20,6 +20,14 @@ module Formatter
     downcase
   end
 
+  def to_i18n(array)
+    raise "Given '#{array.class}'. Expected an Array" unless array.is_a?(Array)
+
+    result = []
+    array.each { |object| result << I18n.t(object.to_s) }
+    result
+  end
+
   def attach_emoji(param)
     case param
     when :open

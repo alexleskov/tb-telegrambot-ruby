@@ -2,7 +2,9 @@ module Teachbase
   module Bot
     module Scenarios
       module StandartLearning
-        include Teachbase::Bot::Scenarios::Base
+        include Teachbase::Bot::Viewers::Base
+        include Teachbase::Bot::Viewers::StandartLearning
+
         LIMIT_COUNT_PAGINAION = 3
 
         def self.included(base)
@@ -15,14 +17,9 @@ module Teachbase
           appshell.user_info
           profile = appshell.profile
           user = appshell.user
+          return answer.empty_message unless profile && user
 
-          answer.send_out "<b>#{Emoji.t(:mortar_board)} #{I18n.t('profile_state')}</b>
-                          \n  <a href='#{user.avatar_url}'>#{user.first_name} #{user.last_name}</a>
-                          \n  #{Emoji.t(:school)} #{I18n.t('average_score_percent')}: #{profile.average_score_percent}%
-                          \n  #{Emoji.t(:hourglass)} #{I18n.t('total_time_spent')}: #{profile.total_time_spent / 3600} #{I18n.t('hour')}
-                          \n  #{Emoji.t(:green_book)} #{I18n.t('courses')}:
-                          #{I18n.t('active_courses')}: #{profile.active_courses_count}
-                          #{I18n.t('archived_courses')}: #{profile.archived_courses_count}"
+          print_user_profile(user, profile)
         end
 
         def show_course_sessions_list(state, limit_count = LIMIT_COUNT_PAGINAION, offset_num = 0)
@@ -30,31 +27,13 @@ module Teachbase
           limit_count = limit_count.to_i
           course_sessions = appshell.course_sessions_list(state, limit_count, offset_num)
           сs_count = appshell.cs_count_by(state) 
-          answer.send_out "#{Emoji.t(:books)} <b>#{I18n.t("#{state}_courses").capitalize}</b>"
-          return answer.send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if course_sessions.empty?
+          print_course_state(state)
+          return answer.empty_message if course_sessions.empty?
           
-          course_sessions.each do |cs|
-            buttons = init_course_session_buttons(cs)
-            @logger.debug "cs_buttons: #{buttons}"
-            menu.create(buttons: buttons,
-                        type: :menu_inline,
-                        mode: :none,
-                        text: "#{show_breadcrumbs(:course, [:name],
-                                                  course_icon_url: cs.icon_url,
-                                                  course_name: cs.name)}",
-                        slices_count: 2)
-          end
-
+          print_courses_list(course_sessions)
           offset_num += limit_count
           unless offset_num >= сs_count
-            more_button = MenuButton.t(:inline_more,
-                                        command_prefix: "show_course_sessions_list:#{state}",
-                                        limit: limit_count,
-                                        offset: offset_num)
-            menu.create(buttons: more_button,
-                        type: :menu_inline,
-                        mode: :none,
-                        text: "#{Emoji.t(:point_right)} #{I18n.t('show_more')} (#{сs_count - offset_num})?")
+            print_more_courses_button(state: state, limit_count: limit_count, offset_num: offset_num)
           end
         end
 
@@ -70,7 +49,7 @@ module Teachbase
                   \n  #{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{cs.progress}%
                   \n  #{Emoji.t(:star2)}#{I18n.t('complete_status')}: #{I18n.t("complete_status_#{cs.complete_status}")}
                   \n  #{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{cs.success}")}"
-          buttons = MenuButton.t(:inline_back, sent_messages: @tg_user.tg_account_messages)
+          buttons = InlineCallbackButton.back(@tg_user.tg_account_messages)
           menu.create(buttons: buttons,
                       type: :menu_inline,
                       text: text)
@@ -84,12 +63,10 @@ module Teachbase
                              \n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
           else
             params = %i[find_by_query_num show_avaliable show_unvaliable show_all]
-            buttons = MenuButton.t(:inline_cb,
-                                    buttons_sign: params,
-                                    command_prefix: "show_sections_by_csid:#{cs_id}_param:",
-                                    back_button: true,
-                                    sent_messages: @tg_user.tg_account_messages)
-
+            buttons = InlineCallbackButton.g(buttons_sign: params,
+                                             command_prefix: "show_sections_by_csid:#{cs_id}_param:",
+                                             back_button: true,
+                                             sent_messages: @tg_user.tg_account_messages)
             menu.create(buttons: buttons,
                         type: :menu_inline,
                         text: "#{show_breadcrumbs(:course, [:name, :contents, :sections], course_name: cs.name)}
@@ -117,7 +94,7 @@ module Teachbase
                      else
                        raise "No such param: '#{param}' for showing sections"
                      end
-          buttons = MenuButton.t(:inline_back, sent_messages: @tg_user.tg_account_messages)
+          buttons = InlineCallbackButton.back(@tg_user.tg_account_messages)
           menu.create(buttons: buttons,
                       mode: menu_mode || :edit_msg,
                       type: :menu_inline,
@@ -150,8 +127,8 @@ module Teachbase
           cs_name = content.course_session.name
           section_bd = content.section
           show_content_by_type(content)
-          back_button = MenuButton.t(:inline_back, sent_messages: @tg_user.tg_account_messages)
-          menu.create(buttons: back_button,
+          buttons = InlineCallbackButton.back(@tg_user.tg_account_messages)
+          menu.create(buttons: buttons,
                       type: :menu_inline,
                       text: "#{show_breadcrumbs(:course,
                                                 [:name, :contents, :section, :content],
@@ -268,7 +245,8 @@ module Teachbase
         private
 
         def init_open_url_button(object)
-          buttons = MenuButton.t(:inline_url, text: "#{I18n.t('open').capitalize}", url: object.source)
+          buttons = InlineUrlButton.g(buttons_sign: I18n.t('open').capitalize,
+                                      url: [ object.source ])
           menu.create(buttons: buttons,
                       mode: :none,
                       type: :menu_inline,
@@ -294,14 +272,6 @@ module Teachbase
           }
         end
 
-        def init_course_session_buttons(cs)
-          buttons_sign = ["open", "course_results"]
-          callbacks_data = ["cs_sec_by_id:#{cs.tb_id}", "cs_info_id:#{cs.tb_id}"]
-          MenuButton.t(:inline_cb,
-                       buttons_sign: buttons_sign,
-                       callbacks_data: callbacks_data)
-        end
-
         def init_content_buttons(contents, cs_id)
           buttons_sign = []
           callbacks_data = []
@@ -313,12 +283,10 @@ module Teachbase
               callbacks_data << "open_content:#{content_type}_by_csid:#{cs_id}_secid:#{content.section_id}_objid:#{content.tb_id}"
             end
           end
-          MenuButton.t(:inline_cb,
-                        buttons_sign: buttons_sign,
-                        callbacks_data: callbacks_data,
-                        i18n: :no_translate,
-                        back_button: true,
-                        sent_messages: @tg_user.tg_account_messages)
+             InlineCallbackButton.g(buttons_sign: buttons_sign,
+                                    callbacks_data: callbacks_data,
+                                    back_button: true,
+                                    sent_messages: @tg_user.tg_account_messages)
         end
 
         def section_menu_title(menu_state)

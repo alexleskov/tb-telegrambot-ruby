@@ -2,6 +2,7 @@ require './models/tg_account'
 require './models/setting'
 require './models/bot_message'
 require './models/tg_account_message'
+require './models/auth_session'
 require './lib/respond'
 
 class MessageResponder

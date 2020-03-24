@@ -1,5 +1,3 @@
-#require './models/user'
-#require './models/api_token'
 require './models/profile'
 require './models/course_session'
 require './models/section'

@@ -1,21 +1,23 @@
-require './lib/message_sender'
 require './models/auth_session'
 
 module Teachbase
   module Bot
     class Answer
+      include Formatter
+      
       MSG_DESTS = %i[chat from].freeze
 
       attr_reader :msg_params
 
       def initialize(appshell, param)
+        @logger = AppConfigurator.new.get_logger
         raise "No such param '#{param}' for send answer" unless MSG_DESTS.include?(param)
 
         @param = param
         @appshell = appshell
         @respond = appshell.controller.respond
         @tg_user = @respond.incoming_data.tg_user
-        @logger = AppConfigurator.new.get_logger
+        @settings = @respond.incoming_data.settings
         @msg_params = {}
       end
 

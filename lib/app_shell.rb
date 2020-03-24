@@ -1,4 +1,3 @@
-require './controllers/controller'
 require './lib/authorizer'
 require './lib/data_loader'
 
@@ -53,7 +52,7 @@ module Teachbase
       end
 
       def course_session_info(cs_id, mode = nil)
-         mode ||= access_mode
+        mode ||= access_mode
         data_loader.call_cs_info(cs_id) if mode == :with_api
         data_loader.get_cs_info(cs_id)
       end

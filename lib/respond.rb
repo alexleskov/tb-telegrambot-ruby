@@ -1,9 +1,7 @@
 require './lib/command_list'
-require './controllers/controller'
 require './controllers/action_controller'
 require './controllers/callback_controller'
 require './controllers/command_controller'
-require './lib/scenarios.rb'
 
 module Teachbase
   module Bot

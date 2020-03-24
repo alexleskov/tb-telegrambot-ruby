@@ -7,9 +7,9 @@ require 'encrypted_strings'
 
 require './lib/app_configurator'
 require './lib/emoji'
-require './lib/menu_button'
 require './lib/formatter'
 require './lib/message_responder'
+require './lib/message_sender'
 
 config = AppConfigurator.new
 config.configure

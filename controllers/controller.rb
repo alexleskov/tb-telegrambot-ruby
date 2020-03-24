@@ -1,10 +1,8 @@
-require './lib/message_sender'
-require './lib/answers/answer'
+require './lib/app_shell'
+require './lib/scenarios.rb'
 require './lib/answers/answer_menu'
 require './lib/answers/answer_text'
 require './lib/answers/answer_content'
-require './lib/app_shell'
-require './lib/scenarios.rb'
 
 module Teachbase
   module Bot
