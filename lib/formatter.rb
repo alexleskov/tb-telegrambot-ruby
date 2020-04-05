@@ -1,4 +1,7 @@
 module Formatter
+  NOT_VAILD_URL_REGEXP = %r{^(\/\/)}
+  DEFAULT_URL_PROTOCOL = "http://"
+
   def to_bolder(string)
     string.insert(0, "<b>").insert(-1, "</b>")
   end
@@ -20,11 +23,11 @@ module Formatter
     downcase
   end
 
-  def to_i18n(array)
+  def to_i18n(array, prefix = "")
     raise "Given '#{array.class}'. Expected an Array" unless array.is_a?(Array)
 
     result = []
-    array.each { |object| result << I18n.t(object.to_s) }
+    array.each { |object| result << I18n.t("#{prefix}#{object}").capitalize }
     result
   end
 
@@ -38,7 +41,7 @@ module Formatter
       Emoji.t(:no_entry_sign)
     when :section_unpublish
       Emoji.t(:x)
-    when :materials
+    when :materials, :text, :image, :video, :youtube, :pdf, :audio, :iframe
       Emoji.t(:page_facing_up)
     when :tasks
       Emoji.t(:memo)
@@ -48,4 +51,17 @@ module Formatter
       Emoji.t(:computer)
     end
   end
+
+  def url_valid?(url)
+    !(url =~ NOT_VAILD_URL_REGEXP)
+  end
+
+  def to_default_protocol(url)
+    url_valid?(url) ? url : url.gsub(NOT_VAILD_URL_REGEXP, DEFAULT_URL_PROTOCOL)
+  end
+
+  def sanitize_html(html)
+    Sanitize.fragment(html)
+  end
+
 end

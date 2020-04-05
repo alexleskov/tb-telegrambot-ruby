@@ -2,7 +2,7 @@ module Teachbase
   module Bot
     module Scenarios
       module Marathon
-        include Teachbase::Bot::Viewers::Base
+        include Teachbase::Bot::Scenarios::Base
 
         def self.included(base)
           base.extend ClassMethods

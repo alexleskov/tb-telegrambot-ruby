@@ -1,4 +1,5 @@
 require './viewers/viewers.rb'
+require './lib/scenarios/base.rb'
 require './lib/scenarios/standart_learning.rb'
 require './lib/scenarios/marathon.rb'
 

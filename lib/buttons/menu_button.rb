@@ -67,7 +67,7 @@ class MenuButton
   end
 
   def create_button_name(button_sign, ind)
-    text_on_button = emoji ? "#{emoji[ind]}#{button_sign}" : button_sign
+    text_on_button = emoji ? "#{Emoji.t(emoji[ind])}#{button_sign}" : button_sign
     { text: "#{text_on_button}" }
   end
 

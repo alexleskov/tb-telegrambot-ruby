@@ -1,50 +1,39 @@
 require './lib/buttons/menu_button'
 
 class InlineCallbackButton < MenuButton
+
   class << self
-
-    attr_reader :options
-
-    @options = {}
-
     def g(options)
       super(:callback_data, options)
     end
 
     def nums
-      options[:buttons_sign] = give_indexes(buttons_sign)
-      g(options)
+      g(buttons_sign: give_indexes(buttons_sign))
     end
 
-    def back(sent_messages, options = {})
-      options[:callback_data] = [ last_unical_callback(sent_messages) ]
+    def back(sent_messages)
       return unless last_unical_callback(sent_messages)
 
-      options[:buttons_sign] = [I18n.t('back').to_s]
-      options[:emoji] = [Emoji.t(:arrow_left)]
-      g(options)
+      g(callback_data: [ last_unical_callback(sent_messages) ],
+        buttons_sign: [ I18n.t('back').to_s ],
+        emoji: [ :arrow_left ])
     end
 
     def more(options)
-      options[:limit] = limit
-      options[:offset] = offset
-      raise unless limit || offset
+      raise unless options[:limit] || options[:offset]
 
-      options[:callback_data] = ["_lim:#{limit}_offset:#{offset}"]
-      options[:buttons_sign] = [I18n.t('show_more').to_s]
-      g(options)
+      g(callback_data: [ "#{options[:command_prefix]}_lim:#{options[:limit]}_offset:#{options[:offset]}" ],
+        buttons_sign: [ "#{I18n.t('show_more').to_s}" ], emoji: [ :arrow_down ])
     end
 
     def sign_in
-      options[:callback_data] = ["signin"]
-      options[:buttons_sign] = [I18n.t('signin').to_s]
-      g(options)
+      g(callback_data: [ "signin" ], buttons_sign: [ I18n.t('signin').to_s ], emoji: [ :rocket ])
     end
 
     def last_unical_callback(sent_messages)
       raise unless sent_messages
 
-      callbacks = sent_messages.order(created_at: :desc).where(message_type: "callback_data") #TO DO: Add limit
+      callbacks = sent_messages.order(created_at: :desc).where(message_type: "callback_data") # TODO: Add limit
                               .select(:data)
       raise "Can't find callbacks for back button" unless callbacks
 

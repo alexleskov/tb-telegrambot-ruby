@@ -9,7 +9,7 @@ module Teachbase
                         [:sign_out, Emoji.t(:door)],
                         [:settings, Emoji.t(:wrench)],
                         [:show_profile_state, Emoji.t(:mortar_board)],
-                        [:course_list_l1, Emoji.t(:books)],
+                        [:courses_list, Emoji.t(:books)],
                         [:update_profile_data, Emoji.t(:arrows_counterclockwise)]
       class << self
         attr_reader :sign_and_emoji

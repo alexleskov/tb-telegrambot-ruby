@@ -206,18 +206,20 @@ module Teachbase
 
       def fetch_content_material(material_lms)
         attributes = {}
-
         case material_lms["type"]
         when "video"
-          attributes = { source: material_lms["source"][CONTENT_VIDEO_FORMAT] }
+          attributes[:source] = material_lms["source"][CONTENT_VIDEO_FORMAT]
         when "vimeo", "youtube", "image", "audio", "pdf", "iframe"
-          attributes = create_attributes(%w[source], material_lms)
+          attributes[:source] = material_lms["source"]
         when "text"
-            attributes = create_attributes(%w[content], material_lms)
           if material_lms["editor_js"]
             attributes[:editor_js] = material_lms["editor_js"]
+            attributes[:content] = material_lms["content"]
           elsif material_lms["markdown"]
             attributes[:markdown] = material_lms["markdown"]
+            attributes[:content] = material_lms["content"]
+          else
+            attributes[:content] = material_lms["source"]
           end
         else 
           raise "Can't fetch such material type: '#{material_lms["type"]}'"

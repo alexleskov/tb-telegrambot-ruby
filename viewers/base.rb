@@ -8,59 +8,42 @@ module Teachbase
 
         module ClassMethods; end
 
-        def signin
-          answer.send_out "#{Emoji.t(:rocket)}<b>#{I18n.t('enter')} #{I18n.t('in_teachbase')}</b>"
-          auth = appshell.authorization
-          raise unless auth
-
-          menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('greetings')} #{I18n.t('in_teachbase')}!")
-          menu.after_auth
-        rescue RuntimeError => e
-          try_signin_again
+        def print_on_enter(account_name)
+          answer.send_out "#{Emoji.t(:rocket)}<b>#{I18n.t('enter')} #{I18n.t('in')} #{I18n.t(account_name)}</b>"
         end
 
-        def sign_out
+        def print_greetings(account_name)
+          menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('greetings')} #{I18n.t('in')} #{I18n.t(account_name)}!")
+        end
+
+        def print_on_farewell
           answer.send_out "#{Emoji.t(:door)}<b>#{I18n.t('sign_out')}</b>"
-          appshell.logout
-          menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('farewell_message')} :'(")
-          menu.starting
-        rescue RuntimeError => e
-          answer.send_out "#{I18n.t('error')} #{e}"
         end
 
-        def settings
-          menu.settings
+        def print_farewell
+          menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('farewell_message')} #{Emoji.t(:crying_cat_face)}")
         end
 
-        def edit_settings
-          menu.edit_settings
+        def print_on_save(param, status)
+          answer.send_out "#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t(param.to_s)}: <b>#{I18n.t(status.to_s)}</b>"
         end
 
-        def choose_localization
-          menu.choosing("Setting", :localization)
+        def prepeare_open_url_button(url, text = "")
+          InlineUrlButton.to_open(url, text)
         end
 
-        def choose_scenario
-          menu.choosing("Setting", :scenario)
-        end
-
-        def change_language(lang)
-          appshell.change_localization(lang.to_s)
-          I18n.with_locale appshell.settings.localization.to_sym do
-            answer.send_out "#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t('localization')}: <b>#{I18n.t(lang)}</b>"
-            menu.starting
-          end
-        end
-
-        def change_scenario(mode)
-          appshell.change_scenario(mode)
-        end
-
-        def try_signin_again
-          menu.create(buttons: InlineCallbackButton.sign_in,
-                      mode: :none,
-                      type: :menu_inline,
-                      text: "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}")
+        def menu_show_content(content, open_button = nil)
+          cs = content.course_session
+          section = content.section
+          buttons = InlineCallbackButton.g(buttons_sign: [ I18n.t('back').to_s ],
+                                           callback_data: [ "/sec#{section.position}_cs#{cs.tb_id}" ],
+                                           emoji: [ :arrow_left ])
+          buttons = open_button ? buttons + open_button : buttons
+          menu.create(buttons: buttons, type: :menu_inline,
+                      text: "#{content.position}. #{attach_emoji(content.content_type.to_sym)} <b>#{content.name}</b>")
+        rescue Telegram::Bot::Exceptions::ResponseError => e
+          answer.send_out("#{I18n.t('unexpected_error')}")
+          @logger.debug "Telegram::Bot::Exceptions::ResponseError: #{e}"
         end
 
         def show_breadcrumbs(level, stage_names, params = {})
@@ -77,6 +60,7 @@ module Teachbase
           to_bolder(result.last)
           result.join(delimeter)
         end
+
       end
     end
   end

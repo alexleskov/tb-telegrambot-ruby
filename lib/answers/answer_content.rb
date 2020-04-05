@@ -26,4 +26,7 @@ class Teachbase::Bot::AnswerContent < Teachbase::Bot::Answer
     create(audio: param)
   end
 
+  def youtube(param)
+    create(text: param)
+  end
 end

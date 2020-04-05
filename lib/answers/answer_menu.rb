@@ -5,8 +5,8 @@ require './lib/buttons/text_command_button'
 
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
   MENU_TYPES = %i[menu menu_inline].freeze
-  LOCALIZATION_EMOJI = [ Emoji.t(:ru), Emoji.t(:us) ]
-  SCENARIO_EMOJI = [Emoji.t(:books), Emoji.t(:bicyclist)]
+  LOCALIZATION_EMOJI = [ :ru, :us ]
+  SCENARIO_EMOJI = [:books, :bicyclist]
 
   def initialize(appshell, param)
     @logger = AppConfigurator.new.get_logger
@@ -35,7 +35,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
 
   def after_auth
     buttons = TextCommandButton.g(commands: @respond.commands,
-                                  buttons_sign: %i[course_list_l1 show_profile_state settings sign_out])
+                                  buttons_sign: %i[courses_list show_profile_state settings sign_out])
     create(buttons: buttons, type: :menu, text: I18n.t('start_menu_message'), slices_count: 2)
   end
 
@@ -64,13 +64,36 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
            slices_count: 2)
   end
 
-  def more(all_count, offset_count, more_button)
-    return unless more_button.is_a?(InlineCallbackButton)
-    
+  def show_more(object, params)
+    more_button = InlineCallbackButton.more(command_prefix: "show_#{object}_list:#{params[:state]}",
+                                            limit: params[:limit_count],
+                                            offset: params[:offset_num])
     create(buttons: more_button,
            type: :menu_inline,
            mode: :none,
-           text: "#{Emoji.t(:point_right)} #{I18n.t('show_more')} (#{all_count - offset_count})?")
+           text: "#{I18n.t('show_more')} (#{params[:all_count] - params[:offset_num]})?")
+  end
+
+  def back(text = "", mode = :none)
+    create(buttons: InlineCallbackButton.back(@tg_user.tg_account_messages),
+           type: :menu_inline,
+           mode: mode,
+           text: text)
+  end
+
+  def open_url_by_object(object, params)
+    create(buttons: InlineUrlButton.g(buttons_sign: [ I18n.t('open').capitalize ],
+                                      url: [ object.source ]),
+           mode: params[:mode],
+           type: :menu_inline,
+           text: params[:text] || object.name)
+  end
+
+  def sign_in_again
+    create(buttons: InlineCallbackButton.sign_in,
+           mode: :none,
+           type: :menu_inline,
+           text: "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}")
   end
 
   def choosing(type, param_name)

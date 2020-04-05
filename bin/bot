@@ -4,6 +4,7 @@ require 'telegram/bot'
 require 'gemoji'
 require 'async'
 require 'encrypted_strings'
+require 'sanitize'
 
 require './lib/app_configurator'
 require './lib/emoji'
@@ -20,7 +21,6 @@ logger = config.get_logger
 logger.debug 'Starting telegram bot'
 
 telegram_bot_client = Telegram::Bot::Client.new(token)
-
 
 telegram_bot_client.run do |bot|
   bot.listen do |message|

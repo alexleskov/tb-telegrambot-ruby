@@ -8,6 +8,6 @@ class TextCommandButton < MenuButton
   end
 
   def init_button(button_sign, type_params, ind)
-    "#{emoji}#{commands.show(button_sign)}"
+    "#{commands.show(button_sign)}"
   end
 end
