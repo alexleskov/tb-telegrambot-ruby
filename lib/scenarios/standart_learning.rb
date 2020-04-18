@@ -61,22 +61,28 @@ module Teachbase
           return answer.empty_message if sections_bd.empty?
 
           sections = find_sections_by(option, sections_bd)
-          menu_mode = option == :find_by_query_num ? :none : nil
+          title = prepare_title(object: cs,
+                                breadcrumbs: :section, level: [:section_menu], menu_option: option)
+
           if sections.empty?
-            print_is_empty_by(cs, breadcrumbs: :section, level: [:section_menu], menu_option: option)
+            menu.create(buttons: prepare_sections_button(cs_tb_id, :arrow_left),
+                        text: "#{title}\n\n#{create_empty_msg}",
+                        type: :menu_inline)            
           else
-            menu.back("#{prepare_title(object: cs, breadcrumbs: :section, level: [:section_menu], menu_option: option)}
+            menu_mode = option == :find_by_query_num ? :none : :edit_msg
+            menu.back("#{title}
                        #{print_sections_by_status(sections, cs_tb_id)}",
-                       menu_mode || :edit_msg)
+                       menu_mode)
           end
         end
 
         def show_section_contents(section_position, cs_tb_id)
           contents = appshell.course_session_section_contents(section_position, cs_tb_id)
           cs = appshell.course_session_info(cs_tb_id, :without_api)
+          back_to_course_button = prepare_sections_button(cs_tb_id, :arrow_left)
           return answer.empty_message unless contents
 
-          menu.create(buttons: prepare_content_buttons(contents, cs_tb_id),
+          menu.create(buttons: prepare_content_buttons(contents, cs_tb_id) + back_to_course_button,
                       mode: :none,
                       type: :menu_inline,
                       text: prepare_title(object: cs,
@@ -89,7 +95,7 @@ module Teachbase
           content = appshell.course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
           return answer.empty_message unless content
 
-          show_content_by_type(content)
+          find_content_type(content)
         end
 
         def courses_update

@@ -69,7 +69,11 @@ module Teachbase
         def print_is_empty_by(course_session, params = {})
           params[:object] = course_session if params[:breadcrumbs]
           answer.send_out "\n#{prepare_title(params)}
-                           \n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
+                           \n#{create_empty_msg}"
+        end
+
+        def create_empty_msg
+          "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
         end
 
         def print_section_menu_title(menu_state)
@@ -180,9 +184,13 @@ module Teachbase
             end
           end
           InlineCallbackButton.g(buttons_sign: buttons_sign,
-                                 callback_data: callbacks_data,
-                                 back_button: true,
-                                 sent_messages: @tg_user.tg_account_messages)
+                                 callback_data: callbacks_data)
+        end
+
+        def prepare_sections_button(cs_id, emoji)
+          InlineCallbackButton.g(buttons_sign: [ I18n.t('back').to_s ],
+                                 callback_data: [ "cs_sec_by_id:#{cs_id}" ],
+                                 emoji: [ :arrow_left ])
         end
 
         def prepare_title(params)
@@ -194,10 +202,10 @@ module Teachbase
             object = params[:object]
             case params[:breadcrumbs]
               when :course
-                #show_breadcrumbs(:course, params[:level], course_icon_url: object.icon_url, course_name: object.name)
-                show_breadcrumbs(:course, params[:level], course_icon_url: params[:icon_url], course_name: object.name)
+                #create_breadcrumbs(:course, params[:level], course_icon_url: object.icon_url, course_name: object.name)
+                create_breadcrumbs(:course, params[:level], course_icon_url: params[:icon_url], course_name: object.name)
               when :section
-                show_breadcrumbs(:course,
+                create_breadcrumbs(:course,
                                  [:name, :contents] + params[:level],
                                  course_name: object.name,
                                  section_menu: params[:menu_option],

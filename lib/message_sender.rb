@@ -10,6 +10,7 @@ class MessageSender
               :reply_to_tg_id,
               :reply_to_message_id,
               :parse_mode,
+              :disable_notification,
               :mode,
               :text,
               :menu_data,
@@ -22,7 +23,8 @@ class MessageSender
     @tg_user = msg_params[:tg_user]
     @text = msg_params[:text]
     @menu_type = msg_params[:menu]
-    @parse_mode = msg_params[:parse_mode]
+    @parse_mode = msg_params[:parse_mode] || AppConfigurator.new.get_parse_mode
+    @disable_notification = msg_params[:disable_notification] || false
     @reply_to_message_id = msg_params[:reply_to_message_id]
     @reply_to_tg_id = msg_params[:reply_to_tg_id]    
     @menu_data = msg_params[:menu_data]
@@ -33,9 +35,10 @@ class MessageSender
 
   def send
     msg_type_sign = msg_type == :menu ? :reply_markup : msg_type
-    params = { text: text, msg_type_sign => msg_data}
+    params = { text: text, msg_type_sign => msg_data }
+    params[:parse_mode] = parse_mode
+    params[:disable_notification] = disable_notification
     params[:chat_id] = reply_to_tg_id || chat.id
-    params[:parse_mode] = parse_mode || AppConfigurator.new.get_parse_mode
     params[:reply_to_message_id] = reply_to_message_id if reply_to_message_id
     sending_message = create_message(params)
     save_message(sending_message["result"]) if sending_message["result"]["reply_markup"]
@@ -105,9 +108,7 @@ class MessageSender
       end
     else
       case msg_type
-      when :menu
-        bot.api.send_message(params)
-      when :text
+      when :menu, :text
         bot.api.send_message(params)
       when :photo
         bot.api.send_photo(params)

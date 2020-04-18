@@ -12,8 +12,8 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
     MessageSender.new(msg_params).send
   end
 
-  def send_out(text)
-    create(text: text)
+  def send_out(text, disable_notification = false)
+    create(text: text, disable_notification: disable_notification)
   end
 
   def greeting_message

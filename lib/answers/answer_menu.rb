@@ -20,9 +20,9 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
     raise "No such menu type: #{options[:type]}" unless MENU_TYPES.include?(options[:type])
     raise "Buttons must be an Array class. Given '#{buttons.class}'" unless buttons.is_a?(Array)
 
-    slices_count = options[:slices_count] || nil
     @msg_params[:menu] = options[:type]
     @msg_params[:mode] = options[:mode]
+    slices_count = options[:slices_count] || nil
     @msg_params[:menu_data] = init_menu_params(buttons, slices_count)
     MessageSender.new(msg_params).send
   end
@@ -81,10 +81,19 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
            text: text)
   end
 
-  def open_url_by_object(object, params)
+  def custom_back(callback_data, text, mode = :none)
+    create(buttons: InlineCallbackButton.g(buttons_sign: [ I18n.t('back') ],
+                                           callback_data: [ callback_data ],
+                                           emoji: [ :arrow_left ]),
+           type: :menu_inline,
+           disable_notification: true,
+           mode: mode,
+           text: text)
+  end
+
+  def open_url_by_object(object, params = {})
     create(buttons: InlineUrlButton.g(buttons_sign: [ I18n.t('open').capitalize ],
-                                      url: [ object.source ]),
-           mode: params[:mode],
+                                      url: [ to_default_protocol(object.source) ]),
            type: :menu_inline,
            text: params[:text] || object.name)
   end

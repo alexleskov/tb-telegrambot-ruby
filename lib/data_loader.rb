@@ -5,6 +5,7 @@ require './models/material'
 require './models/quiz'
 require './models/scorm_package'
 require './models/task'
+require './models/attachment'
 
 module Teachbase
   module Bot
@@ -134,39 +135,33 @@ module Teachbase
 
           cs = user.course_sessions.find_by!(tb_id: cs_id)
           cs.sections.destroy_all if cs
+          authsession.load_cs_info(cs_id)["sections"].each_with_index do |section_lms, ind|
+            section_bd = cs.sections.find_or_create_by!(position: ind + 1, user_id: user.id)
+            section_params = create_attributes(Teachbase::Bot::Section.attribute_names, section_lms)
+            section_bd.update!(section_params)
+          end
+        end
+      end
 
-          #@request_loader = Async do |task|
-            authsession.load_cs_info(cs_id)["sections"].each_with_index do |section_lms, ind|
-              section_bd = cs.sections.find_or_create_by!(position: ind + 1, user_id: user.id)
-              SECTION_OBJECTS.each do |type|
-                fetch_section_objects(type, section_lms, section_bd)
-              end
-              section_params = create_attributes(Teachbase::Bot::Section.attribute_names, section_lms)
-              section_bd.update!(section_params)
-            end
-          #end
+      def call_cs_sec_contents(cs_tb_id, sec_position)
+        section_bd = get_cs_sec_by(:position, sec_position, cs_tb_id)
+        section_lms = call_data { authsession.load_cs_info(cs_tb_id)["sections"][sec_position.to_i - 1] }
+        SECTION_OBJECTS.each do |type|
+          section_bd.public_send(type).destroy_all
+          next if section_lms[type.to_s].empty?
+          fetch_section_objects(type, section_lms, section_bd)
         end
       end
 
       def call_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
         section_bd = get_cs_sec_by(:id, sec_id, cs_tb_id)
-        call_data do
-          case content_type.to_sym
-          when :materials
-            lms_data = authsession.load_material(cs_tb_id, content_tb_id)
-            @logger.debug "lms_data: #{lms_data}"
+        raise unless section_bd || section_bd.empty?
 
-            attributes = fetch_content_material(lms_data)
-            section_bd.materials.find_by!(tb_id: content_tb_id).update!(attributes)
-          when :tasks
-            # TO DO: Some logic
-          when :quizzes
-            # TO DO: Some logic
-          when :scorm_packages
-            # TO DO: Some logic
-          else
-            raise "Can't open such content type: '#{content_type}'"
-          end
+        call_data do
+          lms_data = authsession.load_content(content_type, cs_tb_id, content_tb_id)
+          @logger.debug "lms_data: #{lms_data}"
+          attributes = fetch_content_attr_by_type(content_type, lms_data)
+          section_bd.public_send(content_type).find_by!(tb_id: content_tb_id).update!(attributes)
         end
       end
 
@@ -204,6 +199,21 @@ module Teachbase
         user.course_sessions.find_by(tb_id: cs_id, changed_at: call_cs_info(cs_id).changed_at)
       end
 
+      def fetch_content_attr_by_type(content_type, lms_data)
+        case content_type.to_sym
+        when :materials
+          fetch_content_material(lms_data)
+        when :tasks
+          fetch_content_task(lms_data)
+        when :quizzes
+          #fetch_content_quiz(lms_data)
+        when :scorm_packages
+          #fetch_content_scorm_package(lms_data)
+        else
+          raise "Can't open such content type: '#{content_type}'"
+        end
+      end
+
       def fetch_content_material(material_lms)
         attributes = {}
         case material_lms["type"]
@@ -225,6 +235,10 @@ module Teachbase
           raise "Can't fetch such material type: '#{material_lms["type"]}'"
         end
         attributes
+      end
+
+      def fetch_content_task(task_lms)
+        attributes = {}
       end
 
       def create_attributes(params, object_type_hash, custom_params = {})

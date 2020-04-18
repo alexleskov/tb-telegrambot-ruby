@@ -29,4 +29,9 @@ class Teachbase::Bot::AnswerContent < Teachbase::Bot::Answer
   def youtube(param)
     create(text: param)
   end
+
+  def url(link, link_name)
+    create(text: "<a href='#{to_default_protocol(link)}'>#{link_name}</a>")
+  end
+
 end

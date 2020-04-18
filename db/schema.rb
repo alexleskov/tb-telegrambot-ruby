@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 15) do
+ActiveRecord::Schema.define(version: 16) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -26,6 +26,22 @@ ActiveRecord::Schema.define(version: 15) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["auth_session_id"], name: "index_api_tokens_on_auth_session_id"
+  end
+
+  create_table "attachments", force: :cascade do |t|
+    t.string "name"
+    t.string "category"
+    t.string "url"
+    t.bigint "material_id"
+    t.bigint "quiz_id"
+    t.bigint "task_id"
+    t.bigint "scorm_package_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["material_id"], name: "index_attachments_on_material_id"
+    t.index ["quiz_id"], name: "index_attachments_on_quiz_id"
+    t.index ["scorm_package_id"], name: "index_attachments_on_scorm_package_id"
+    t.index ["task_id"], name: "index_attachments_on_task_id"
   end
 
   create_table "auth_sessions", force: :cascade do |t|
@@ -165,6 +181,10 @@ ActiveRecord::Schema.define(version: 15) do
     t.integer "tb_id", null: false
     t.integer "position", null: false
     t.string "name"
+    t.string "content"
+    t.string "description"
+    t.string "title"
+    t.boolean "editor_js", default: false
     t.bigint "section_id"
     t.bigint "course_session_id"
     t.bigint "user_id"
@@ -206,6 +226,10 @@ ActiveRecord::Schema.define(version: 15) do
   end
 
   add_foreign_key "api_tokens", "auth_sessions"
+  add_foreign_key "attachments", "materials"
+  add_foreign_key "attachments", "quizzes"
+  add_foreign_key "attachments", "scorm_packages"
+  add_foreign_key "attachments", "tasks"
   add_foreign_key "auth_sessions", "api_tokens"
   add_foreign_key "auth_sessions", "tg_accounts"
   add_foreign_key "auth_sessions", "users"

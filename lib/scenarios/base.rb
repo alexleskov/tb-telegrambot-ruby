@@ -12,12 +12,12 @@ module Teachbase
 
         module ClassMethods; end
 
-        def signin
-          print_on_enter("teachbase")
+        def signin(account_name = "teachbase")
+          print_on_enter(account_name)
           auth = appshell.authorization
           raise unless auth
 
-          print_greetings("teachbase")
+          print_greetings(account_name)
           menu.after_auth
         rescue RuntimeError => e
           menu.sign_in_again
@@ -61,33 +61,48 @@ module Teachbase
           print_on_save("scenario", mode)
         end
 
-        def show_content_by_type(content)
+        def find_content_type(content)
           @logger.debug "content.attr: #{content.attributes}"
-          case content.content_type.to_sym
-          when :text
-            answer.send_out(sanitize_html(content.content))
-          when :image
-            answer_content.photo(content.source)
-          when :video
-            answer_content.video(content.source)
-          when :youtube
-            answer_content.youtube("<a href='#{YOUTUBE_HOST}#{content.source}'>#{content.name}</a>")
-          when :pdf
-            answer_content.document(content.source)
-          when :audio
-            answer_content.audio(content.source)
-          when :iframe
-            open_button = prepeare_open_url_button(to_default_protocol(content.source), "\"#{content.name}\"")
-          end
-          menu_show_content(content, open_button)
-        rescue Telegram::Bot::Exceptions::ResponseError => e
-          if e.error_code == 400
-            @logger.debug "Error: #{e}"
-            menu_show_content(content, prepeare_open_url_button(content.source, "\"#{content.name}\""))
+          case content
+          when Teachbase::Bot::Material
+            show_materials_by_type(content)
           else
             answer.send_out(I18n.t('unexpected_error'))
           end
         end
+
+        def show_materials_by_type(content, back_button = true)
+          source = content.source
+          content_name = content.name
+          section = content.section
+          answer.send_out(content_title(content), disable_notification: true)
+          case content.content_type.to_sym
+          when :text
+            answer.send_out(sanitize_html(content.content))
+          when :image
+            answer_content.photo(source)
+          when :video
+            answer_content.video(source)
+          when :youtube
+            answer_content.url("#{YOUTUBE_HOST}#{source}", content_name)
+          when :pdf
+            answer_content.document(source)
+          when :audio
+            answer_content.audio(source)
+          when :iframe
+            answer_content.url(source, "\"#{content_name}\"")      
+          end
+          prepare_section_back_button(section) if back_button
+        rescue Telegram::Bot::Exceptions::ResponseError => e
+          if e.error_code == 400
+            @logger.debug "Error: #{e}"
+            menu.open_url_by_object(content)
+            prepare_section_back_button(section) if back_button
+          else
+            answer.send_out(I18n.t('unexpected_error'))
+          end 
+        end
+
       end
     end
   end

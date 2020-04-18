@@ -66,7 +66,8 @@ module Teachbase
       def course_session_section_contents(section_position, cs_id)
         section_bd = data_loader.get_cs_sec_by(:position, section_position, cs_id)
         return unless section_bd
-        
+
+        data_loader.call_cs_sec_contents(cs_id, section_position)
         { section: section_bd,
           section_content: data_loader.get_cs_sec_contents(section_bd) }
       end
