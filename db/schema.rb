@@ -32,15 +32,11 @@ ActiveRecord::Schema.define(version: 16) do
     t.string "name"
     t.string "category"
     t.string "url"
-    t.bigint "material_id"
     t.bigint "quiz_id"
     t.bigint "task_id"
-    t.bigint "scorm_package_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["material_id"], name: "index_attachments_on_material_id"
     t.index ["quiz_id"], name: "index_attachments_on_quiz_id"
-    t.index ["scorm_package_id"], name: "index_attachments_on_scorm_package_id"
     t.index ["task_id"], name: "index_attachments_on_task_id"
   end
 
@@ -226,9 +222,7 @@ ActiveRecord::Schema.define(version: 16) do
   end
 
   add_foreign_key "api_tokens", "auth_sessions"
-  add_foreign_key "attachments", "materials"
   add_foreign_key "attachments", "quizzes"
-  add_foreign_key "attachments", "scorm_packages"
   add_foreign_key "attachments", "tasks"
   add_foreign_key "auth_sessions", "api_tokens"
   add_foreign_key "auth_sessions", "tg_accounts"

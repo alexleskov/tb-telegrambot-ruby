@@ -26,12 +26,25 @@ class Teachbase::Bot::AnswerContent < Teachbase::Bot::Answer
     create(audio: param)
   end
 
-  def youtube(param)
-    create(text: param)
-  end
-
   def url(link, link_name)
     create(text: "<a href='#{to_default_protocol(link)}'>#{link_name}</a>")
   end
 
+  def text(param)
+    create(text: param)
+  end
+
+  def iframe(param)
+    param[:link] = link
+    param[:link_name] = link_name
+    url(link, link_name)
+  end
+
+  def youtube(param)
+    iframe(param)
+  end
+
+  def pdf(param)
+    document(param)
+  end
 end

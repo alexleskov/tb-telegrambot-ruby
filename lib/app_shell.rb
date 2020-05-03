@@ -1,3 +1,4 @@
+require './lib/scenarios'
 require './lib/authorizer'
 require './lib/data_loader'
 
@@ -11,7 +12,13 @@ module Teachbase
       PHONE_MASK = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/.freeze
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
 
-      attr_reader :access_mode, :controller, :data_loader, :settings, :authorizer, :profile, :user
+      attr_reader :access_mode,
+                  :controller,
+                  :data_loader,
+                  :settings,
+                  :authorizer,
+                  :profile,
+                  :user
 
       def initialize(controller, access_mode = :with_api)
         @logger = AppConfigurator.new.get_logger

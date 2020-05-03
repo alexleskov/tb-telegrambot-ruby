@@ -1,7 +1,7 @@
-require './viewers/viewers.rb'
-require './lib/scenarios/base.rb'
-require './lib/scenarios/standart_learning.rb'
-require './lib/scenarios/marathon.rb'
+require './interfaces/interfaces'
+require './lib/scenarios/base'
+require './lib/scenarios/standart_learning'
+require './lib/scenarios/marathon'
 
 module Teachbase
   module Bot

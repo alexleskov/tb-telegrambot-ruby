@@ -2,9 +2,7 @@ module Teachbase
   module Bot
     module Scenarios
       module Base
-        YOUTUBE_HOST = "https://youtu.be/"
-
-        include Teachbase::Bot::Viewers::Base
+        include Teachbase::Bot::Interfaces::Base
 
         def self.included(base)
           base.extend ClassMethods
@@ -60,49 +58,6 @@ module Teachbase
           appshell.change_scenario(mode)
           print_on_save("scenario", mode)
         end
-
-        def find_content_type(content)
-          @logger.debug "content.attr: #{content.attributes}"
-          case content
-          when Teachbase::Bot::Material
-            show_materials_by_type(content)
-          else
-            answer.send_out(I18n.t('unexpected_error'))
-          end
-        end
-
-        def show_materials_by_type(content, back_button = true)
-          source = content.source
-          content_name = content.name
-          section = content.section
-          answer.send_out(content_title(content), disable_notification: true)
-          case content.content_type.to_sym
-          when :text
-            answer.send_out(sanitize_html(content.content))
-          when :image
-            answer_content.photo(source)
-          when :video
-            answer_content.video(source)
-          when :youtube
-            answer_content.url("#{YOUTUBE_HOST}#{source}", content_name)
-          when :pdf
-            answer_content.document(source)
-          when :audio
-            answer_content.audio(source)
-          when :iframe
-            answer_content.url(source, "\"#{content_name}\"")      
-          end
-          prepare_section_back_button(section) if back_button
-        rescue Telegram::Bot::Exceptions::ResponseError => e
-          if e.error_code == 400
-            @logger.debug "Error: #{e}"
-            menu.open_url_by_object(content)
-            prepare_section_back_button(section) if back_button
-          else
-            answer.send_out(I18n.t('unexpected_error'))
-          end 
-        end
-
       end
     end
   end

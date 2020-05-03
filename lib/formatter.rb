@@ -49,6 +49,10 @@ module Formatter
       Emoji.t(:bar_chart)
     when :scorm_packages
       Emoji.t(:computer)
+    when :active
+      Emoji.t(:green_book)
+    when :archived
+      Emoji.t(:closed_book)
     end
   end
 

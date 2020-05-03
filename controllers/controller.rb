@@ -1,5 +1,4 @@
 require './lib/app_shell'
-require './lib/scenarios.rb'
 require './lib/answers/answer_menu'
 require './lib/answers/answer_text'
 require './lib/answers/answer_content'
@@ -8,6 +7,7 @@ module Teachbase
   module Bot
     class Controller
       include Formatter
+      include Viewers
 
       MSG_TYPES = %i[text data].freeze
 

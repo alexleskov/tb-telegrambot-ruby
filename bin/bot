@@ -9,6 +9,7 @@ require 'sanitize'
 require './lib/app_configurator'
 require './lib/emoji'
 require './lib/formatter'
+require './lib/viewers/viewers'
 require './lib/message_responder'
 require './lib/message_sender'
 

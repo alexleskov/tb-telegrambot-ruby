@@ -4,6 +4,8 @@ require './lib/buttons/inline_url_button'
 require './lib/buttons/text_command_button'
 
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
+  include Viewers::Menu
+  
   MENU_TYPES = %i[menu menu_inline].freeze
   LOCALIZATION_EMOJI = [ :ru, :us ]
   SCENARIO_EMOJI = [:books, :bicyclist]

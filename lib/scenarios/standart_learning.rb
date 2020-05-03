@@ -3,9 +3,9 @@ module Teachbase
     module Scenarios
       module StandartLearning
         include Teachbase::Bot::Scenarios::Base
-        include Teachbase::Bot::Viewers::StandartLearning
+        include Teachbase::Bot::Interfaces::StandartLearning
 
-        LIMIT_COUNT_PAGINAION = 4
+        DEFAULT_COUNT_PAGINAION = 4
 
         def self.included(base)
           base.extend ClassMethods
@@ -19,10 +19,10 @@ module Teachbase
           user = appshell.user
           return answer.empty_message unless profile && user
 
-          print_user_profile(user, profile)
+          print_user_profile(user)
         end
 
-        def show_course_sessions_list(state, limit_count = LIMIT_COUNT_PAGINAION, offset_num = 0)
+        def show_course_sessions_list(state, limit_count = DEFAULT_COUNT_PAGINAION, offset_num = 0)
           offset_num = offset_num.to_i
           limit_count = limit_count.to_i
           course_sessions = appshell.course_sessions_list(state, limit_count, offset_num)
@@ -40,7 +40,7 @@ module Teachbase
 
         def show_course_session_info(cs_tb_id)
           cs = appshell.course_session_info(cs_tb_id)
-          text = print_course_stats(cs, breadcrumbs: :course, level: [:name, :info])
+          text = prepare_course_stats(cs, breadcrumbs: :course, level: [:name, :info])
           menu.back(text)
         end
 
@@ -65,13 +65,13 @@ module Teachbase
                                 breadcrumbs: :section, level: [:section_menu], menu_option: option)
 
           if sections.empty?
-            menu.create(buttons: prepare_sections_button(cs_tb_id, :arrow_left),
+            menu.create(buttons: to_course_sections_button(cs_tb_id),
                         text: "#{title}\n\n#{create_empty_msg}",
                         type: :menu_inline)            
           else
             menu_mode = option == :find_by_query_num ? :none : :edit_msg
             menu.back("#{title}
-                       #{print_sections_by_status(sections, cs_tb_id)}",
+                       #{print_sections_by_state(sections)}",
                        menu_mode)
           end
         end
@@ -79,10 +79,9 @@ module Teachbase
         def show_section_contents(section_position, cs_tb_id)
           contents = appshell.course_session_section_contents(section_position, cs_tb_id)
           cs = appshell.course_session_info(cs_tb_id, :without_api)
-          back_to_course_button = prepare_sections_button(cs_tb_id, :arrow_left)
           return answer.empty_message unless contents
 
-          menu.create(buttons: prepare_content_buttons(contents, cs_tb_id) + back_to_course_button,
+          menu.create(buttons: prepare_content_buttons(contents, cs_tb_id) + to_course_sections_button(cs_tb_id),
                       mode: :none,
                       type: :menu_inline,
                       text: prepare_title(object: cs,
@@ -95,7 +94,7 @@ module Teachbase
           content = appshell.course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
           return answer.empty_message unless content
 
-          find_content_type(content)
+          print_content(content)
         end
 
         def courses_update
