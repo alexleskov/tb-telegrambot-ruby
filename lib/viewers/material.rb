@@ -1,5 +1,7 @@
 module Viewers
   module Material
+    include Formatter
+
     YOUTUBE_HOST = "https://youtu.be/"
 
     def get_content

@@ -127,16 +127,16 @@ module Teachbase
 
             object = params[:object]
             case params[:breadcrumbs]
-              when :course
-                #create_breadcrumbs(:course, params[:level], course_icon_url: object.icon_url, course_name: object.name)
-                create_breadcrumbs(:course, params[:level], course_icon_url: params[:icon_url], course_name: object.name)
-              when :section
-                create_breadcrumbs(:course,
-                                 [:name, :contents] + params[:level],
-                                 course_name: object.name,
-                                 section_menu: params[:menu_option],
-                                 section: params[:section],
-                                 content: params[:content])
+            when :course
+              #create_breadcrumbs(:course, params[:level], course_icon_url: object.icon_url, course_name: object.name)
+              create_breadcrumbs(:course, params[:level], course_icon_url: params[:icon_url], course_name: object.name)
+            when :section
+              create_breadcrumbs(:course,
+                               [:name, :contents] + params[:level],
+                               course_name: object.name,
+                               section_menu: params[:menu_option],
+                               section: params[:section],
+                               content: params[:content])
               else
                 raise "No such breadcrumbs source: '#{params[:breadcrumbs]}'"
               end
@@ -160,7 +160,7 @@ module Teachbase
             content_type = content.content_type.to_sym
             content_source = content.source
           end
-          section_name = section ? print_section_title_by(section, :string) : nil
+          section_name = section ? section.name : nil
           section_menu_title = section_menu ? print_section_menu_title(section_menu) : nil
           { course: { name: "#{Emoji.t(:book)} <a href='#{course_icon_url}'>#{I18n.t('course')}</a>: #{course_name}",
                       info: "#{Emoji.t(:information_source)} #{I18n.t('information')}",

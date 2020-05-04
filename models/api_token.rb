@@ -12,6 +12,15 @@ module Teachbase
         save
         active
       end
+
+      def activate_by(token)
+        update!(version: token.api_version,
+                api_type: token.api_type,
+                grant_type: token.grant_type,
+                expired_at: token.expired_at,
+                value: token.value,
+                active: true)
+      end
     end
   end
 end

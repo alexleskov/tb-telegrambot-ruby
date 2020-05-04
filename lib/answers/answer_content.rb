@@ -35,8 +35,8 @@ class Teachbase::Bot::AnswerContent < Teachbase::Bot::Answer
   end
 
   def iframe(param)
-    param[:link] = link
-    param[:link_name] = link_name
+    link = param[:link]
+    link_name = param[:link_name]
     url(link, link_name)
   end
 

@@ -27,4 +27,13 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
   def empty_message
     send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
   end
+  
+  def ask_login
+    send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_login')}:"
+  end
+
+  def ask_password
+    send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_password')}:"
+  end
+
 end

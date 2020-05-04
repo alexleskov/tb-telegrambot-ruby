@@ -44,8 +44,12 @@ module Teachbase
       end
 
       def get_cs_list(state, limit_count, offset_num)
-        get_data { user.course_sessions.order(name: :asc).limit(limit_count).offset(offset_num).where(complete_status: state.to_s,
-                                                     scenario_mode: @appshell.settings.scenario) }
+        get_data do
+          user.course_sessions.order(name: :asc)
+                              .limit(limit_count)
+                              .offset(offset_num)
+                              .where(complete_status: state.to_s, scenario_mode: @appshell.settings.scenario)
+        end
       end
 
       def get_cs_sections(cs_id)
@@ -99,13 +103,10 @@ module Teachbase
 
       def call_cs_list(state, mode = :normal)
         raise "No such option for update course sessions list" unless CS_STATES.include?(state.to_sym)
-        
-        delete_course_sessions(state) if mode == :with_reload
 
         call_data do
+          delete_course_sessions(state) if mode == :with_reload
           lms_info = authsession.load_course_sessions(state)
-          #@logger.debug "lms_info: #{lms_info}"
-
           lms_info.each do |course_session_lms|
             cs = user.course_sessions.find_or_create_by!(tb_id: course_session_lms["id"])
             course_session_params = create_attributes(Teachbase::Bot::CourseSession.attribute_names,
@@ -144,12 +145,14 @@ module Teachbase
       end
 
       def call_cs_sec_contents(cs_tb_id, sec_position)
-        section_bd = get_cs_sec_by(:position, sec_position, cs_tb_id)
-        section_lms = call_data { authsession.load_cs_info(cs_tb_id)["sections"][sec_position.to_i - 1] }
-        SECTION_OBJECTS.each do |type|
-          section_bd.public_send(type).destroy_all
-          next if section_lms[type.to_s].empty?
-          fetch_section_objects(type, section_lms, section_bd)
+        call_data do
+          section_bd = get_cs_sec_by(:position, sec_position, cs_tb_id)
+          section_lms = authsession.load_cs_info(cs_tb_id)["sections"][sec_position.to_i - 1]
+          SECTION_OBJECTS.each do |type|
+            section_bd.public_send(type).destroy_all
+            next if section_lms[type.to_s].empty?
+            fetch_section_objects(type, section_lms, section_bd)
+          end
         end
       end
 
@@ -166,9 +169,7 @@ module Teachbase
       end
 
       def delete_course_sessions(state)
-        get_data do
-          user.course_sessions.where(complete_status: state.to_s).destroy_all
-        end
+        get_data { user.course_sessions.where(complete_status: state.to_s).destroy_all }
       end
 
       private
@@ -180,6 +181,8 @@ module Teachbase
       end
 
       def call_data
+        return unless @appshell.access_mode == :with_api
+
         @authsession = @appshell.authorizer.call_authsession(:with_api)
         @user = authsession.user
         yield
@@ -258,7 +261,7 @@ module Teachbase
         raise "No such content type: #{conten_type}." unless section_bd.respond_to?(conten_type)
 
         content_params = to_constantize(to_camelize(SECTION_OBJECT_TYPES[conten_type]), "Teachbase::Bot::")
-                                 .public_send(:attribute_names)
+                         .public_send(:attribute_names)
         cs_id = section_bd.course_session.id        
         section_lms[conten_type.to_s].each do |content_type_hash|
           attributes = create_attributes(content_params, content_type_hash, SECTION_OBJECTS_CUSTOM_PARAMS[conten_type])
@@ -272,12 +275,8 @@ module Teachbase
       end
 
       def replace_key_names(mapping, initial_hash)
-        mapping.each do |old_key, new_key|
-          initial_hash[new_key.to_s] = initial_hash.delete(old_key)
-        end
+        mapping.each { |old_key, new_key| initial_hash[new_key.to_s] = initial_hash.delete(old_key) }
       end
     end
   end
 end
-
-

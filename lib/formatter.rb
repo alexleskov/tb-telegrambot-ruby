@@ -56,16 +56,18 @@ module Formatter
     end
   end
 
-  def url_valid?(url)
-    !(url =~ NOT_VAILD_URL_REGEXP)
-  end
-
   def to_default_protocol(url)
     url_valid?(url) ? url : url.gsub(NOT_VAILD_URL_REGEXP, DEFAULT_URL_PROTOCOL)
   end
 
   def sanitize_html(html)
     Sanitize.fragment(html)
+  end
+
+  private
+
+  def url_valid?(url)
+    !(url =~ NOT_VAILD_URL_REGEXP)
   end
 
 end
