@@ -5,7 +5,7 @@ module Teachbase
   module Bot
     class Authorizer
 
-      attr_reader :apitoken, :user, :authsession, :login, :login_type, :crypted_password
+      attr_reader :apitoken, :authsession, :user, :login, :login_type, :crypted_password
 
       def initialize(appshell)
         raise "'#{appshell}' is not Teachbase::Bot::AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
@@ -17,16 +17,14 @@ module Teachbase
       end
 
       def call_authsession(access_mode)
-        auth_checker unless authsession?
-        @apitoken = Teachbase::Bot::ApiToken.find_by!(auth_session_id: authsession.id)
-        if access_mode == :with_api
-          unless apitoken.avaliable?
-            authsession.update!(active: false)
-            auth_checker
-          end
+        auth_checker if !authsession? && access_mode == :with_api
+        @apitoken = Teachbase::Bot::ApiToken.find_by!(auth_session_id: authsession.id) unless apitoken 
+
+        if apitoken.avaliable? && authsession?
           authsession.api_auth(:mobile, 2, access_token: apitoken.value)
         else
-          raise "Unexpected error or using not ':with_api' access mode in AppShell" unless authsession?
+          authsession.update!(active: false)
+          auth_checker if access_mode == :with_api
         end
 
         @user = authsession.user
@@ -37,6 +35,14 @@ module Teachbase
         return unless authsession?
 
         authsession.update!(active: false)
+      end
+
+      def authsession?
+        @authsession = @tg_user.auth_sessions.find_by(active: true)
+      end
+
+      def telegram_user_fullname
+        [@tg_user.first_name, @tg_user.last_name]
       end
 
       private
@@ -54,10 +60,6 @@ module Teachbase
         authsession
       end
 
-      def authsession?
-        @authsession = @tg_user.auth_sessions.find_by(active: true)
-      end
-
       def login_by_user_data
         user_auth_data
         authsession.api_auth(:mobile, 2, user_login: login, password: crypted_password.decrypt)
@@ -66,7 +68,7 @@ module Teachbase
 
         apitoken.activate_by(token)
         @user = Teachbase::Bot::User.find_or_create_by!(login_type => login)
-        user.update!(password: crypted_password)
+        @user.update!(password: crypted_password)
         activate_authsession
       rescue RuntimeError => e
         @logger.debug e.to_s
@@ -78,7 +80,7 @@ module Teachbase
         authsession.update!(auth_at: Time.now.utc,
                             active: true,
                             api_token_id: apitoken.id,
-                            user_id: user.id)
+                            user_id: @user.id)
       end
 
       def user_auth_data

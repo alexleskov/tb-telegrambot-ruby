@@ -32,13 +32,8 @@ module Teachbase
         @msg_params[:chat] = destination # TODO: Add option options[:to_chat_id]
       end
 
-      def user_fullname(option) # TODO: move to appshell by DataLoader
-        active_authsession = @appshell.data_loader.authsession
-        user_name = if active_authsession && [active_authsession.user.first_name, active_authsession.user.last_name].none?(nil)
-                      [active_authsession.user.first_name, active_authsession.user.last_name]
-                    else
-                      [@respond.incoming_data.tg_user.first_name, @respond.incoming_data.tg_user.last_name]
-                    end
+      def user_fullname(option)
+        user_name = @appshell.user_fullname
         case option
         when :string
           user_name.join(" ")

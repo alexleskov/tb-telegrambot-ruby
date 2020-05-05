@@ -1,4 +1,4 @@
-require './lib/scenarios'
+require './lib/scenarios/scenarios'
 require './lib/authorizer'
 require './lib/data_loader'
 
@@ -14,8 +14,9 @@ module Teachbase
                   :data_loader,
                   :settings,
                   :authorizer,
-                  :profile,
-                  :user
+                  :authsession
+                  #:profile,
+                  #:user
       attr_accessor :access_mode
 
       def initialize(controller, access_mode = :with_api)
@@ -30,16 +31,27 @@ module Teachbase
         set_scenario
       end
 
+      def user(mode = access_mode)
+        @authsession = authorizer.call_authsession(access_mode)
+        authorizer.user
+      end
+
       def user_info
         data_loader.call_profile
-        @profile = data_loader.get_user_profile
-        @user = data_loader.user
+      end
 
-        return if [profile, user].any?(nil)
+      def user_fullname
+        active_authsession = authorizer.authsession?
+        user_in_db = authorizer.authsession? ? user(:without_api) : nil
+        if user_in_db && [user_in_db.first_name, user_in_db.last_name].none?(nil)
+          [user_in_db.first_name, user_in_db.last_name]
+        else
+          authorizer.telegram_user_fullname
+        end
       end
 
       def authorization(mode = access_mode)
-        authsession = authorizer.call_authsession(mode)
+        user(mode)
         return unless authsession.is_a?(Teachbase::Bot::AuthSession)
 
         user_info
@@ -51,27 +63,30 @@ module Teachbase
       end
 
       def course_sessions_list(state, limit_count, offset_num)
-        data_loader.call_cs_list(state)
-        data_loader.get_cs_list(state, limit_count, offset_num)
+        data_loader.call_cs_list(state: state, limit: limit_count, offset: offset_num)
+        data_loader.get_cs_list(state: state, limit: limit_count, offset: offset_num)
       end
 
       def course_session_info(cs_id)
         data_loader.call_cs_info(cs_id)
-        data_loader.get_cs_info(cs_id)
+        user.course_sessions.find_by(tb_id: cs_id)
+      end
+
+      def course_session_section(option, param, cs_id)
+        data_loader.get_cs_sec_by(option, param, cs_id)
       end
 
       def course_session_sections(cs_id)
         data_loader.call_cs_sections(cs_id)
-        data_loader.get_cs_sections(cs_id)
+        user.course_sessions.find_by(tb_id: cs_id).sections.order(position: :asc)
       end
 
       def course_session_section_contents(section_position, cs_id)
-        section_bd = data_loader.get_cs_sec_by(:position, section_position, cs_id)
+        section_bd = course_session_section(:position, section_position, cs_id)
         return unless section_bd
 
-        data_loader.call_cs_sec_contents(cs_id, section_position)
-        { section: section_bd,
-          section_content: data_loader.get_cs_sec_contents(section_bd) }
+        data_loader.call_cs_sec_contents(section_bd)
+        section_bd.contents_by_types
       end
 
       def course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
@@ -81,7 +96,7 @@ module Teachbase
 
       def update_all_course_sessions
         Teachbase::Bot::DataLoader::CS_STATES.each do |state|
-          data_loader.call_cs_list(state, :with_reload)
+          data_loader.call_cs_list(state: state, mode: :with_reload)
         end
       end
 
@@ -118,7 +133,7 @@ module Teachbase
 
       def cs_count_by(state)
         user_info
-        profile.public_send("#{state}_courses_count").to_i
+        user.profile.public_send("#{state}_courses_count").to_i
       end
 
       private

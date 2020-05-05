@@ -5,12 +5,28 @@ module Teachbase
     class Section < ActiveRecord::Base
       include Viewers::Section
 
+      OBJECTS = [ :materials, :scorm_packages, :quizzes, :tasks ]
+      OBJECTS_CUSTOM_PARAMS = { materials: { "type" => :content_type },
+                                scorm_packages: { "title" => :name } }
+      OBJECTS_TYPES = { materials: :material,
+                        scorm_packages: :scorm_package,
+                        quizzes: :quiz,
+                        tasks: :task }
+
       belongs_to :course_session
       belongs_to :user
       has_many :materials, dependent: :destroy
       has_many :scorm_packages, dependent: :destroy
       has_many :quizzes, dependent: :destroy
       has_many :tasks, dependent: :destroy
+
+      def contents_by_types
+        objects = {}
+        OBJECTS.each do |content_type|
+          objects[content_type] = public_send(content_type).order(position: :asc)
+        end
+        objects
+      end
 
       def find_state
         if is_open?

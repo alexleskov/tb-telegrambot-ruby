@@ -59,7 +59,7 @@ module Teachbase
         rescue Telegram::Bot::Exceptions::ResponseError => e
           if e.error_code == 400
             @logger.debug "Error: #{e}"
-            menu.open_url_by_object(content)
+            answer_content.url(content.source, "#{I18n.t('open').capitalize}: #{content.name}")
             prepare_section_back_button(content.section) if back_button
           else
             answer.send_out(I18n.t('unexpected_error'))
@@ -91,11 +91,9 @@ module Teachbase
         def prepare_content_buttons(contents, cs_tb_id)
           buttons_sign = []
           callbacks_data = []
-          contents[:section_content].keys.each do |content_type|
-            emoji = attach_emoji(content_type)
-            content_type_group = contents[:section_content][content_type]
-            content_type_group.each do |content|
-              buttons_sign << "#{emoji} #{content.name}"
+          contents.keys.each do |content_type|
+            contents[content_type].each do |content|
+              buttons_sign << "#{attach_emoji(content_type)} #{content.name}"
               callbacks_data << "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}"
             end
           end

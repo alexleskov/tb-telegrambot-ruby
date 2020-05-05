@@ -15,9 +15,8 @@ module Teachbase
 
         def show_profile_state
           appshell.user_info
-          profile = appshell.profile
           user = appshell.user
-          return answer.empty_message unless profile && user
+          return answer.empty_message unless user.profile && user
 
           print_user_profile(user)
         end
@@ -56,7 +55,7 @@ module Teachbase
         end
 
         def show_sections(cs_tb_id, option)
-          sections_bd = appshell.course_session_sections(cs_tb_id, :without_api)
+          sections_bd = appshell.course_session_sections(cs_tb_id)
           cs = sections_bd.first.course_session
           return answer.empty_message if sections_bd.empty?
 
@@ -77,8 +76,9 @@ module Teachbase
         end
 
         def show_section_contents(section_position, cs_tb_id)
-          contents = appshell.course_session_section_contents(section_position, cs_tb_id)
-          cs = appshell.course_session_info(cs_tb_id, :without_api)
+          section_bd = appshell.course_session_section(:position, section_position, cs_tb_id)
+          contents = appshell.course_session_section_contents(section_position, cs_tb_id)          
+          cs = appshell.course_session_info(cs_tb_id)
           return answer.empty_message unless contents
 
           menu.create(buttons: prepare_content_buttons(contents, cs_tb_id) + to_course_sections_button(cs_tb_id),
@@ -87,7 +87,7 @@ module Teachbase
                       text: prepare_title(object: cs,
                                           breadcrumbs: :section,
                                           level: [:section],
-                                          section: contents[:section]))
+                                          section: section_bd))
         end
 
         def open_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
