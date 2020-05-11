@@ -8,19 +8,24 @@ module Viewers
        \n #{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}"
     end
 
-    def time_by(param)
-      raise "Can't get time by param: '#{param}" unless respond_to?(param)
+    def time_by(option)
+      raise "Can't get time by param: '#{option}" unless respond_to?(option)
 
-      time = public_send(param)
-      time.nil? ? sign_empty_date(param) : Time.parse(Time.at(time)
+      time = public_send(option)
+      time.nil? ? sign_empty_date(option) : Time.parse(Time.at(time)
                                                           .strftime("%d.%m.%Y %H:%M"))
-                                               .strftime("%d.%m.%Y %H:%M")
+                                                .strftime("%d.%m.%Y %H:%M")
+    end
+
+    def title(params)
+      cover_url = params ? params[:cover_url] : icon_url
+      "#{Emoji.t(:book)} <a href='#{cover_url}'>#{I18n.t('course')}</a>: #{name}"
     end
 
     private
 
-    def sign_empty_date(param)
-      param == :deadline ? "\u221e" : "-"
+    def sign_empty_date(option)
+      option == :deadline ? "\u221e" : "-"
     end
   end
 end

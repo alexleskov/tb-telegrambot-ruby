@@ -29,7 +29,7 @@ module Teachbase
           print_course_state(state)
           return answer.empty_message if course_sessions.empty?
           
-          print_courses_list(course_sessions, breadcrumbs: :course, level: [:name])
+          menu_courses_list(course_sessions, stages: %i[title])
           offset_num += limit_count
           unless offset_num >= сs_count
             menu.show_more(:course_sessions, all_count: сs_count, state: state, limit_count: limit_count,
@@ -39,62 +39,35 @@ module Teachbase
 
         def show_course_session_info(cs_tb_id)
           cs = appshell.course_session_info(cs_tb_id)
-          text = prepare_course_stats(cs, breadcrumbs: :course, level: [:name, :info])
-          menu.back(text)
+          print_course_stats_info(cs)
         end
 
         def sections_choosing_menu(cs_tb_id)
           sections = appshell.course_session_sections(cs_tb_id)
-          cs = sections.first.course_session
-          if sections.empty?
-            print_is_empty_by(cs, breadcrumbs: :course, level: [:name, :contents])
-          else
-            menu_choosing_section(sections, breadcrumbs: :course, level: [:name, :contents, :sections],
-                                            command_prefix: "show_sections_by_csid:#{cs_tb_id}_param:")
-          end
+          menu_choosing_section(sections, stages: %i[title sections],
+                                          command_prefix: "show_sections_by_csid:#{cs_tb_id}_param:")
         end
 
         def show_sections(cs_tb_id, option)
           sections_bd = appshell.course_session_sections(cs_tb_id)
-          cs = sections_bd.first.course_session
           return answer.empty_message if sections_bd.empty?
 
-          sections = find_sections_by(option, sections_bd)
-          title = prepare_title(object: cs,
-                                breadcrumbs: :section, level: [:section_menu], menu_option: option)
-
-          if sections.empty?
-            menu.create(buttons: to_course_sections_button(cs_tb_id),
-                        text: "#{title}\n\n#{create_empty_msg}",
-                        type: :menu_inline)            
-          else
-            menu_mode = option == :find_by_query_num ? :none : :edit_msg
-            menu.back("#{title}
-                       #{print_sections_by_state(sections)}",
-                       menu_mode)
-          end
+          menu_sections_by_option(find_sections_by(option, sections_bd), option)
         end
 
         def show_section_contents(section_position, cs_tb_id)
-          section_bd = appshell.course_session_section(:position, section_position, cs_tb_id)
-          contents = appshell.course_session_section_contents(section_position, cs_tb_id)          
-          cs = appshell.course_session_info(cs_tb_id)
+          section = appshell.course_session_section(:position, section_position, cs_tb_id)
+          contents = appshell.course_session_section_contents(section_position, cs_tb_id)
           return answer.empty_message unless contents
 
-          menu.create(buttons: prepare_content_buttons(contents, cs_tb_id) + to_course_sections_button(cs_tb_id),
-                      mode: :none,
-                      type: :menu_inline,
-                      text: prepare_title(object: cs,
-                                          breadcrumbs: :section,
-                                          level: [:section],
-                                          section: section_bd))
+          menu_section_contents(section, contents, stages: %i[title contents])
         end
 
         def open_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
           content = appshell.course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
           return answer.empty_message unless content
 
-          print_content(content)
+          print_material(content)
         end
 
         def courses_update

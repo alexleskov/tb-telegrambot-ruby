@@ -2,14 +2,16 @@ module Viewers
   module Section
     include Formatter
 
-    def title_by(state)
-      emoji = attach_emoji(state) ? attach_emoji(state) : Emoji.t(:open_file_folder)
+    def title(params)
+      section_state = params ? params[:state] : :open
+      emoji = attach_emoji(section_state) ? attach_emoji(section_state) : Emoji.t(:open_file_folder)
+      puts "emoji: #{emoji}"
       "#{emoji} <b>#{I18n.t('section')} #{position}:</b> #{name}"
     end
 
     def title_with_state(state)
       section_state_msg = public_send(state) if respond_to?(state)
-      "#{title_by(state)}\n#{section_state_msg}"
+      "#{title(state: state)}\n#{section_state_msg}"
     end
 
     def open

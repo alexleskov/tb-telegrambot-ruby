@@ -32,7 +32,7 @@ module Formatter
   end
 
   def attach_emoji(param)
-    case param
+    case param.to_sym
     when :open
       Emoji.t(:arrow_forward)
     when :section_unable
@@ -41,8 +41,14 @@ module Formatter
       Emoji.t(:no_entry_sign)
     when :section_unpublish
       Emoji.t(:x)
-    when :materials, :text, :image, :video, :youtube, :pdf, :audio, :iframe
+    when :materials, :text, :pdf, :iframe
       Emoji.t(:page_facing_up)
+    when :video, :youtube, :vimeo
+      Emoji.t(:clapper)
+    when :audio
+      Emoji.t(:sound)
+    when :image
+      Emoji.t(:art)
     when :tasks
       Emoji.t(:memo)
     when :quizzes
@@ -53,6 +59,8 @@ module Formatter
       Emoji.t(:green_book)
     when :archived
       Emoji.t(:closed_book)
+    else
+      Emoji.t(:round_pushpin)
     end
   end
 

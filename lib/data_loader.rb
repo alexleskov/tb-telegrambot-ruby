@@ -30,13 +30,10 @@ module Teachbase
       end
 
       def get_cs_list(params)
-        state = params[:state]
-        limit_count = params[:limit]
-        offset_num = params[:offset]
-        appshell.user.course_sessions.order(name: :asc)
-                                     .limit(limit_count)
-                                     .offset(offset_num)
-                                     .where(complete_status: state.to_s,
+        appshell.user.course_sessions.order(id: :asc)
+                                     .limit(params[:limit])
+                                     .offset(params[:offset])
+                                     .where(complete_status: params[:state].to_s,
                                             scenario_mode: appshell.settings.scenario)
       end
 
@@ -71,7 +68,6 @@ module Teachbase
                                         MAIN_OBJECTS_CUSTOM_PARAMS[:users])
           user_attrs[:tb_id] = lms_info["id"]
           profile_attrs = Attribute.create(Teachbase::Bot::Profile.attribute_names, lms_info)
-          @logger.debug "user_attrs: #{user_attrs}\nappshell.user: #{appshell.user}"
           appshell.user.update!(user_attrs)
           Teachbase::Bot::Profile.find_or_create_by!(user_id: appshell.user.id).update!(profile_attrs)
         end
@@ -151,7 +147,7 @@ module Teachbase
             lms_data["source"] = lms_data["source"][CONTENT_VIDEO_FORMAT]
           end
           @logger.debug "lms_data: #{lms_data}"
-          attributes = Attribute.create(content_attrs(content_type), lms_data)
+          attributes = Attribute.create(section_content_attrs(content_type), lms_data)
           section_bd.public_send(content_type).find_by!(tb_id: content_tb_id).update!(attributes)
         end
       end
@@ -186,7 +182,7 @@ module Teachbase
       def fetch_section_objects(content_type, section_lms, section_bd)
         raise "No such content type: #{content_type}." unless section_bd.respond_to?(content_type)
 
-        content_params = content_attrs(content_type)
+        content_params = section_content_attrs(content_type)
         section_lms[content_type.to_s].each do |content_type_hash|
           attributes = Attribute.create(content_params, content_type_hash,
                                         Teachbase::Bot::Section::OBJECTS_CUSTOM_PARAMS[content_type])
@@ -198,7 +194,7 @@ module Teachbase
         end
       end
 
-      def content_attrs(content_type)
+      def section_content_attrs(content_type)
          to_constantize(to_camelize(Teachbase::Bot::Section::OBJECTS_TYPES[content_type.to_sym]),
                         "Teachbase::Bot::").public_send(:attribute_names)
       end

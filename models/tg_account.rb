@@ -8,6 +8,10 @@ module Teachbase
       has_many :users, through: :auth_sessions
       has_many :bot_messages, dependent: :destroy
       has_many :tg_account_messages, dependent: :destroy
+
+    def user_fullname
+      [first_name, last_name]
+    end
     end
   end
 end

@@ -1,3 +1,4 @@
+require './interfaces/breadcrumb'
 require './interfaces/base'
 require './interfaces/standart_learning'
 

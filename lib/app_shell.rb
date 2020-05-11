@@ -15,8 +15,6 @@ module Teachbase
                   :settings,
                   :authorizer,
                   :authsession
-                  #:profile,
-                  #:user
       attr_accessor :access_mode
 
       def initialize(controller, access_mode = :with_api)
@@ -41,12 +39,11 @@ module Teachbase
       end
 
       def user_fullname
-        active_authsession = authorizer.authsession?
         user_in_db = authorizer.authsession? ? user(:without_api) : nil
         if user_in_db && [user_in_db.first_name, user_in_db.last_name].none?(nil)
           [user_in_db.first_name, user_in_db.last_name]
         else
-          authorizer.telegram_user_fullname
+          controller.tg_user.user_fullname
         end
       end
 

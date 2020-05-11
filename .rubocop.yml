@@ -2,7 +2,7 @@ Rails:
   Enabled: true
 
 Style/FrozenStringLiteralComment:
-  Enabled: false
+  Enabled: true
 
 Metrics/LineLength:
   Max: 120
@@ -14,4 +14,7 @@ Metrics/MethodLength:
   Max: 30
 
 Style/StringLiterals:
+  Enabled: false
+
+Style/RegexpLiteral:
   Enabled: false

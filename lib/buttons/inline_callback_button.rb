@@ -19,6 +19,10 @@ class InlineCallbackButton < MenuButton
         emoji: [ :arrow_left ])
     end
 
+    def custom_back(callback_data)
+     g(buttons_sign: [ I18n.t('back') ], callback_data: [ callback_data ], emoji: [ :arrow_left ])
+    end
+    
     def more(options)
       raise unless options[:limit] || options[:offset]
 
@@ -29,6 +33,8 @@ class InlineCallbackButton < MenuButton
     def sign_in
       g(callback_data: [ "signin" ], buttons_sign: [ I18n.t('signin').to_s ], emoji: [ :rocket ])
     end
+
+    private
 
     def last_unical_callback(sent_messages)
       raise unless sent_messages

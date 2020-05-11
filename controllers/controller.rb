@@ -11,7 +11,7 @@ module Teachbase
 
       MSG_TYPES = %i[text data].freeze
 
-      attr_reader :respond, :answer, :menu, :answer_content, :appshell
+      attr_reader :respond, :answer, :menu, :answer_content, :appshell, :tg_user
 
       def initialize(params, dest)
         @respond = params[:respond]

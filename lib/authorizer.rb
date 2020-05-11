@@ -12,7 +12,7 @@ module Teachbase
 
         @logger = AppConfigurator.new.get_logger
         @appshell = appshell
-        @tg_user = appshell.controller.respond.incoming_data.tg_user
+        @tg_user = appshell.controller.tg_user
         @encrypt_key = AppConfigurator.new.get_encrypt_key
       end
 
@@ -39,10 +39,6 @@ module Teachbase
 
       def authsession?
         @authsession = @tg_user.auth_sessions.find_by(active: true)
-      end
-
-      def telegram_user_fullname
-        [@tg_user.first_name, @tg_user.last_name]
       end
 
       private
