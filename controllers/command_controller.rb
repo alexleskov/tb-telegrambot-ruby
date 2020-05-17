@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './controllers/controller'
 
 class Teachbase::Bot::CommandController < Teachbase::Bot::Controller

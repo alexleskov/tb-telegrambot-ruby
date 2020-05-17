@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 require './lib/app_shell'
+require './interfaces/breadcrumb'
 require './lib/answers/answer_menu'
 require './lib/answers/answer_text'
 require './lib/answers/answer_content'
@@ -17,7 +20,7 @@ module Teachbase
         @respond = params[:respond]
         raise "Respond not found" unless respond
 
-        @logger = AppConfigurator.new.get_logger
+        @logger = AppConfigurator.new.load_logger
         @tg_user = respond.incoming_data.tg_user
         @message = respond.incoming_data.message
         @appshell = Teachbase::Bot::AppShell.new(self)
@@ -51,15 +54,15 @@ module Teachbase
                          end
 
         command =~ @message_value
-        if $~
-          case block.arity
-          when 0
-            yield
-          when 1
-            yield $1
-          when 2
-            yield $1, $2
-          end
+        return unless $LAST_MATCH_INFO
+
+        case block.arity
+        when 0
+          yield
+        when 1
+          yield $1
+        when 2
+          yield $1, $2
         end
       end
     end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './lib/answers/answer'
 require './lib/buttons/inline_callback_button'
 require './lib/buttons/inline_url_button'
@@ -5,13 +7,13 @@ require './lib/buttons/text_command_button'
 
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
   include Viewers::Menu
-  
+
   MENU_TYPES = %i[menu menu_inline].freeze
-  LOCALIZATION_EMOJI = [ :ru, :us ]
-  SCENARIO_EMOJI = [:books, :bicyclist]
+  LOCALIZATION_EMOJI = %i[ru us].freeze
+  SCENARIO_EMOJI = %i[books bicyclist].freeze
 
   def initialize(appshell, param)
-    @logger = AppConfigurator.new.get_logger
+    @logger = AppConfigurator.new.load_logger
     super(appshell, param)
   end
 
@@ -84,9 +86,9 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
   end
 
   def custom_back(callback_data, text, mode = :none)
-    create(buttons: InlineCallbackButton.g(buttons_sign: [ I18n.t('back') ],
-                                           callback_data: [ callback_data ],
-                                           emoji: [ :arrow_left ]),
+    create(buttons: InlineCallbackButton.g(buttons_sign: [I18n.t('back')],
+                                           callback_data: [callback_data],
+                                           emoji: [:arrow_left]),
            type: :menu_inline,
            disable_notification: true,
            mode: mode,
@@ -94,8 +96,8 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
   end
 
   def open_url_by_object(object, params = {})
-    create(buttons: InlineUrlButton.g(buttons_sign: [ I18n.t('open').capitalize ],
-                                      url: [ to_default_protocol(object.source) ]),
+    create(buttons: InlineUrlButton.g(buttons_sign: [I18n.t('open').capitalize],
+                                      url: [to_default_protocol(object.source)]),
            type: :menu_inline,
            text: params[:text] || object.name)
   end
@@ -132,7 +134,6 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
   private
 
   def init_menu_params(buttons, slices_count)
-    {buttons: buttons, slices: slices_count }
+    { buttons: buttons, slices: slices_count }
   end
-
 end

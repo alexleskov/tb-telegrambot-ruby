@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Breadcrumb
   include Formatter
 
@@ -13,6 +15,7 @@ class Breadcrumb
 
   def initialize(object, stages, params)
     raise "Stages is '#{stages.class}'. Must be an Array" unless stages.is_a?(Array)
+
     if params
       raise "Params is '#{params.class}'. Must be a Hash" unless params.is_a?(Hash)
     end
@@ -36,7 +39,7 @@ class Breadcrumb
     "#{Emoji.t(:arrow_down)} #{I18n.t('course_sections')}"
   end
 
-  alias_method :contents, :sections
+  alias contents sections
 
   def menu
     "#{attach_emoji(params[:state])} #{I18n.t(params[:state])}"
@@ -45,7 +48,7 @@ class Breadcrumb
   def build_crumbs
     result = []
     stages.each { |stage| result << public_send(stage) }
-    to_bolder(result.last << DELIMETER)
+    result << to_bolder(result.pop.dup) + DELIMETER
     result.join(DELIMETER)
   end
 end

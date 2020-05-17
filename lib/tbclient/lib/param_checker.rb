@@ -26,7 +26,7 @@ module Teachbase
         end
         @lost_params.empty?
       end
-      
+
       def check!(mode, params, check_data)
         raise "Can't find several #{mode} for this request. Lost: #{@lost_params}" unless check(mode, params, check_data)
       end

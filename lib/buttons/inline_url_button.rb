@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './lib/buttons/menu_button'
 
 class InlineUrlButton < MenuButton
@@ -7,7 +9,7 @@ class InlineUrlButton < MenuButton
     end
 
     def to_open(url, text = "")
-      g(buttons_sign: [ "#{I18n.t('open').capitalize} #{text}" ], url: [ url ], emoji: [ :link ])
+      g(buttons_sign: ["#{I18n.t('open').capitalize} #{text}"], url: [url], emoji: [:link])
     end
   end
 end

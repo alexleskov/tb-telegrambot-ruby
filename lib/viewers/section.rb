@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 module Viewers
   module Section
     include Formatter
+    include Viewers::Helper
 
     def title(params)
       section_state = params ? params[:state] : :open
-      emoji = attach_emoji(section_state) ? attach_emoji(section_state) : Emoji.t(:open_file_folder)
-      puts "emoji: #{emoji}"
-      "#{emoji} <b>#{I18n.t('section')} #{position}:</b> #{name}"
+      emoji = attach_emoji(section_state) || Emoji.t(:open_file_folder)
+      " #{emoji} <b>#{I18n.t('section')} #{position}:</b> #{name}"
     end
 
     def title_with_state(state)
@@ -28,6 +30,10 @@ module Viewers
 
     def section_unpublish
       "<i>#{I18n.t('section_unpublish')}</i>."
+    end
+
+    def back_button
+      InlineCallbackButton.custom_back("/sec#{position}_cs#{course_session.tb_id}")
     end
   end
 end

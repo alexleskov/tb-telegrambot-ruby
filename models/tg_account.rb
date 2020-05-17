@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_record'
 
 module Teachbase
@@ -9,9 +11,9 @@ module Teachbase
       has_many :bot_messages, dependent: :destroy
       has_many :tg_account_messages, dependent: :destroy
 
-    def user_fullname
-      [first_name, last_name]
-    end
+      def user_fullname
+        [first_name, last_name]
+      end
     end
   end
 end

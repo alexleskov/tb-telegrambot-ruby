@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './models/tg_account'
 require './models/setting'
 require './models/bot_message'

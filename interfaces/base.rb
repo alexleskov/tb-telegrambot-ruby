@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 module Teachbase
   module Bot
     module Interfaces
-      module Base
+      include Viewers::Helper
 
+      module Base
         def self.included(base)
           base.extend ClassMethods
         end
@@ -29,6 +32,10 @@ module Teachbase
           answer.send_out "#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t(param.to_s)}: <b>#{I18n.t(status.to_s)}</b>"
         end
 
+        def print_update_status(status)
+          answer.send_out(create_update_status_msg_by(status))
+        end
+
         def ask_enter_the_number(object)
           sign = case object
                  when :section
@@ -39,19 +46,29 @@ module Teachbase
           answer.send_out "#{Emoji.t(:pencil2)} <b>#{I18n.t('enter_the_number')} #{sign}:</b>"
         end
 
-        def create_breadcrumbs(level, stage_names, params = {})
-          raise "'stage_names' is a #{stage_names.class}. Must be an Array." unless stage_names.is_a?(Array)
+        def print_is_empty_by(params = {})
+          answer.send_out "\n#{create_title(params)}
+                           \n#{create_empty_msg}"
+        end
 
-          breadcrumbs = init_breadcrumbs(params)
-          raise "Can't find breadcrumbs." unless breadcrumbs
+        def menu_empty_msg(text, buttons, mode = :none)
+          menu.create(buttons: buttons,
+                      text: "#{text}\n#{create_empty_msg}",
+                      type: :menu_inline,
+                      mode: mode)
+        end
 
-          delimeter = "\n"
-          result = []
-          stage_names.each do |stage_name|
-            result << breadcrumbs[level.to_sym][stage_name]
+        private
+
+        def create_update_status_msg_by(status)
+          case status.to_sym
+          when :in_progress
+            "#{Emoji.t(:arrows_counterclockwise)} <b>#{I18n.t('updating_data')}</b>"
+          when :success
+            "#{Emoji.t(:thumbsup)} #{I18n.t('updating_success')}"
+          else
+            "#{Emoji.t(:thumbsdown)} #{I18n.t('error')}"
           end
-          to_bolder(result.last)
-          result.join(delimeter)
         end
 
       end

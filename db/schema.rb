@@ -94,10 +94,12 @@ ActiveRecord::Schema.define(version: 16) do
   create_table "materials", force: :cascade do |t|
     t.integer "tb_id", null: false
     t.integer "position", null: false
+    t.integer "time_spent"
     t.string "name"
     t.string "content_type"
     t.string "category"
     t.string "source"
+    t.string "status"
     t.boolean "editor_js", default: false
     t.boolean "markdown", default: false
     t.jsonb "content", default: "{}"
@@ -126,6 +128,7 @@ ActiveRecord::Schema.define(version: 16) do
     t.integer "tb_id", null: false
     t.integer "position", null: false
     t.string "name"
+    t.string "status"
     t.bigint "section_id"
     t.bigint "course_session_id"
     t.bigint "user_id"
@@ -140,6 +143,7 @@ ActiveRecord::Schema.define(version: 16) do
     t.integer "tb_id", null: false
     t.integer "position", null: false
     t.string "name"
+    t.string "status"
     t.bigint "section_id"
     t.bigint "course_session_id"
     t.bigint "user_id"
@@ -180,6 +184,7 @@ ActiveRecord::Schema.define(version: 16) do
     t.string "content"
     t.string "description"
     t.string "title"
+    t.string "status"
     t.boolean "editor_js", default: false
     t.bigint "section_id"
     t.bigint "course_session_id"

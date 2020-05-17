@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './controllers/controller'
 
 class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
@@ -5,16 +7,15 @@ class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
     super(params, :from)
     save_message
   end
-  
+
   private
 
   def on(command, &block)
     super(command, :data, &block)
   end
 
-  def save_message(result_data = {})
-    result_data = { data: @message.data,
-                    message_type: "callback_data"}
-    super(result_data)
+  def save_message(_result_data = {})
+    result = { data: @message.data, message_type: "callback_data" }
+    super(result)
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'logger'
 
 require './lib/database_connector'
@@ -12,19 +14,19 @@ class AppConfigurator
     setup_database
   end
 
-  def get_token
+  def load_token
     YAML.safe_load(@load_config_file)['telegram_bot_token']
   end
 
-  def get_logger
+  def load_logger
     Logger.new(STDOUT, Logger::DEBUG)
   end
 
-  def get_encrypt_key
+  def load_encrypt_key
     YAML.safe_load(@load_config_file)['encrypt_key']
   end
 
-  def get_parse_mode
+  def load_parse_mode
     YAML.safe_load(@load_config_file)['parse_mode']
   end
 

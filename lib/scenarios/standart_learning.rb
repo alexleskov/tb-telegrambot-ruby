@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Teachbase
   module Bot
     module Scenarios
@@ -25,16 +27,16 @@ module Teachbase
           offset_num = offset_num.to_i
           limit_count = limit_count.to_i
           course_sessions = appshell.course_sessions_list(state, limit_count, offset_num)
-          сs_count = appshell.cs_count_by(state) 
+          cs_count = appshell.cs_count_by(state)
           print_course_state(state)
           return answer.empty_message if course_sessions.empty?
-          
+
           menu_courses_list(course_sessions, stages: %i[title])
           offset_num += limit_count
-          unless offset_num >= сs_count
-            menu.show_more(:course_sessions, all_count: сs_count, state: state, limit_count: limit_count,
-                           offset_num: offset_num)
-          end
+          return if offset_num >= cs_count
+
+          menu.show_more(:course_sessions, all_count: cs_count, state: state, limit_count: limit_count,
+                                           offset_num: offset_num)
         end
 
         def show_course_session_info(cs_tb_id)
@@ -49,10 +51,16 @@ module Teachbase
         end
 
         def show_sections(cs_tb_id, option)
-          sections_bd = appshell.course_session_sections(cs_tb_id)
-          return answer.empty_message if sections_bd.empty?
+          sections = appshell.course_session_sections(cs_tb_id)
+          sections_by_option = find_sections_by(option, sections)
 
-          menu_sections_by_option(find_sections_by(option, sections_bd), option)
+          if sections.empty? || sections_by_option.empty?
+            cs = appshell.course_session_info(cs_tb_id)
+            title = create_title(object: cs, stages: %i[title sections menu], params: { state: option })
+            return menu_empty_msg(title, create_sections_back_button(cs_tb_id), :edit_msg)
+          end
+
+          menu_sections_by_option(sections_by_option, option)
         end
 
         def show_section_contents(section_position, cs_tb_id)
@@ -71,9 +79,11 @@ module Teachbase
         end
 
         def courses_update
-          print_update_status(:in_progress)
-          course_update = appshell.update_all_course_sessions
-          course_update ? print_update_status(:success) : print_update_status(:fail)
+          check_status { appshell.update_all_course_sessions }
+        end
+
+        def track_material(cs_tb_id, material_tb_id, time_spent)
+          check_status { appshell.track_material(cs_tb_id, material_tb_id, time_spent) }
         end
 
         def courses_list
@@ -149,6 +159,11 @@ module Teachbase
             @message_value =~ %r{^/sec(\d*)_cs(\d*)}
             show_section_contents($1, $2)
           end
+
+          on %r{^approve_material_by_csid:} do
+            @message_value =~ %r{^approve_material_by_csid:(\d*)_objid:(\d*)_time:(\d*)}
+            track_material($1, $2, $3)
+          end
         end
 
         def match_text_action
@@ -170,7 +185,7 @@ module Teachbase
             menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('farewell_message')} :'(")
           end
         end
-        
+
         private
 
         def find_sections_by(option, sections)

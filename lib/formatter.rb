@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 module Formatter
-  NOT_VAILD_URL_REGEXP = %r{^(\/\/)}
+  NOT_VAILD_URL_REGEXP = %r{^(\/\/)}.freeze
   DEFAULT_URL_PROTOCOL = "http://"
 
   def to_bolder(string)
-    string.insert(0, "<b>").insert(-1, "</b>")
+    "<b>#{string}</b>"
   end
 
   def to_camelize(string)
@@ -15,12 +17,12 @@ module Formatter
   end
 
   def to_snakecase(string)
-    string.to_s.gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').
-    gsub(/([a-z\d])([A-Z])/,'\1_\2').
-    tr('-', '_').
-    gsub(/\s/, '_').
-    gsub(/__+/, '_').
-    downcase
+    string.to_s.gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+          .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+          .tr('-', '_')
+          .gsub(/\s/, '_')
+          .gsub(/__+/, '_')
+          .downcase
   end
 
   def to_i18n(array, prefix = "")
@@ -75,7 +77,6 @@ module Formatter
   private
 
   def url_valid?(url)
-    !(url =~ NOT_VAILD_URL_REGEXP)
+    url !~ NOT_VAILD_URL_REGEXP
   end
-
 end

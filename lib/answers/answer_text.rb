@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './lib/answers/answer'
 
 class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
@@ -8,7 +10,7 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
   def create(options)
     super(options)
     raise "Option 'text' is missing" unless options[:text]
-    
+
     MessageSender.new(msg_params).send
   end
 
@@ -24,10 +26,10 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
     send_out("#{I18n.t('farewell_message')} <b>#{user_fullname(:string)}!</b>")
   end
 
-  def empty_message
-    send_out "#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
+  def empty_message(title = "")
+    send_out "#{title}#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
   end
-  
+
   def ask_login
     send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_login')}:"
   end
@@ -35,5 +37,4 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
   def ask_password
     send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_password')}:"
   end
-
 end

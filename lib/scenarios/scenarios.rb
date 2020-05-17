@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './interfaces/interfaces'
 require './lib/scenarios/base'
 require './lib/scenarios/standart_learning'

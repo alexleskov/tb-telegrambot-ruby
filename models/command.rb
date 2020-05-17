@@ -1,10 +1,8 @@
-# require 'active_record'
-require './lib/app_configurator'
-require 'gemoji'
+# frozen_string_literal: true
 
 module Teachbase
   module Bot
-    class Command # < ActiveRecord::Base
+    class Command
       attr_reader :key, :emoji, :text, :value
 
       def initialize(key, emoji)

@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require './lib/reply_markup_formatter'
 
 class MessageSender
-  MSG_TYPES = [:photo, :video, :document, :audio, :menu]
+  MSG_TYPES = %i[photo video document audio menu].freeze
 
   attr_reader :bot,
               :msg_data,
@@ -17,16 +19,16 @@ class MessageSender
               :menu_type
 
   def initialize(msg_params)
-    @logger = AppConfigurator.new.get_logger
+    @logger = AppConfigurator.new.load_logger
     @bot = msg_params[:bot]
     @chat = msg_params[:chat]
     @tg_user = msg_params[:tg_user]
     @text = msg_params[:text]
     @menu_type = msg_params[:menu]
-    @parse_mode = msg_params[:parse_mode] || AppConfigurator.new.get_parse_mode
+    @parse_mode = msg_params[:parse_mode] || AppConfigurator.new.load_parse_mode
     @disable_notification = msg_params[:disable_notification] || false
     @reply_to_message_id = msg_params[:reply_to_message_id]
-    @reply_to_tg_id = msg_params[:reply_to_tg_id]    
+    @reply_to_tg_id = msg_params[:reply_to_tg_id]
     @menu_data = msg_params[:menu_data]
     @mode = msg_params[:mode] || find_menu_mode
     @msg_type = find_msg_type(msg_params)
@@ -64,8 +66,8 @@ class MessageSender
 
   def find_msg_type(msg_params)
     type = MSG_TYPES.each do |type_of_msg|
-             break type_of_msg if msg_params.keys.include?(type_of_msg)
-           end
+      break type_of_msg if msg_params.keys.include?(type_of_msg)
+    end
     type = :text unless type.is_a?(Symbol)
     type
   end
@@ -101,31 +103,35 @@ class MessageSender
       raise "Can't find last message for editing" unless last_message
 
       params[:message_id] = last_message.message_id
-      if [:text, :menu].include?(msg_type)
+      if %i[text menu].include?(msg_type)
         bot.api.edit_message_text(params)
       else
         bot.api.edit_message_media(params)
       end
     else
-      case msg_type
-      when :menu, :text
-        bot.api.send_message(params)
-      when :photo
-        bot.api.send_photo(params)
-      when :video
-        bot.api.send_video(params)
-      when :document
-        bot.api.send_document(params)
-      when :audio
-        bot.api.send_audio(params)
-      else
-        raise "Can't find such message type for sending: '#{msg_type}'. Avaliable: '#{MSG_TYPES}'"
-      end
-    end    
+      send_msg_by_type(params)
+    end
+  end
+
+  def send_msg_by_type(params)
+    case msg_type
+    when :menu, :text
+      bot.api.send_message(params)
+    when :photo
+      bot.api.send_photo(params)
+    when :video
+      bot.api.send_video(params)
+    when :document
+      bot.api.send_document(params)
+    when :audio
+      bot.api.send_audio(params)
+    else
+      raise "Can't find such message type for sending: '#{msg_type}'. Avaliable: '#{MSG_TYPES}'"
+    end
   end
 
   def reply_markup
-    ReplyMarkupFormatter.new(menu_data).get_markup if menu_data.include?(:buttons)
+    ReplyMarkupFormatter.new(menu_data).build_markup if menu_data.include?(:buttons)
   end
 
   def hide_markup
@@ -133,21 +139,19 @@ class MessageSender
   end
 
   def inline_markup
-    ReplyMarkupFormatter.new(menu_data).get_inline_markup if menu_data.include?(:buttons)
+    ReplyMarkupFormatter.new(menu_data).build_inline_markup if menu_data.include?(:buttons)
   end
 
   def force_reply_markup
     Telegram::Bot::Types::ForceReply.new(force_reply: true)
   end
 
-  private
-
   def fetch_msg_result_data(result)
     { message_id: result["message_id"],
-                        chat_id: result["chat"]["id"],
-                        date: result["date"],
-                        edit_date: result["edit_date"],
-                        text: result["text"],
-                        inline_keyboard: result["reply_markup"]["inline_keyboard"] }
+      chat_id: result["chat"]["id"],
+      date: result["date"],
+      edit_date: result["edit_date"],
+      text: result["text"],
+      inline_keyboard: result["reply_markup"]["inline_keyboard"] }
   end
 end

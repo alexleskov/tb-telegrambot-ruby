@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './lib/answers/answer'
 
 class Teachbase::Bot::AnswerContent < Teachbase::Bot::Answer

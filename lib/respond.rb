@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './lib/command_list'
 require './controllers/action_controller'
 require './controllers/callback_controller'

@@ -1,5 +1,9 @@
+# frozen_string_literal: true
+
 module Viewers
   module User
+    include Viewers::Helper
+    
     def profile_info
       "<b>#{Emoji.t(:mortar_board)} #{I18n.t('profile_state')}</b>
       \n  <a href='#{avatar_url}'>#{first_name} #{last_name}</a>

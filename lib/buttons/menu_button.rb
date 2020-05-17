@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MenuButton
   BUTTON_TYPES = %i[callback_data text_command url].freeze
 
@@ -6,7 +8,7 @@ class MenuButton
       inst = new(type, options)
       buttons_list = inst.create_buttons
       back = inline_back(inst.sent_messages) if inst.back_button
-      buttons_list = buttons_list + back if back
+      buttons_list += back if back
       buttons_list
     end
 
@@ -26,7 +28,7 @@ class MenuButton
               :sent_messages
 
   def initialize(type, options)
-    @logger = AppConfigurator.new.get_logger
+    @logger = AppConfigurator.new.load_logger
     @type = type
     @options = options
     @sent_messages = options[:sent_messages]
@@ -59,16 +61,15 @@ class MenuButton
   end
 
   def init_button(button_sign, type_params, ind)
-    [ create_button_name(button_sign, ind).merge(create_action(type_params, ind)) ]
+    [create_button_name(button_sign, ind).merge(create_action(type_params, ind))]
   end
 
   def create_action(type_params, ind)
-    { type.to_sym => "#{type_params[ind]}" }
+    { type.to_sym => (type_params[ind]).to_s }
   end
 
   def create_button_name(button_sign, ind)
     text_on_button = emoji ? "#{Emoji.t(emoji[ind])}#{button_sign}" : button_sign
-    { text: "#{text_on_button}" }
+    { text: text_on_button.to_s }
   end
-
 end

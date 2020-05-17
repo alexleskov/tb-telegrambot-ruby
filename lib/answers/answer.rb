@@ -1,16 +1,18 @@
+# frozen_string_literal: true
+
 require './models/auth_session'
 
 module Teachbase
   module Bot
     class Answer
       include Formatter
-      
+
       MSG_DESTS = %i[chat from].freeze
 
       attr_reader :msg_params
 
       def initialize(appshell, param)
-        @logger = AppConfigurator.new.get_logger
+        @logger = AppConfigurator.new.load_logger
         raise "No such param '#{param}' for send answer" unless MSG_DESTS.include?(param)
 
         @param = param
@@ -39,7 +41,7 @@ module Teachbase
           user_name.join(" ")
         when :array
           user_name
-        else 
+        else
           raise "Don't know such option: #{option}. Use: ':string', ':array'"
         end
       end

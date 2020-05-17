@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './lib/scenarios/scenarios'
 require './lib/authorizer'
 require './lib/data_loader'
@@ -18,7 +20,7 @@ module Teachbase
       attr_accessor :access_mode
 
       def initialize(controller, access_mode = :with_api)
-        @logger = AppConfigurator.new.get_logger
+        @logger = AppConfigurator.new.load_logger
         @access_mode = access_mode
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
 
@@ -29,7 +31,7 @@ module Teachbase
         set_scenario
       end
 
-      def user(mode = access_mode)
+      def user(_mode = access_mode)
         @authsession = authorizer.call_authsession(access_mode)
         authorizer.user
       end
@@ -64,22 +66,22 @@ module Teachbase
         data_loader.get_cs_list(state: state, limit: limit_count, offset: offset_num)
       end
 
-      def course_session_info(cs_id)
-        data_loader.call_cs_info(cs_id)
-        user.course_sessions.find_by(tb_id: cs_id)
+      def course_session_info(cs_tb_id)
+        data_loader.call_cs_info(cs_tb_id)
+        user.course_sessions.find_by(tb_id: cs_tb_id)
       end
 
-      def course_session_section(option, param, cs_id)
-        data_loader.get_cs_sec_by(option, param, cs_id)
+      def course_session_section(option, param, cs_tb_id)
+        data_loader.get_cs_sec_by(option, param, cs_tb_id)
       end
 
-      def course_session_sections(cs_id)
-        data_loader.call_cs_sections(cs_id)
-        user.course_sessions.find_by(tb_id: cs_id).sections.order(position: :asc)
+      def course_session_sections(cs_tb_id)
+        data_loader.call_cs_sections(cs_tb_id)
+        user.course_sessions.find_by(tb_id: cs_tb_id).sections.order(position: :asc)
       end
 
-      def course_session_section_contents(section_position, cs_id)
-        section_bd = course_session_section(:position, section_position, cs_id)
+      def course_session_section_contents(section_position, cs_tb_id)
+        section_bd = course_session_section(:position, section_position, cs_tb_id)
         return unless section_bd
 
         data_loader.call_cs_sec_contents(section_bd)
@@ -92,9 +94,11 @@ module Teachbase
       end
 
       def update_all_course_sessions
+        courses = {}
         Teachbase::Bot::DataLoader::CS_STATES.each do |state|
-          data_loader.call_cs_list(state: state, mode: :with_reload)
+          courses[state] = data_loader.call_cs_list(state: state, mode: :with_reload)
         end
+        courses
       end
 
       def change_scenario(scenario_name)
@@ -113,9 +117,9 @@ module Teachbase
 
       def request_data(validate_type)
         data = take_data
-        return value = nil if !(data =~ ABORT_ACTION_COMMAND).nil? || controller.respond.commands.command_by?(:value, data)
+        return nil if !(data =~ ABORT_ACTION_COMMAND).nil? || controller.respond.commands.command_by?(:value, data)
 
-        value = data unless validation(validate_type, data).nil?
+        data unless validation(validate_type, data).nil?
       end
 
       def request_user_data
@@ -133,6 +137,10 @@ module Teachbase
         user.profile.public_send("#{state}_courses_count").to_i
       end
 
+      def track_material(cs_tb_id, material_tb_id, time_spent)
+        data_loader.call_track_material(cs_tb_id, material_tb_id, time_spent)
+      end
+
       private
 
       def set_scenario
@@ -141,7 +149,7 @@ module Teachbase
 
       def take_data
         controller.respond.incoming_data.bot.listen do |message|
-          msg = message.respond_to?(:text) ? message.text : message.data # for debugger 
+          msg = message.respond_to?(:text) ? message.text : message.data # for debugger
           @logger.debug "taking data: @#{message.from.username}: #{msg}"
           break message.text if message.respond_to?(:text)
         end

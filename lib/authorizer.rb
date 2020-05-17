@@ -1,24 +1,25 @@
+# frozen_string_literal: true
+
 require './models/user'
 require './models/api_token'
 
 module Teachbase
   module Bot
     class Authorizer
-
       attr_reader :apitoken, :authsession, :user, :login, :login_type, :crypted_password
 
       def initialize(appshell)
         raise "'#{appshell}' is not Teachbase::Bot::AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
 
-        @logger = AppConfigurator.new.get_logger
+        @logger = AppConfigurator.new.load_logger
         @appshell = appshell
         @tg_user = appshell.controller.tg_user
-        @encrypt_key = AppConfigurator.new.get_encrypt_key
+        @encrypt_key = AppConfigurator.new.load_encrypt_key
       end
 
       def call_authsession(access_mode)
         auth_checker if !authsession? && access_mode == :with_api
-        @apitoken = Teachbase::Bot::ApiToken.find_by!(auth_session_id: authsession.id) unless apitoken 
+        @apitoken = Teachbase::Bot::ApiToken.find_by!(auth_session_id: authsession.id) unless apitoken
 
         if apitoken.avaliable? && authsession?
           authsession.api_auth(:mobile, 2, access_token: apitoken.value)
@@ -100,7 +101,6 @@ module Teachbase
           :phone
         end
       end
-
     end
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Teachbase
   module Bot
     module Scenarios
@@ -58,6 +60,12 @@ module Teachbase
           appshell.change_scenario(mode)
           print_on_save("scenario", mode)
         end
+
+        def check_status
+          print_update_status(:in_progress)
+          yield ? print_update_status(:success) : print_update_status(:fail)
+        end
+
       end
     end
   end

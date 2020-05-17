@@ -35,6 +35,16 @@ module Teachbase
               check!(:ids, [:id], url_ids)
               "#{course_sessions}/content"
             end
+
+            def course_sessions_progress
+              check!(:ids, [:id], url_ids)
+              "#{course_sessions}/progress"
+            end
+
+            def course_sessions_materials_track
+              check!(:ids, %i[session_id id], url_ids)
+              "#{SOURCE}/#{url_ids[:session_id]}/materials/#{url_ids[:id]}/track"
+            end
           end
         end
       end

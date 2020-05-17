@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ReplyMarkupFormatter
   attr_reader :array
 
@@ -6,12 +8,12 @@ class ReplyMarkupFormatter
     @slices = !options[:slices].nil? ? options[:slices] : 1
   end
 
-  def get_markup
+  def build_markup
     Telegram::Bot::Types::ReplyKeyboardMarkup
       .new(keyboard: array.each_slice(@slices).to_a, one_time_keyboard: true)
   end
 
-  def get_inline_markup
+  def build_inline_markup
     buttons = []
     array.each do |button|
       buttons << Telegram::Bot::Types::InlineKeyboardButton.new(button.first)

@@ -1,6 +1,6 @@
+# frozen_string_literal: true
+
 require './models/command'
-require './lib/app_configurator'
-require 'gemoji'
 
 module Teachbase
   module Bot
@@ -39,8 +39,7 @@ module Teachbase
       def find_by(param, data)
         return unless command_by?(param, data)
 
-        command = all.select { |command| command.public_send(param) == data }
-        command.first
+        all.select { |command| command.public_send(param) == data }.first
       end
 
       def show(key)
