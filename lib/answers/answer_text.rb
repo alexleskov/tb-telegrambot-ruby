@@ -30,6 +30,22 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
     send_out "#{title}#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
   end
 
+  def error
+    send_out "#{Emoji.t(:boom)} <i>#{I18n.t('unexpected_error')}</i>"
+  end
+
+  def declined
+    send_out "#{Emoji.t(:leftwards_arrow_with_hook)} <i>#{I18n.t('declined')}</i>"
+  end
+
+  def accepted
+    send_out "#{Emoji.t(:ok)} <i>#{I18n.t('accepted')}</i>"
+  end
+
+  def ask_answer
+    send_out "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_answer')}:"
+  end
+
   def ask_login
     send_out "#{Emoji.t(:pencil2)} #{I18n.t('add_user_login')}:"
   end

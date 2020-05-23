@@ -7,7 +7,7 @@ class CreateCourseSessions < ActiveRecord::Migration[5.2]
       t.string :icon_url, default: "https://image.flaticon.com/icons/svg/149/149092.svg"
       t.string :bg_url
       t.string :application_status
-      t.string :complete_status
+      t.string :status
       t.string :navigation
       t.string :scenario_mode, default: "standart_learning"
       t.integer :tb_id, null: false

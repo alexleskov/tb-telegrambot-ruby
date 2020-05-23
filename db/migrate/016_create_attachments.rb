@@ -6,8 +6,7 @@ class CreateAttachments < ActiveRecord::Migration[5.2]
       t.string :name
       t.string :category
       t.string :url
-      t.references :quiz, foreign_key: true
-      t.references :task, foreign_key: true
+      t.references :imageable, polymorphic: true
 
       t.timestamps
     end

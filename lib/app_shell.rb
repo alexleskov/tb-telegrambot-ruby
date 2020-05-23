@@ -71,6 +71,10 @@ module Teachbase
         user.course_sessions.find_by(tb_id: cs_tb_id)
       end
 
+      def course_session_update_progress(cs_tb_id)
+        data_loader.call_cs_progress(cs_tb_id)
+      end
+
       def course_session_section(option, param, cs_tb_id)
         data_loader.get_cs_sec_by(option, param, cs_tb_id)
       end
@@ -91,6 +95,10 @@ module Teachbase
       def course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
         data_loader.call_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
         data_loader.get_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
+      end
+
+      def course_session_task(cs_tb_id, task_tb_id)
+        user.course_sessions.find_by(tb_id: cs_tb_id).tasks.find_by(tb_id: task_tb_id)
       end
 
       def update_all_course_sessions
@@ -139,6 +147,15 @@ module Teachbase
 
       def track_material(cs_tb_id, material_tb_id, time_spent)
         data_loader.call_track_material(cs_tb_id, material_tb_id, time_spent)
+      end
+
+      def submit_answer(cs_tb_id, task_tb_id, object_type, user_answer)
+        @logger.debug "OK"
+      end
+
+      def ask_answer
+        controller.answer.ask_answer
+        request_data(:string)
       end
 
       private

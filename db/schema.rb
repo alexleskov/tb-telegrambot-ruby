@@ -32,12 +32,11 @@ ActiveRecord::Schema.define(version: 16) do
     t.string "name"
     t.string "category"
     t.string "url"
-    t.bigint "quiz_id"
-    t.bigint "task_id"
+    t.string "imageable_type"
+    t.bigint "imageable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["quiz_id"], name: "index_attachments_on_quiz_id"
-    t.index ["task_id"], name: "index_attachments_on_task_id"
+    t.index ["imageable_type", "imageable_id"], name: "index_attachments_on_imageable_type_and_imageable_id"
   end
 
   create_table "auth_sessions", force: :cascade do |t|
@@ -71,7 +70,7 @@ ActiveRecord::Schema.define(version: 16) do
     t.string "icon_url", default: "https://image.flaticon.com/icons/svg/149/149092.svg"
     t.string "bg_url"
     t.string "application_status"
-    t.string "complete_status"
+    t.string "status"
     t.string "navigation"
     t.string "scenario_mode", default: "standart_learning"
     t.integer "tb_id", null: false
@@ -227,8 +226,6 @@ ActiveRecord::Schema.define(version: 16) do
   end
 
   add_foreign_key "api_tokens", "auth_sessions"
-  add_foreign_key "attachments", "quizzes"
-  add_foreign_key "attachments", "tasks"
   add_foreign_key "auth_sessions", "api_tokens"
   add_foreign_key "auth_sessions", "tg_accounts"
   add_foreign_key "auth_sessions", "users"

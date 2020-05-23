@@ -58,7 +58,19 @@ module Teachbase
                       mode: mode)
         end
 
+        def menu_confirm_answer(object)
+          cs_tb_id = object.course_session.tb_id
+          menu.confirmation(command_prefix: "confirm_csid:#{cs_tb_id}_objid:#{object.tb_id}_t:#{object_type(object)}_p:")
+        end
+
         private
+
+        def object_type(object)
+          case object
+          when Teachbase::Bot::Task
+            :tasks
+          end
+        end
 
         def create_update_status_msg_by(status)
           case status.to_sym

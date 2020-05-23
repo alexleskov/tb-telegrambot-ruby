@@ -68,14 +68,17 @@ module Teachbase
           contents = appshell.course_session_section_contents(section_position, cs_tb_id)
           return answer.empty_message unless contents
 
+          appshell.course_session_update_progress(cs_tb_id)
           menu_section_contents(section, contents, stages: %i[title contents])
         end
 
-        def open_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
-          content = appshell.course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
+        def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
+          @logger.debug "content_type: #{type}"
+          content = appshell.course_session_section_content(type, cs_tb_id, sec_id, content_tb_id)
           return answer.empty_message unless content
-
-          print_material(content)
+          
+          print_content_title(content)
+          respond_to?("print_#{type}") ? public_send("print_#{type}", content) : answer.error
         end
 
         def courses_update
@@ -84,6 +87,24 @@ module Teachbase
 
         def track_material(cs_tb_id, material_tb_id, time_spent)
           check_status { appshell.track_material(cs_tb_id, material_tb_id, time_spent) }
+        end
+
+        def submit_answer_task(cs_tb_id, task_tb_id)
+          task = appshell.course_session_task(cs_tb_id, task_tb_id)
+          return unless task
+
+          menu_confirm_answer(task)
+        end
+
+        def confirm_answer(cs_tb_id, object_tb_id, type, param)
+          if param.to_sym == :decline
+            return menu.declined(back_button: :back)
+          end
+
+          user_answer = appshell.ask_answer
+          return answer.error unless user_answer
+
+          check_status { appshell.submit_answer(cs_tb_id, object_tb_id, type, user_answer) }
         end
 
         def courses_list
@@ -163,6 +184,16 @@ module Teachbase
           on %r{^approve_material_by_csid:} do
             @message_value =~ %r{^approve_material_by_csid:(\d*)_objid:(\d*)_time:(\d*)}
             track_material($1, $2, $3)
+          end
+
+          on %r{submit_tasks_by_csid:} do
+            @message_value =~ %r{submit_tasks_by_csid:(\d*)_objid:(\d*)}
+            submit_answer_task($1, $2)
+          end
+
+          on %r{confirm_csid:} do
+            @message_value =~ %r{^confirm_csid:(\d*)_objid:(\d*)_t:(\w*)_p:(\w*)}
+            confirm_answer($1, $2, $3, $4)
           end
         end
 

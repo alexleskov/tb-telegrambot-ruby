@@ -25,6 +25,10 @@ module Formatter
           .downcase
   end
 
+  def to_url_link(link, link_name)
+    "<a href='#{to_default_protocol(link)}'>#{link_name}</a>"
+  end
+
   def to_i18n(array, prefix = "")
     raise "Given '#{array.class}'. Expected an Array" unless array.is_a?(Array)
 
@@ -35,6 +39,8 @@ module Formatter
 
   def attach_emoji(param)
     case param.to_sym
+    when :completed, :accepted, :passed
+      Emoji.t(:white_check_mark)
     when :open
       Emoji.t(:arrow_forward)
     when :section_unable

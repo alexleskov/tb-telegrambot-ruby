@@ -35,14 +35,14 @@ module Teachbase
         appshell.user.course_sessions.order(id: :asc)
                 .limit(params[:limit])
                 .offset(params[:offset])
-                .where(complete_status: params[:state].to_s,
+                .where(status: params[:state].to_s,
                        scenario_mode: appshell.settings.scenario)
       end
 
-      def get_cs_sec_by(option, param, cs_id)
+      def get_cs_sec_by(option, param, cs_tb_id)
         raise "No such option: '#{option}" unless %i[position id].include?(option.to_sym)
 
-        appshell.user.course_sessions.find_by(tb_id: cs_id).sections.find_by(option.to_sym => param)
+        appshell.user.course_sessions.find_by(tb_id: cs_tb_id).sections.find_by(option.to_sym => param)
       end
 
       def get_cs_sec_contents(section_bd)
@@ -93,7 +93,7 @@ module Teachbase
             cs = appshell.user.course_sessions.find_or_create_by!(tb_id: course_session_lms["id"])
             cs_attrs = Attribute.create(Teachbase::Bot::CourseSession.attribute_names, course_session_lms,
                                         MAIN_OBJECTS_CUSTOM_PARAMS[:course_sessions])
-            cs_attrs[:complete_status] = state.to_s
+            cs_attrs[:status] = state.to_s
             cs.update!(cs_attrs)
             ind += 1
             result << cs.id
@@ -103,33 +103,33 @@ module Teachbase
         result
       end
 
-      def call_cs_info(cs_id)
-        call_data do
-          cs = appshell.user.course_sessions.find_by!(tb_id: cs_id)
-          lms_info = appshell.authsession.load_cs_info(cs_id)
-          cs_attrs = Attribute.create(Teachbase::Bot::CourseSession.attribute_names, lms_info,
-                                      MAIN_OBJECTS_CUSTOM_PARAMS[:course_sessions])
-          cs.update!(cs_attrs)
-          cs
-        end
+      def call_cs_info(cs_tb_id)
+        call_update_cs(cs_tb_id) { appshell.authsession.load_cs_info(cs_tb_id) }
       end
 
-      def call_cs_progress(cs_id)
-        call_data do
-          cs = appshell.user.course_sessions.find_by!(tb_id: cs_id)
-          lms_info = appshell.authsession.load_cs_progress(cs_id)
-          cs_attrs = Attribute.create(Teachbase::Bot::CourseSession.attribute_names, lms_info,
-                                      MAIN_OBJECTS_CUSTOM_PARAMS[:course_sessions])
+      def call_cs_progress(cs_tb_id)
+        lms_info = call_data { appshell.authsession.load_cs_progress(cs_tb_id) }
+        cs = call_update_cs(cs_tb_id) { lms_info }
+        return appshell.user.course_sessions.find_by(tb_id: cs_tb_id) unless cs
+
+        Teachbase::Bot::Section::OBJECTS_TYPES.keys.each do |content_type|
+          lms_info[content_type.to_s].each do |content_lms|
+            content_attrs = Attribute.create(section_content_attrs(content_type), content_lms)
+            content_db = cs.public_send(content_type).find_by(tb_id: content_lms["id"])
+            next unless content_db
+            content_db.update!(content_attrs)
+          end
         end
+        cs        
       end
 
-      def call_cs_sections(cs_id)
+      def call_cs_sections(cs_tb_id)
         call_data do
-          return if course_session_last_version?(cs_id) && !course_session_last_version?(cs_id).sections.empty?
+          return if course_session_last_version?(cs_tb_id) && !course_session_last_version?(cs_tb_id).sections.empty?
 
-          cs = appshell.user.course_sessions.find_by!(tb_id: cs_id)
+          cs = appshell.user.course_sessions.find_by!(tb_id: cs_tb_id)
           cs&.sections&.destroy_all
-          appshell.authsession.load_cs_info(cs_id)["sections"].each_with_index do |section_lms, ind|
+          appshell.authsession.load_cs_info(cs_tb_id)["sections"].each_with_index do |section_lms, ind|
             section_bd = cs.sections.find_or_create_by!(position: ind + 1, user_id: appshell.user.id)
             section_attrs = Attribute.create(Teachbase::Bot::Section.attribute_names, section_lms)
             section_bd.update!(section_attrs)
@@ -162,8 +162,11 @@ module Teachbase
             lms_data["source"] = lms_data["source"][CONTENT_VIDEO_FORMAT]
           end
           @logger.debug "lms_data: #{lms_data}"
-          attributes = Attribute.create(section_content_attrs(content_type), lms_data)
-          section_bd.public_send(content_type).find_by!(tb_id: content_tb_id).update!(attributes)
+          content_attributes = Attribute.create(section_content_attrs(content_type), lms_data)
+          content = section_bd.public_send(content_type).find_by!(tb_id: content_tb_id)
+          content.update!(content_attributes)
+          create_attachments(content, lms_data) if attachments?(lms_data)
+          content
         end
       end
 
@@ -181,10 +184,21 @@ module Teachbase
       end
 
       def delete_course_sessions(state)
-        appshell.user.course_sessions.where(complete_status: state.to_s).destroy_all
+        appshell.user.course_sessions.where(status: state.to_s).destroy_all
       end
 
       private
+
+      def create_attachments(content, lms_data)
+        lms_data["attachments"].each do |attachment_lms|
+          attributes = Attribute.create(Teachbase::Bot::Attachment.attribute_names, attachment_lms)
+          content.attachments.find_or_create_by!(attributes)
+        end
+      end
+
+      def attachments?(lms_data)
+        lms_data.keys.include?("attachments")
+      end
 
       def call_data
         return unless appshell.access_mode == :with_api
@@ -203,8 +217,19 @@ module Teachbase
         end
       end
 
-      def course_session_last_version?(cs_id)
-        appshell.user.course_sessions.find_by(tb_id: cs_id, changed_at: call_cs_info(cs_id).changed_at)
+      def call_update_cs(cs_tb_id)
+        call_data do 
+          cs = appshell.user.course_sessions.find_by!(tb_id: cs_tb_id)
+          lms_info = yield
+          cs_attrs = Attribute.create(Teachbase::Bot::CourseSession.attribute_names, lms_info,
+                                      MAIN_OBJECTS_CUSTOM_PARAMS[:course_sessions])
+          cs.update!(cs_attrs)
+          cs
+        end
+      end
+
+      def course_session_last_version?(cs_tb_id)
+        appshell.user.course_sessions.find_by(tb_id: cs_tb_id, changed_at: call_cs_info(cs_tb_id).changed_at)
       end
 
       def fetch_section_objects(content_type, section_lms, section_bd)

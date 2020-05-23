@@ -11,6 +11,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
   MENU_TYPES = %i[menu menu_inline].freeze
   LOCALIZATION_EMOJI = %i[ru us].freeze
   SCENARIO_EMOJI = %i[books bicyclist].freeze
+  CONFIRMATION = %i[accept decline].freeze
 
   def initialize(appshell, param)
     @logger = AppConfigurator.new.load_logger
@@ -122,6 +123,29 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
            type: :menu_inline,
            text: "<b>#{Emoji.t(:wrench)} #{I18n.t("choose_#{param_name.downcase}")}</b>",
            slices_count: 2)
+  end
+
+  def confirmation(params = {})
+    create(buttons: InlineCallbackButton.g(buttons_sign: to_i18n(CONFIRMATION),
+                                           command_prefix: params[:command_prefix] || "",
+                                           callback_data: CONFIRMATION,
+                                           emoji: %i[ok leftwards_arrow_with_hook]),
+          type: :menu_inline,
+          text: params[:text] || I18n.t('confirm_action').to_s,
+          slices_count: 2)
+  end
+
+  def declined(params)
+    return unless params[:back_button]
+
+    text = params[:text] || "#{Emoji.t(:leftwards_arrow_with_hook)} <i>#{I18n.t('declined')}</i>"
+    mode = params[:mode]
+    case params[:back_button]
+    when :custom_back
+      custom_back(params[:callback_data], text, mode)
+    when :back
+      back(text, mode)
+    end
   end
 
   def hide(text)

@@ -24,8 +24,7 @@ module Teachbase
           menu.back(course_session.stats_with_title(stages: %i[title info]))
         end
 
-        def print_material(content)
-          print_content_title(content)
+        def print_materials(content)
           buttons = content.action_buttons
           if answer_content.respond_to?(content.content_type)
             answer_content.public_send(content.content_type, content.build_source)
@@ -39,8 +38,15 @@ module Teachbase
             menu.content_main(buttons) unless buttons.empty?
           else
             @logger.debug "Error: #{e}"
-            answer.send_out(I18n.t('unexpected_error'))
+            answer.error
           end
+        end
+
+        def print_tasks(content)
+          buttons = content.action_buttons
+          msg = !content.attachments.empty? ? "#{content.description}\n\n#{add_attachments(content)}" : content.description
+          answer.send_out(msg)
+          menu.content_main(buttons) unless buttons.empty?
         end
 
         def print_content_title(content)
@@ -49,7 +55,7 @@ module Teachbase
         end
 
         def print_link_content(content)
-          answer_content.url(content.source, "#{I18n.t('open').capitalize}: #{content.name}")
+          answer_content.url(link: content.source, link_name: "#{I18n.t('open').capitalize}: #{content.name}")
         end
 
         def print_is_empty_by(params = {})
@@ -99,13 +105,22 @@ module Teachbase
 
         private
 
+        def add_attachments(content)
+          content_attachments = ["#{Emoji.t(:bookmark_tabs)} #{I18n.t("attachments").capitalize}"]
+          content.attachments.each do |attachment|
+            content_attachments << to_url_link(attachment.url, attachment.name)
+          end
+
+          content_attachments.join("\n")
+        end
+
         def create_content_buttons(contents)
           buttons_sign = []
           callbacks_data = []
           contents.keys.each do |content_type|
             contents[content_type].each do |content|
               cs_tb_id = content.course_session.tb_id
-              buttons_sign << "#{attach_emoji(content_type)} #{content.name}"
+              buttons_sign << "#{content.button_sign(content_type)}"
               callbacks_data << "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}"
             end
           end
