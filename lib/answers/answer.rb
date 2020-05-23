@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require './models/auth_session'
-
 module Teachbase
   module Bot
     class Answer
@@ -11,15 +9,14 @@ module Teachbase
 
       attr_reader :msg_params
 
-      def initialize(appshell, param)
+      def initialize(respond, dest)
         @logger = AppConfigurator.new.load_logger
-        raise "No such param '#{param}' for send answer" unless MSG_DESTS.include?(param)
+        raise "No such dest '#{dest}' for send answer" unless MSG_DESTS.include?(dest)
 
-        @param = param
-        @appshell = appshell
-        @respond = appshell.controller.respond
-        @tg_user = @respond.incoming_data.tg_user
-        @settings = @respond.incoming_data.settings
+        @dest = dest
+        @respond = respond
+        @settings = respond.incoming_data.settings
+        @tg_user = respond.incoming_data.tg_user
         @msg_params = {}
       end
 
@@ -34,22 +31,10 @@ module Teachbase
         @msg_params[:chat] = destination # TODO: Add option options[:to_chat_id]
       end
 
-      def user_fullname(option)
-        user_name = @appshell.user_fullname
-        case option
-        when :string
-          user_name.join(" ")
-        when :array
-          user_name
-        else
-          raise "Don't know such option: #{option}. Use: ':string', ':array'"
-        end
-      end
-
       protected
 
       def destination
-        @respond.incoming_data.message.public_send(@param) if @respond.incoming_data.message.respond_to? @param
+        @respond.incoming_data.message.public_send(@dest) if @respond.incoming_data.message.respond_to? @dest
       end
     end
   end

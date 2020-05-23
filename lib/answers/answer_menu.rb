@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/answers/answer'
 require './lib/buttons/inline_callback_button'
 require './lib/buttons/inline_url_button'
 require './lib/buttons/text_command_button'
@@ -13,9 +12,9 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
   SCENARIO_EMOJI = %i[books bicyclist].freeze
   CONFIRMATION = %i[accept decline].freeze
 
-  def initialize(appshell, param)
+  def initialize(respond, dest)
     @logger = AppConfigurator.new.load_logger
-    super(appshell, param)
+    super(respond, dest)
   end
 
   def create(options)

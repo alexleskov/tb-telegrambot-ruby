@@ -49,7 +49,7 @@ module Formatter
       Emoji.t(:no_entry_sign)
     when :section_unpublish
       Emoji.t(:x)
-    when :materials, :text, :pdf, :iframe
+    when :materials, :material, :text, :pdf, :iframe
       Emoji.t(:page_facing_up)
     when :video, :youtube, :vimeo
       Emoji.t(:clapper)
@@ -57,11 +57,11 @@ module Formatter
       Emoji.t(:sound)
     when :image
       Emoji.t(:art)
-    when :tasks
+    when :tasks, :task
       Emoji.t(:memo)
-    when :quizzes
+    when :quizzes, :quiz
       Emoji.t(:bar_chart)
-    when :scorm_packages
+    when :scorm_packages, :scorm_package
       Emoji.t(:computer)
     when :active
       Emoji.t(:green_book)

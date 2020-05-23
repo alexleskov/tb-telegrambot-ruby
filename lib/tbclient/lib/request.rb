@@ -99,7 +99,7 @@ module Teachbase
             OpenStruct.new(r)
           end
         else
-          raise "No such param for getting response answer. Aval: ':raw', ':json', ':object'"
+          raise "No such param for getting response. Aval: ':raw', ':json', ':object'"
         end
       end
 

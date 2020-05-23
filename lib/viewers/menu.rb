@@ -33,11 +33,6 @@ module Viewers
              slices_count: 3)
     end
 
-    def content_main(buttons, mode = :none)
-      create(buttons: buttons, type: :menu_inline, disable_notification: true, mode: mode,
-             text: I18n.t('start_menu_message'), slices_count: buttons.size)   
-    end
-
     private
 
     def course_main_buttons(callbacks)

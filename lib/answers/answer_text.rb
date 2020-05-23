@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-require './lib/answers/answer'
-
 class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
-  def initialize(appshell, param)
-    super(appshell, param)
+  def initialize(respond, dest)
+    super(respond, dest)
   end
 
   def create(options)
@@ -18,12 +16,12 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::Answer
     create(text: text, disable_notification: disable_notification)
   end
 
-  def greeting_message
-    send_out("#{I18n.t('greeting_message')} <b>#{user_fullname(:string)}!</b>")
+  def greeting_message(user_name)
+    send_out("#{I18n.t('greeting_message')} <b>#{user_name}!</b>")
   end
 
-  def farewell_message
-    send_out("#{I18n.t('farewell_message')} <b>#{user_fullname(:string)}!</b>")
+  def farewell_message(user_name)
+    send_out("#{I18n.t('farewell_message')} <b>#{user_name}!</b>")
   end
 
   def empty_message(title = "")

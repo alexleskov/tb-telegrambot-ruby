@@ -31,8 +31,8 @@ module Teachbase
         set_scenario
       end
 
-      def user(_mode = access_mode)
-        @authsession = authorizer.call_authsession(access_mode)
+      def user(mode = access_mode)
+        @authsession = authorizer.call_authsession(mode)
         authorizer.user
       end
 
@@ -40,13 +40,14 @@ module Teachbase
         data_loader.call_profile
       end
 
-      def user_fullname
+      def user_fullname(option = :string)
         user_in_db = authorizer.authsession? ? user(:without_api) : nil
-        if user_in_db && [user_in_db.first_name, user_in_db.last_name].none?(nil)
-          [user_in_db.first_name, user_in_db.last_name]
-        else
-          controller.tg_user.user_fullname
-        end
+        user_name = if user_in_db && [user_in_db.first_name, user_in_db.last_name].none?(nil)
+                      [user_in_db.first_name, user_in_db.last_name]
+                    else
+                      controller.tg_user.user_fullname
+                    end
+        option == :string ? user_name.join(" ") : user_name
       end
 
       def authorization(mode = access_mode)
@@ -131,11 +132,11 @@ module Teachbase
       end
 
       def request_user_data
-        controller.answer.ask_login
+        controller.answer_text.ask_login
         user_login = request_data(:login)
         raise unless user_login
 
-        controller.answer.ask_password
+        controller.answer_text.ask_password
         user_password = request_data(:password)
         [user_login, user_password]
       end
@@ -154,7 +155,7 @@ module Teachbase
       end
 
       def ask_answer
-        controller.answer.ask_answer
+        controller.answer_text.ask_answer
         request_data(:string)
       end
 

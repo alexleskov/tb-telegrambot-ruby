@@ -13,65 +13,36 @@ module Teachbase
         module ClassMethods; end
 
         def print_user_profile(user)
-          answer.send_out(user.profile_info)
+          answer.text.send_out(user.profile_info)
         end
 
         def print_course_state(state)
-          answer.send_out("#{attach_emoji(state.to_sym)} <b>#{I18n.t("courses_#{state}").capitalize}</b>")
+          answer.text.send_out("#{attach_emoji(state.to_sym)} <b>#{I18n.t("courses_#{state}").capitalize}</b>")
         end
 
         def print_course_stats_info(course_session)
-          menu.back(course_session.stats_with_title(stages: %i[title info]))
-        end
-
-        def print_materials(content)
-          buttons = content.action_buttons
-          if answer_content.respond_to?(content.content_type)
-            answer_content.public_send(content.content_type, content.build_source)
-          else
-            print_link_content(content)
-          end
-          menu.content_main(buttons) unless buttons.empty?
-        rescue Telegram::Bot::Exceptions::ResponseError => e
-          if e.error_code == 400
-            print_link_content(content)
-            menu.content_main(buttons) unless buttons.empty?
-          else
-            @logger.debug "Error: #{e}"
-            answer.error
-          end
-        end
-
-        def print_tasks(content)
-          buttons = content.action_buttons
-          msg = !content.attachments.empty? ? "#{content.description}\n\n#{add_attachments(content)}" : content.description
-          answer.send_out(msg)
-          menu.content_main(buttons) unless buttons.empty?
+          answer.menu.back(course_session.stats_with_title(stages: %i[title info]))
         end
 
         def print_content_title(content)
-          answer.send_out(create_title(object: content,
+          answer.text.send_out(create_title(object: content,
                                        stages: %i[contents title]), disable_notification: true)
         end
 
-        def print_link_content(content)
-          answer_content.url(link: content.source, link_name: "#{I18n.t('open').capitalize}: #{content.name}")
-        end
-
         def print_is_empty_by(params = {})
-          answer.send_out "\n#{create_title(params)}
+          answer.text.send_out "\n#{create_title(params)}
                            \n#{create_empty_msg}"
         end
 
         def menu_courses_list(course_sessions, params = {})
           course_sessions.each do |cs|
             params[:object] = cs
-            menu.course_main(create_title(params), ["cs_sec_by_id:#{cs.tb_id}", "cs_info_id:#{cs.tb_id}"])
+            answer.menu.course_main(create_title(params), ["cs_sec_by_id:#{cs.tb_id}", "cs_info_id:#{cs.tb_id}"])
           end
         end
 
         def menu_choosing_course_state
-          menu.course_states("#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>")
+          answer.menu.course_states("#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>")
         end
 
         def menu_choosing_section(sections, params)
@@ -82,7 +53,7 @@ module Teachbase
           if sections.empty?
             menu_empty_msg(title, cs.back_button)
           else
-            menu.section_main(title, params[:command_prefix], @tg_user.tg_account_messages)
+            answer.menu.section_main(title, params[:command_prefix], @tg_user.tg_account_messages)
           end
         end
 
@@ -90,29 +61,20 @@ module Teachbase
           cs = sections.first.course_session
           title = create_title(object: cs, stages: %i[title sections menu], params: { state: option })
           menu_mode = option == :find_by_query_num ? :none : :edit_msg
-          menu.back("#{title}
+          answer.menu.back("#{title}
                     #{create_sections_msg_with_state(sections)}",
                     menu_mode)
         end
 
         def menu_section_contents(section, contents, params)
           params[:object] = section
-          menu.create(buttons: create_content_buttons(contents) + section.course_session.back_button,
-                      mode: :none,
-                      type: :menu_inline,
-                      text: create_title(params))
+          answer.menu.create(buttons: create_content_buttons(contents) + section.course_session.back_button,
+                             mode: :none,
+                             type: :menu_inline,
+                             text: create_title(params))
         end
 
         private
-
-        def add_attachments(content)
-          content_attachments = ["#{Emoji.t(:bookmark_tabs)} #{I18n.t("attachments").capitalize}"]
-          content.attachments.each do |attachment|
-            content_attachments << to_url_link(attachment.url, attachment.name)
-          end
-
-          content_attachments.join("\n")
-        end
 
         def create_content_buttons(contents)
           buttons_sign = []
@@ -120,8 +82,9 @@ module Teachbase
           contents.keys.each do |content_type|
             contents[content_type].each do |content|
               cs_tb_id = content.course_session.tb_id
-              buttons_sign << "#{content.button_sign(content_type)}"
-              callbacks_data << "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}"
+              object_type = Teachbase::Bot::OBJECTS_TYPES[content_type]
+              buttons_sign << "#{content.button_sign(object_type)}"
+              callbacks_data << "open_content:#{object_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}"
             end
           end
           InlineCallbackButton.g(buttons_sign: buttons_sign,

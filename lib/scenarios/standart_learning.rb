@@ -18,7 +18,7 @@ module Teachbase
         def show_profile_state
           appshell.user_info
           user = appshell.user
-          return answer.empty_message unless user.profile && user
+          return answer.text.empty_message unless user.profile && user
 
           print_user_profile(user)
         end
@@ -29,14 +29,14 @@ module Teachbase
           course_sessions = appshell.course_sessions_list(state, limit_count, offset_num)
           cs_count = appshell.cs_count_by(state)
           print_course_state(state)
-          return answer.empty_message if course_sessions.empty?
+          return answer.text.empty_message if course_sessions.empty?
 
           menu_courses_list(course_sessions, stages: %i[title])
           offset_num += limit_count
           return if offset_num >= cs_count
 
-          menu.show_more(:course_sessions, all_count: cs_count, state: state, limit_count: limit_count,
-                                           offset_num: offset_num)
+          answer.menu.show_more(:course_sessions, all_count: cs_count, state: state, limit_count: limit_count,
+                                                  offset_num: offset_num)
         end
 
         def show_course_session_info(cs_tb_id)
@@ -66,7 +66,7 @@ module Teachbase
         def show_section_contents(section_position, cs_tb_id)
           section = appshell.course_session_section(:position, section_position, cs_tb_id)
           contents = appshell.course_session_section_contents(section_position, cs_tb_id)
-          return answer.empty_message unless contents
+          return answer.text.empty_message unless contents
 
           appshell.course_session_update_progress(cs_tb_id)
           menu_section_contents(section, contents, stages: %i[title contents])
@@ -75,10 +75,10 @@ module Teachbase
         def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
           @logger.debug "content_type: #{type}"
           content = appshell.course_session_section_content(type, cs_tb_id, sec_id, content_tb_id)
-          return answer.empty_message unless content
+          return answer.text.empty_message unless content
           
           print_content_title(content)
-          respond_to?("print_#{type}") ? public_send("print_#{type}", content) : answer.error
+          respond_to?("print_#{type}") ? public_send("print_#{type}", content) : answer.text.error
         end
 
         def courses_update
@@ -98,11 +98,11 @@ module Teachbase
 
         def confirm_answer(cs_tb_id, object_tb_id, type, param)
           if param.to_sym == :decline
-            return menu.declined(back_button: :back)
+            return answer.menu.declined(back_button: :back)
           end
 
           user_answer = appshell.ask_answer
-          return answer.error unless user_answer
+          return answer.text.error unless user_answer
 
           check_status { appshell.submit_answer(cs_tb_id, object_tb_id, type, user_answer) }
         end
@@ -204,8 +204,8 @@ module Teachbase
           end
 
           on %r{^/start} do
-            answer.greeting_message
-            menu.starting
+            answer.text.greeting_message(appshell.user_fullname(:string))
+            answer.menu.starting
           end
 
           on %r{^/settings} do
@@ -213,7 +213,7 @@ module Teachbase
           end
 
           on %r{^/close} do
-            menu.hide("<b>#{answer.user_fullname(:string)}!</b> #{I18n.t('farewell_message')} :'(")
+            print_farewell
           end
         end
 
