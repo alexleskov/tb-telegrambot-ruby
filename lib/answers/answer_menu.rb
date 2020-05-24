@@ -5,7 +5,6 @@ require './lib/buttons/inline_url_button'
 require './lib/buttons/text_command_button'
 
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
-
   MENU_TYPES = %i[menu menu_inline].freeze
   LOCALIZATION_EMOJI = %i[ru us].freeze
   SCENARIO_EMOJI = %i[books bicyclist].freeze
@@ -128,9 +127,9 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
                                            command_prefix: params[:command_prefix] || "",
                                            callback_data: CONFIRMATION,
                                            emoji: %i[ok leftwards_arrow_with_hook]),
-          type: :menu_inline,
-          text: params[:text] || I18n.t('confirm_action').to_s,
-          slices_count: 2)
+           type: :menu_inline,
+           text: params[:text] || I18n.t('confirm_action').to_s,
+           slices_count: 2)
   end
 
   def declined(params)

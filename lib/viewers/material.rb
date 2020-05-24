@@ -29,7 +29,7 @@ module Viewers
 
     def approve_button(time_spent = 50)
       cs_tb_id = course_session.tb_id
-      InlineCallbackButton.g(buttons_sign: ["#{I18n.t('viewed')}"],
+      InlineCallbackButton.g(buttons_sign: [I18n.t('viewed').to_s],
                              callback_data: ["approve_material_by_csid:#{cs_tb_id}_objid:#{tb_id}_time:#{time_spent}"],
                              emoji: %i[white_check_mark])
     end

@@ -74,7 +74,6 @@ module Teachbase
 
           mess.join("\n")
         end
-
       end
     end
   end

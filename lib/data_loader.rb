@@ -22,8 +22,8 @@ module Teachbase
                                      course_sessions: { "updated_at" => :changed_at } }.freeze
       CONTENT_VIDEO_FORMAT = "mp4"
       ADDTION_OBJECTS = { attachments: :attachment,
-                             answers: :answer,
-                             blocks: :block  }.freeze
+                          answers: :answer,
+                          blocks: :block }.freeze
 
       attr_reader :appshell
 
@@ -121,10 +121,11 @@ module Teachbase
             content_attrs = Attribute.create(section_content_attrs(content_type), content_lms)
             content_db = cs.public_send(content_type).find_by(tb_id: content_lms["id"])
             next unless content_db
+
             content_db.update!(content_attrs)
           end
         end
-        cs        
+        cs
       end
 
       def call_cs_sections(cs_tb_id)
@@ -215,7 +216,7 @@ module Teachbase
       end
 
       def addit_data_sign(addition_object)
-        "#{ADDTION_OBJECTS[addition_object.to_sym]}"
+        (ADDTION_OBJECTS[addition_object.to_sym]).to_s
       end
 
       def call_data
@@ -236,7 +237,7 @@ module Teachbase
       end
 
       def call_update_cs(cs_tb_id)
-        call_data do 
+        call_data do
           cs = appshell.user.course_sessions.find_by!(tb_id: cs_tb_id)
           lms_info = yield
           cs_attrs = Attribute.create(Teachbase::Bot::CourseSession.attribute_names, lms_info,

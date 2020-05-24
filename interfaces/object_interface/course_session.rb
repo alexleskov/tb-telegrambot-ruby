@@ -32,6 +32,7 @@ module Teachbase
           unless callbacks.size == MAIN_BUTTONS.size
             raise "Given '#{callbacks.size}' callbacks for #{MAIN_BUTTONS.size} course buttons."
           end
+
           InlineCallbackButton.g(buttons_sign: to_i18n(MAIN_BUTTONS),
                                  callback_data: callbacks,
                                  emoji: MAIN_BUTTONS_EMOJI)
@@ -43,7 +44,6 @@ module Teachbase
                                  command_prefix: command_prefix,
                                  emoji: STATE_EMOJI)
         end
-
       end
     end
   end

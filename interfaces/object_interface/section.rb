@@ -43,7 +43,7 @@ module Teachbase
 
         def build_conts_buttons_params(content, content_type)
           cs_tb_id = content.course_session.tb_id
-          @buttons_sign << "#{content.button_sign(content_type)}"
+          @buttons_sign << content.button_sign(content_type).to_s
           @callbacks_data << "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}"
         end
       end

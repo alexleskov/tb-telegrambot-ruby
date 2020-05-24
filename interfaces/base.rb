@@ -102,7 +102,6 @@ module Teachbase
         def create_empty_msg
           "<b>#{I18n.t('empty')}</b>"
         end
-
       end
     end
   end

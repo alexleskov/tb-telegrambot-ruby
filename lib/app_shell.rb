@@ -150,7 +150,7 @@ module Teachbase
         data_loader.call_track_material(cs_tb_id, material_tb_id, time_spent)
       end
 
-      def submit_answer(cs_tb_id, task_tb_id, object_type, user_answer)
+      def submit_answer(_cs_tb_id, _task_tb_id, _object_type, _user_answer)
         @logger.debug "OK"
       end
 

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 require './lib/answers/answer_controller'
 require './lib/answers/answer_menu'

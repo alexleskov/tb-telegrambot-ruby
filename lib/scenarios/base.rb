@@ -66,7 +66,6 @@ module Teachbase
           print_update_status(:in_progress)
           yield ? print_update_status(:success) : print_update_status(:fail)
         end
-
       end
     end
   end

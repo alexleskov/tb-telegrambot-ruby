@@ -50,7 +50,7 @@ module Teachbase
 
       def track_material(cs_id, material_id, time_spent)
         tb_api.request(:course_sessions, :course_sessions_materials_track,
-                       session_id: cs_id, id: material_id, payload: {time_spent: time_spent}).post
+                       session_id: cs_id, id: material_id, payload: { time_spent: time_spent }).post
       end
 
       private

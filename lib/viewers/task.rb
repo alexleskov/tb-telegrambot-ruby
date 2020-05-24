@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Viewers
   module Task
     include Formatter
@@ -23,8 +25,7 @@ module Viewers
     end
 
     def can_submit?
-      ["new", "declined"].include?(status)
+      %w[new declined].include?(status)
     end
-
   end
 end

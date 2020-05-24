@@ -77,7 +77,7 @@ module Teachbase
           object_type = Teachbase::Bot::Section::OBJECTS_TYPES[type.to_sym]
           content = appshell.course_session_section_content(type, cs_tb_id, sec_id, content_tb_id)
           return answer.text.empty_message unless content
-          
+
           print_content_title(content)
           respond_to?("print_#{object_type}") ? public_send("print_#{object_type}", content) : answer.text.error
         end
@@ -98,9 +98,7 @@ module Teachbase
         end
 
         def confirm_answer(cs_tb_id, object_tb_id, type, param)
-          if param.to_sym == :decline
-            return answer.menu.declined(back_button: :back)
-          end
+          return answer.menu.declined(back_button: :back) if param.to_sym == :decline
 
           user_answer = appshell.ask_answer
           return answer.text.error unless user_answer

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Viewers
   module Helper
     def create_title(params)
@@ -31,6 +33,5 @@ module Viewers
     def build_show_answers_button
       answers && !answers.empty? ? show_answer_button : []
     end
-
   end
 end

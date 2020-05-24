@@ -4,7 +4,6 @@ module Teachbase
   module Bot
     module Interfaces
       module Material
-
         def print_material(material)
           buttons = material.action_buttons
           if answer.content.respond_to?(material.content_type)
@@ -26,7 +25,6 @@ module Teachbase
         def print_material_link(material)
           answer.content.url(link: material.source, link_name: "#{I18n.t('open').capitalize}: #{material.name}")
         end
-
       end
     end
   end

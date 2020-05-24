@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module EmojiAliaser
   class << self
     def white_check_mark
@@ -60,46 +62,46 @@ module EmojiAliaser
       Emoji.t(:clock4)
     end
 
-    alias :completed :white_check_mark
-    alias :accepted :white_check_mark
-    alias :passed :white_check_mark
+    alias completed white_check_mark
+    alias accepted white_check_mark
+    alias passed white_check_mark
 
-    alias :checking :clock4
+    alias checking clock4
 
-    alias :open :arrow_forward
-    
-    alias :section_unable :no_entry_sign
-    alias :section_delayed :no_entry_sign
+    alias open arrow_forward
 
-    alias :section_unpublish :x
-    alias :declined :x
+    alias section_unable no_entry_sign
+    alias section_delayed no_entry_sign
 
-    alias :materials :page_facing_up
-    alias :material :page_facing_up
-    alias :text :page_facing_up
-    alias :pdf :page_facing_up
-    alias :iframe :page_facing_up
-    alias :table :page_facing_up
+    alias section_unpublish x
+    alias declined x
 
-    alias :video :clapper
-    alias :youtube :clapper
-    alias :vimeo :clapper
+    alias materials page_facing_up
+    alias material page_facing_up
+    alias text page_facing_up
+    alias pdf page_facing_up
+    alias iframe page_facing_up
+    alias table page_facing_up
 
-    alias :audio :sound
+    alias video clapper
+    alias youtube clapper
+    alias vimeo clapper
 
-    alias :image :camera
+    alias audio sound
 
-    alias :tasks :memo
-    alias :task :memo
+    alias image camera
 
-    alias :quizzes :bar_chart
-    alias :quiz :bar_chart
+    alias tasks memo
+    alias task memo
 
-    alias :scorm_packages :computer
-    alias :scorm_package :computer
+    alias quizzes bar_chart
+    alias quiz bar_chart
 
-    alias :active :green_book
+    alias scorm_packages computer
+    alias scorm_package computer
 
-    alias :archived :closed_book
+    alias active green_book
+
+    alias archived closed_book
   end
 end
