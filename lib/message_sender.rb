@@ -13,6 +13,7 @@ class MessageSender
               :reply_to_message_id,
               :parse_mode,
               :disable_notification,
+              :disable_web_page_preview,
               :mode,
               :text,
               :menu_data,
@@ -27,6 +28,7 @@ class MessageSender
     @menu_type = msg_params[:menu]
     @parse_mode = msg_params[:parse_mode] || AppConfigurator.new.load_parse_mode
     @disable_notification = msg_params[:disable_notification] || false
+    @disable_web_page_preview = msg_params[:disable_web_page_preview] || false
     @reply_to_message_id = msg_params[:reply_to_message_id]
     @reply_to_tg_id = msg_params[:reply_to_tg_id]
     @menu_data = msg_params[:menu_data]
@@ -40,6 +42,7 @@ class MessageSender
     params = { text: text, msg_type_sign => msg_data }
     params[:parse_mode] = parse_mode
     params[:disable_notification] = disable_notification
+    params[:disable_web_page_preview] = disable_web_page_preview
     params[:chat_id] = reply_to_tg_id || chat.id
     params[:reply_to_message_id] = reply_to_message_id if reply_to_message_id
     sending_message = create_message(params)

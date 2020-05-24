@@ -11,7 +11,7 @@ module Viewers
     end
 
     def action_buttons(back_button = true)
-      build_approve_button + build_to_section_button(back_button)
+      build_approve_button + build_show_answers_button + build_to_section_button(back_button)
     end
 
     def button_sign(cont_type)
@@ -27,5 +27,10 @@ module Viewers
     def build_to_section_button(back_button)
       back_button ? section.back_button : []
     end
+
+    def build_show_answers_button
+      answers && !answers.empty? ? show_answer_button : []
+    end
+
   end
 end

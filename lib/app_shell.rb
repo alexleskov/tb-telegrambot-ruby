@@ -132,11 +132,11 @@ module Teachbase
       end
 
       def request_user_data
-        controller.answer_text.ask_login
+        controller.answer.text.ask_login
         user_login = request_data(:login)
         raise unless user_login
 
-        controller.answer_text.ask_password
+        controller.answer.text.ask_password
         user_password = request_data(:password)
         [user_login, user_password]
       end
@@ -155,7 +155,7 @@ module Teachbase
       end
 
       def ask_answer
-        controller.answer_text.ask_answer
+        controller.answer.text.ask_answer
         request_data(:string)
       end
 

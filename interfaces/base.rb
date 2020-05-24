@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
+require './interfaces/object_interface/course_session'
 require './interfaces/object_interface/material'
+require './interfaces/object_interface/section'
 require './interfaces/object_interface/task'
 
 module Teachbase
@@ -8,7 +10,9 @@ module Teachbase
     module Interfaces
       module Base
         include Viewers::Helper
+        include Teachbase::Bot::Interfaces::CourseSession
         include Teachbase::Bot::Interfaces::Material
+        include Teachbase::Bot::Interfaces::Section
         include Teachbase::Bot::Interfaces::Task
 
         def self.included(base)
@@ -56,11 +60,18 @@ module Teachbase
                            \n#{create_empty_msg}"
         end
 
-        def menu_empty_msg(text, buttons, mode = :none)
-          answer.menu.create(buttons: buttons,
-                      text: "#{text}\n#{create_empty_msg}",
-                      type: :menu_inline,
-                      mode: mode)
+        def menu_content_main(params)
+          text = params[:object] ? create_title(params) : I18n.t('start_menu_message')
+          answer.menu.create(buttons: params[:buttons], type: :menu_inline, disable_notification: true,
+                             disable_web_page_preview: true, mode: params[:mode] || :none, text: text,
+                             slices_count: params[:buttons].size)
+        end
+
+        def menu_empty_msg(params)
+          answer.menu.create(buttons: params[:buttons],
+                             text: "#{params[:text]}\n#{create_empty_msg}",
+                             type: :menu_inline,
+                             mode: params[:mode] || :none)
         end
 
         def menu_confirm_answer(object)
@@ -86,6 +97,10 @@ module Teachbase
           else
             "#{Emoji.t(:thumbsdown)} #{I18n.t('error')}"
           end
+        end
+
+        def create_empty_msg
+          "<b>#{I18n.t('empty')}</b>"
         end
 
       end

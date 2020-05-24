@@ -4,8 +4,7 @@ require './lib/buttons/inline_callback_button'
 require './lib/buttons/inline_url_button'
 require './lib/buttons/text_command_button'
 
-class Teachbase::Bot::AnswerMenu < Teachbase::Bot::Answer
-  include Viewers::Menu
+class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
 
   MENU_TYPES = %i[menu menu_inline].freeze
   LOCALIZATION_EMOJI = %i[ru us].freeze

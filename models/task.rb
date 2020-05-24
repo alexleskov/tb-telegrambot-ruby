@@ -11,6 +11,7 @@ module Teachbase
       belongs_to :section
       belongs_to :user
       has_many :attachments, as: :imageable
+      has_many :answers, as: :answerable
 
     end
   end

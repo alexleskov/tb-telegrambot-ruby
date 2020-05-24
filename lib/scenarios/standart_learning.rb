@@ -57,7 +57,7 @@ module Teachbase
           if sections.empty? || sections_by_option.empty?
             cs = appshell.course_session_info(cs_tb_id)
             title = create_title(object: cs, stages: %i[title sections menu], params: { state: option })
-            return menu_empty_msg(title, create_sections_back_button(cs_tb_id), :edit_msg)
+            return menu_empty_msg(text: title, buttons: create_sections_back_button(cs_tb_id), mode: :edit_msg)
           end
 
           menu_sections_by_option(sections_by_option, option)
@@ -69,16 +69,17 @@ module Teachbase
           return answer.text.empty_message unless contents
 
           appshell.course_session_update_progress(cs_tb_id)
-          menu_section_contents(section, contents, stages: %i[title contents])
+          title = create_title(object: section, stages: %i[title contents])
+          menu_section_contents(section, contents, text: title)
         end
 
         def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
-          @logger.debug "content_type: #{type}"
+          object_type = Teachbase::Bot::Section::OBJECTS_TYPES[type.to_sym]
           content = appshell.course_session_section_content(type, cs_tb_id, sec_id, content_tb_id)
           return answer.text.empty_message unless content
           
           print_content_title(content)
-          respond_to?("print_#{type}") ? public_send("print_#{type}", content) : answer.text.error
+          respond_to?("print_#{object_type}") ? public_send("print_#{object_type}", content) : answer.text.error
         end
 
         def courses_update

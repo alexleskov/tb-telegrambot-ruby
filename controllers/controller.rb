@@ -22,7 +22,6 @@ module Teachbase
         @message = respond.incoming_data.message
         @logger = AppConfigurator.new.load_logger
         @appshell = Teachbase::Bot::AppShell.new(self)
-        @interface = Teachbase::Bot::ObjInterface.new(self)
         @answer = Teachbase::Bot::Answers.new(respond, dest)
       rescue RuntimeError => e
         @logger.debug "Initialization Controller error: #{e}"

@@ -8,6 +8,7 @@ require './models/quiz'
 require './models/scorm_package'
 require './models/task'
 require './models/attachment'
+require './models/answer'
 require './lib/attribute'
 
 module Teachbase
@@ -20,6 +21,9 @@ module Teachbase
       MAIN_OBJECTS_CUSTOM_PARAMS = { users: { "name" => :first_name },
                                      course_sessions: { "updated_at" => :changed_at } }.freeze
       CONTENT_VIDEO_FORMAT = "mp4"
+      ADDTION_OBJECTS = { attachments: :attachment,
+                             answers: :answer,
+                             blocks: :block  }.freeze
 
       attr_reader :appshell
 
@@ -162,10 +166,11 @@ module Teachbase
             lms_data["source"] = lms_data["source"][CONTENT_VIDEO_FORMAT]
           end
           @logger.debug "lms_data: #{lms_data}"
-          content_attributes = Attribute.create(section_content_attrs(content_type), lms_data)
           content = section_bd.public_send(content_type).find_by!(tb_id: content_tb_id)
-          content.update!(content_attributes)
-          create_attachments(content, lms_data) if attachments?(lms_data)
+          content.update!(Attribute.create(section_content_attrs(content_type), lms_data))
+          ADDTION_OBJECTS.keys.each do |addition_object|
+            attach_addition_object(addition_object, content, lms_data)
+          end
           content
         end
       end
@@ -189,15 +194,28 @@ module Teachbase
 
       private
 
-      def create_attachments(content, lms_data)
-        lms_data["attachments"].each do |attachment_lms|
-          attributes = Attribute.create(Teachbase::Bot::Attachment.attribute_names, attachment_lms)
-          content.attachments.find_or_create_by!(attributes)
+      def attach_addition_object(addition_object, content, lms_data)
+        return unless addition_object?(lms_data, addition_object)
+
+        lms_data[addition_object.to_s].each do |data_lms|
+          data_type_class = to_constantize(to_camelize(addit_data_sign(addition_object)), "Teachbase::Bot::")
+          attributes = Attribute.create(data_type_class.attribute_names, data_lms)
+          attributes[:tb_id] = data_lms["id"] if data_lms["id"]
+          addition_data_bd = content.public_send(addition_object).find_or_create_by!(attributes)
+          addition_data_bd.update!(attributes)
+
+          if data_lms.keys.any? { |key| ADDTION_OBJECTS.include?(key.to_sym) }
+            attach_addition_object(addition_object, addition_data_bd, data_lms)
+          end
         end
       end
 
-      def attachments?(lms_data)
-        lms_data.keys.include?("attachments")
+      def addition_object?(lms_data, addition_object)
+        lms_data.keys.include?(addition_object.to_s) && !lms_data[addition_object.to_s].empty?
+      end
+
+      def addit_data_sign(addition_object)
+        "#{ADDTION_OBJECTS[addition_object.to_sym]}"
       end
 
       def call_data

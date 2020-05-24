@@ -1,5 +1,5 @@
 
-require './lib/answers/answer'
+require './lib/answers/answer_controller'
 require './lib/answers/answer_menu'
 require './lib/answers/answer_text'
 require './lib/answers/answer_content'

@@ -37,39 +37,8 @@ module Formatter
     result
   end
 
-  def attach_emoji(param)
-    case param.to_sym
-    when :completed, :accepted, :passed
-      Emoji.t(:white_check_mark)
-    when :open
-      Emoji.t(:arrow_forward)
-    when :section_unable
-      Emoji.t(:no_entry_sign)
-    when :section_delayed
-      Emoji.t(:no_entry_sign)
-    when :section_unpublish
-      Emoji.t(:x)
-    when :materials, :material, :text, :pdf, :iframe
-      Emoji.t(:page_facing_up)
-    when :video, :youtube, :vimeo
-      Emoji.t(:clapper)
-    when :audio
-      Emoji.t(:sound)
-    when :image
-      Emoji.t(:art)
-    when :tasks, :task
-      Emoji.t(:memo)
-    when :quizzes, :quiz
-      Emoji.t(:bar_chart)
-    when :scorm_packages, :scorm_package
-      Emoji.t(:computer)
-    when :active
-      Emoji.t(:green_book)
-    when :archived
-      Emoji.t(:closed_book)
-    else
-      Emoji.t(:round_pushpin)
-    end
+  def attach_emoji(sign)
+    EmojiAliaser.respond_to?(sign) ? EmojiAliaser.public_send(sign) : EmojiAliaser.round_pushpin
   end
 
   def to_default_protocol(url)

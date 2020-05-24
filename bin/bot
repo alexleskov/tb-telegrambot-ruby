@@ -10,6 +10,7 @@ require 'English'
 
 require './lib/app_configurator'
 require './lib/emoji'
+require './lib/emoji_aliaser'
 require './lib/formatter'
 require './lib/validator'
 require './lib/viewers/viewers'
