@@ -40,8 +40,8 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::AnswerController
     send_out "#{Emoji.t(:ok)} <i>#{I18n.t('accepted')}</i>"
   end
 
-  def ask_answer
-    send_out "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_answer')}:"
+  def ask_answer(text = "")
+    send_out "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_answer')}:\n#{text}"
   end
 
   def ask_login

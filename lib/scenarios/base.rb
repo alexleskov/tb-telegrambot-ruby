@@ -41,6 +41,8 @@ module Teachbase
           answer.menu.edit_settings
         end
 
+        def ready ; end
+
         def choose_localization
           answer.menu.choosing("Setting", :localization)
         end
@@ -64,7 +66,13 @@ module Teachbase
 
         def check_status
           print_update_status(:in_progress)
-          yield ? print_update_status(:success) : print_update_status(:fail)
+          if yield
+            print_update_status(:success)
+            true
+          else
+            print_update_status(:fail)
+            false
+          end
         end
       end
     end

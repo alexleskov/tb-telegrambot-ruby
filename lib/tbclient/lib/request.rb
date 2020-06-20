@@ -19,7 +19,9 @@ module Teachbase
                   :request_url,
                   :account_id,
                   :rest_client,
-                  :answer_type
+                  :answer_type,
+                  :content_type,
+                  :headers
 
       def initialize(type_class_name, method_name, request_options = {}, token)
         @type_class_name = type_class_name
@@ -33,41 +35,58 @@ module Teachbase
         @rest_client = request_options[:rest_client]
         @answer_type = request_options[:answer_type]
         @payload = request_options[:payload] || {}
+        @content_type = request_options[:content_type] || DEFAULT_PAYLOAD_TYPE
+        @headers = set_headers
         find_api_class
         create_request_data
       end
 
       def get
         push_request do
-          rest_client.get(request_url, params: url_params, "X-Account-Id" => account_id.to_s)
+          rest_client.get(request_url, default_settings(:get))
         end
       end
 
       def delete
         push_request do
-          rest_client.delete(request_url, params: url_params, "X-Account-Id" => account_id.to_s)
+          rest_client.delete(request_url, default_settings(:delete))
         end
       end
 
       def post
         push_request do
-          rest_client.post(request_url, payload.to_json,
-                           content_type: DEFAULT_PAYLOAD_TYPE,
-                           "X-Account-Id" => account_id.to_s,
-                           "Authorization" => "Bearer #{@token.value}")
+          rest_client.post(request_url, payload, default_settings(:post))
         end
       end
 
       def patch
         push_request do
-          rest_client.patch(request_url, payload.to_json,
-                            content_type: DEFAULT_PAYLOAD_TYPE,
-                            "X-Account-Id" => account_id.to_s,
-                            "Authorization" => "Bearer #{@token.value}")
+          rest_client.patch(request_url, payload, default_settings(:patch))
         end
       end
 
       private
+
+      def set_headers
+        request_options[:headers] ? default_headers.merge!(request_options[:headers]) : default_headers
+      end
+
+      def default_settings(http_method)
+        case http_method
+        when :post, :patch
+          headers
+        when :get, :delete
+          { params: url_params }.merge!(headers)
+        else
+          raise "No such http_method: '#{http_method}'"
+        end
+      end
+
+      def default_headers
+        { content_type: content_type,
+          "X-Account-Id" => account_id.to_s,
+          "Authorization" => "Bearer #{@token.value}" }
+      end
 
       def push_request
         begin
@@ -77,7 +96,7 @@ module Teachbase
           when 301, 302, 307
             e.response.follow_redirection
           else
-            raise
+            raise e.response
           end
         end
         show_answer(response, answer_type)

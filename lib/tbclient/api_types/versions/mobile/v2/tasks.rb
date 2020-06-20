@@ -20,6 +20,11 @@ module Teachbase
               check!(:ids, %i[session_id id], url_ids)
               "#{SOURCE}/#{url_ids[:session_id]}/tasks/#{url_ids[:id]}"
             end
+
+            def course_sessions_tasks_task_answers
+              "#{course_sessions_tasks}/task_answers"
+            end
+
           end
         end
       end

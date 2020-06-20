@@ -9,6 +9,8 @@ require './models/scorm_package'
 require './models/task'
 require './models/attachment'
 require './models/answer'
+require './models/comment'
+require './models/cache_message'
 require './lib/attribute'
 
 module Teachbase
@@ -23,7 +25,8 @@ module Teachbase
       CONTENT_VIDEO_FORMAT = "mp4"
       ADDTION_OBJECTS = { attachments: :attachment,
                           answers: :answer,
-                          blocks: :block }.freeze
+                          blocks: :block,
+                          comments: :comment }.freeze
 
       attr_reader :appshell
 
@@ -33,36 +36,6 @@ module Teachbase
         @appshell = appshell
         @logger = AppConfigurator.new.load_logger
         @retries = 0
-      end
-
-      def get_cs_list(params)
-        appshell.user.course_sessions.order(id: :asc)
-                .limit(params[:limit])
-                .offset(params[:offset])
-                .where(status: params[:state].to_s,
-                       scenario_mode: appshell.settings.scenario)
-      end
-
-      def get_cs_sec_by(option, param, cs_tb_id)
-        raise "No such option: '#{option}" unless %i[position id].include?(option.to_sym)
-
-        appshell.user.course_sessions.find_by(tb_id: cs_tb_id).sections.find_by(option.to_sym => param)
-      end
-
-      def get_cs_sec_contents(section_bd)
-        return unless section_bd
-
-        section_objects = {}
-        Teachbase::Bot::Section::OBJECTS.each do |content_type|
-          section_objects[content_type] = section_bd.public_send(content_type).order(position: :asc)
-        end
-        section_objects
-      end
-
-      def get_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
-        appshell.user.course_sessions.find_by(tb_id: cs_tb_id)
-                .sections.find_by(id: sec_id)
-                .public_send(content_type).find_by(tb_id: content_tb_id)
       end
 
       def call_profile
@@ -118,11 +91,10 @@ module Teachbase
 
         Teachbase::Bot::Section::OBJECTS_TYPES.keys.each do |content_type|
           lms_info[content_type.to_s].each do |content_lms|
-            content_attrs = Attribute.create(section_content_attrs(content_type), content_lms)
             content_db = cs.public_send(content_type).find_by(tb_id: content_lms["id"])
             next unless content_db
 
-            content_db.update!(content_attrs)
+            content_db.update!(Attribute.create(section_content_attrs(content_type), content_lms))
           end
         end
         cs
@@ -158,7 +130,7 @@ module Teachbase
       end
 
       def call_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
-        section_bd = get_cs_sec_by(:id, sec_id, cs_tb_id)
+        section_bd = appshell.user.sections_by_cs_tbid(cs_tb_id).find_by(id: sec_id)
         raise unless section_bd || section_bd.empty?
 
         call_data do
@@ -177,7 +149,7 @@ module Teachbase
       end
 
       def call_track_material(cs_tb_id, material_tb_id, time_spent)
-        material = appshell.user.course_sessions.find_by(tb_id: cs_tb_id).materials.find_by(tb_id: material_tb_id)
+        material = appshell.user.material_by_cs_tbid(cs_tb_id, material_tb_id)
         raise unless material
 
         call_data do
@@ -203,10 +175,10 @@ module Teachbase
           attributes = Attribute.create(data_type_class.attribute_names, data_lms)
           attributes[:tb_id] = data_lms["id"] if data_lms["id"]
           addition_data_bd = content.public_send(addition_object).find_or_create_by!(attributes)
-          addition_data_bd.update!(attributes)
-
           if data_lms.keys.any? { |key| ADDTION_OBJECTS.include?(key.to_sym) }
-            attach_addition_object(addition_object, addition_data_bd, data_lms)
+            ADDTION_OBJECTS.keys.each do |sub_addition_object|
+              attach_addition_object(sub_addition_object, addition_data_bd, data_lms)
+            end
           end
         end
       end

@@ -39,6 +39,10 @@ class Breadcrumb
     "#{Emoji.t(:arrow_down)} #{I18n.t('course_sections')}"
   end
 
+  def answers
+    "#{Emoji.t(:speech_balloon)} #{I18n.t('answers').capitalize}"
+  end
+
   alias contents sections
 
   def menu
@@ -49,6 +53,6 @@ class Breadcrumb
     result = []
     stages.each { |stage| result << public_send(stage) }
     result << to_bolder(result.pop.dup) + DELIMETER
-    result.join(DELIMETER)
+    result.join(DELIMETER) + DELIMETER
   end
 end

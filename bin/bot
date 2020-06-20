@@ -7,6 +7,7 @@ require 'async'
 require 'encrypted_strings'
 require 'sanitize'
 require 'English'
+require 'open-uri'
 
 require './lib/app_configurator'
 require './lib/emoji'
@@ -37,7 +38,7 @@ telegram_bot_client.run do |bot|
     else
       logger.debug "#{message.from.id} - @#{message.from.username}: #{message}"
     end
-    MessageResponder.new(options).respond
+    MessageResponder.new(options).detect_type
     # rescue => e
     # logger.debug "Error: #{e}"
     # end

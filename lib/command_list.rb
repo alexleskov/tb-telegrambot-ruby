@@ -10,7 +10,8 @@ module Teachbase
                         [:settings, Emoji.t(:wrench)],
                         [:show_profile_state, Emoji.t(:mortar_board)],
                         [:courses_list, Emoji.t(:books)],
-                        [:update_profile_data, Emoji.t(:arrows_counterclockwise)]
+                        [:update_profile_data, Emoji.t(:arrows_counterclockwise)],
+                        [:ready, Emoji.t(:hand)]
       class << self
         attr_reader :sign_and_emoji
       end
@@ -33,13 +34,13 @@ module Teachbase
       def command_by?(param, data)
         raise "No such param: #{param}" unless %i[key emoji text value].include?(param)
 
-        all.any? { |command| command.public_send(param) == data }
+        all.any? { |command| command.public_send(param).to_s == data.to_s }
       end
 
       def find_by(param, data)
         return unless command_by?(param, data)
 
-        all.select { |command| command.public_send(param) == data }.first
+        all.select { |command| command.public_send(param).to_s == data.to_s }.first
       end
 
       def show(key)

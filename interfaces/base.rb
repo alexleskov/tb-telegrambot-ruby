@@ -61,22 +61,27 @@ module Teachbase
         end
 
         def menu_content_main(params)
-          text = params[:object] ? create_title(params) : I18n.t('start_menu_message')
-          answer.menu.create(buttons: params[:buttons], type: :menu_inline, disable_notification: true,
-                             disable_web_page_preview: true, mode: params[:mode] || :none, text: text,
-                             slices_count: params[:buttons].size)
+          params.merge!({ type: :menu_inline, disable_web_page_preview: true, disable_notification: true,
+                          slices_count: 2 })
+          params[:text] ||= I18n.t('start_menu_message')
+          params[:mode] ||= :none
+          answer.menu.create(params)
         end
 
         def menu_empty_msg(params)
-          answer.menu.create(buttons: params[:buttons],
-                             text: "#{params[:text]}\n#{create_empty_msg}",
-                             type: :menu_inline,
-                             mode: params[:mode] || :none)
+          params.merge!({ type: :menu_inline })
+          params[:text] = "#{params[:text]}\n#{create_empty_msg}"
+          params[:mode] ||= :none
+          answer.menu.create(params)
         end
 
-        def menu_confirm_answer(object)
-          cs_tb_id = object.course_session.tb_id
-          answer.menu.confirmation(command_prefix: "confirm_csid:#{cs_tb_id}_objid:#{object.tb_id}_t:#{object_type(object)}_p:")
+        def menu_confirm_answer(params)
+          raise unless params[:object]
+
+          cs_tb_id = params[:object].course_session.tb_id
+          params[:command_prefix] = "confirm_csid:#{cs_tb_id}_objid:#{params[:object].tb_id}_t:#{object_type(params[:object])}_p:"
+          params[:text] = "<b>#{I18n.t('send').capitalize} #{I18n.t('answer').downcase}</b>\n<pre>#{params[:user_answer]}</pre>"
+          answer.menu.confirmation(params)
         end
 
         private

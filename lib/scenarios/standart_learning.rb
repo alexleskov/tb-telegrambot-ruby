@@ -35,8 +35,8 @@ module Teachbase
           offset_num += limit_count
           return if offset_num >= cs_count
 
-          answer.menu.show_more(:course_sessions, all_count: cs_count, state: state, limit_count: limit_count,
-                                                  offset_num: offset_num)
+          answer.menu.show_more(object_type: :course_sessions, all_count: cs_count, state: state,
+                                limit_count: limit_count, offset_num: offset_num)
         end
 
         def show_course_session_info(cs_tb_id)
@@ -70,7 +70,7 @@ module Teachbase
 
           appshell.course_session_update_progress(cs_tb_id)
           title = create_title(object: section, stages: %i[title contents])
-          menu_section_contents(section, contents, text: title)
+          menu_section_contents(section: section, contents: contents, text: title, back_button: true)
         end
 
         def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
@@ -78,7 +78,6 @@ module Teachbase
           content = appshell.course_session_section_content(type, cs_tb_id, sec_id, content_tb_id)
           return answer.text.empty_message unless content
 
-          print_content_title(content)
           respond_to?("print_#{object_type}") ? public_send("print_#{object_type}", content) : answer.text.error
         end
 
@@ -94,16 +93,30 @@ module Teachbase
           task = appshell.course_session_task(cs_tb_id, task_tb_id)
           return unless task
 
-          menu_confirm_answer(task)
+          answer.text.ask_answer
+          appshell.ask_answer(mode: :bulk, saving: :cache)
+          answer.menu.after_auth
+          menu_confirm_answer(object: task, disable_web_page_preview: true, mode: :none,
+                              user_answer: appshell.user_cached_answer)
+        end
+
+        def answers_task(cs_tb_id, task_tb_id)
+          task = appshell.course_session_task(cs_tb_id, task_tb_id)
+          return unless task
+
+          print_answers(task)
         end
 
         def confirm_answer(cs_tb_id, object_tb_id, type, param)
-          return answer.menu.declined(back_button: :back) if param.to_sym == :decline
-
-          user_answer = appshell.ask_answer
-          return answer.text.error unless user_answer
-
-          check_status { appshell.submit_answer(cs_tb_id, object_tb_id, type, user_answer) }
+          object = appshell.public_send("course_session_#{type}", cs_tb_id, object_tb_id)
+          if param.to_sym == :decline
+            appshell.clear_cached_answers
+            answer.text.declined
+          else
+            result = check_status { appshell.submit_answer(cs_tb_id, object_tb_id, type) }
+            appshell.clear_cached_answers if result
+          end
+          answer.menu.custom_back(callback_data: "/sec#{object.section_id}_cs#{cs_tb_id}")
         end
 
         def courses_list
@@ -185,9 +198,14 @@ module Teachbase
             track_material($1, $2, $3)
           end
 
-          on %r{submit_tasks_by_csid:} do
-            @message_value =~ %r{submit_tasks_by_csid:(\d*)_objid:(\d*)}
+          on %r{submit_task_by_csid:} do
+            @message_value =~ %r{submit_task_by_csid:(\d*)_objid:(\d*)}
             submit_answer_task($1, $2)
+          end
+
+          on %r{answers_task_by_csid:} do
+            @message_value =~ %r{answers_task_by_csid:(\d*)_objid:(\d*)}
+            answers_task($1, $2)
           end
 
           on %r{confirm_csid:} do

@@ -25,7 +25,7 @@ module Teachbase
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
 
         @controller = controller
-        @settings = controller.respond.incoming_data.settings
+        @settings = controller.respond.msg_responder.settings
         @authorizer = Teachbase::Bot::Authorizer.new(self)
         @data_loader = Teachbase::Bot::DataLoader.new(self)
         set_scenario
@@ -64,7 +64,7 @@ module Teachbase
 
       def course_sessions_list(state, limit_count, offset_num)
         data_loader.call_cs_list(state: state, limit: limit_count, offset: offset_num)
-        data_loader.get_cs_list(state: state, limit: limit_count, offset: offset_num)
+        user.course_sessions_by(state: state, limit: limit_count, offset: offset_num, scenario: settings.scenario)
       end
 
       def course_session_info(cs_tb_id)
@@ -76,8 +76,14 @@ module Teachbase
         data_loader.call_cs_progress(cs_tb_id)
       end
 
-      def course_session_section(option, param, cs_tb_id)
-        data_loader.get_cs_sec_by(option, param, cs_tb_id)
+      def course_session_section(param, value, cs_tb_id)
+        raise "No such option: '#{option}" unless %i[position id].include?(param.to_sym)
+
+        user.sections_by_cs_tbid(cs_tb_id).find_by(param.to_sym => value)
+      end
+
+      def sections_by_cs(cs_tb_id, param, value)
+        course_sessions.sections.show_by_cs_tb_id(cs_tb_id).find_by(param.to_sym => value)
       end
 
       def course_session_sections(cs_tb_id)
@@ -95,7 +101,7 @@ module Teachbase
 
       def course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
         data_loader.call_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
-        data_loader.get_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
+        user.section_by_cs_tbid(cs_tb_id, sec_id).public_send(content_type).find_by(tb_id: content_tb_id)
       end
 
       def course_session_task(cs_tb_id, task_tb_id)
@@ -126,18 +132,19 @@ module Teachbase
 
       def request_data(validate_type)
         data = take_data
-        return nil if !(data =~ ABORT_ACTION_COMMAND).nil? || controller.respond.commands.command_by?(:value, data)
+        return if break_taking_data?(data)
 
-        data unless validation(validate_type, data).nil?
+        value = data.respond_to?(:text) ? data.text : data.file
+        data if validation(validate_type, value)
       end
 
       def request_user_data
         controller.answer.text.ask_login
-        user_login = request_data(:login)
+        user_login = request_data(:login).text
         raise unless user_login
 
         controller.answer.text.ask_password
-        user_password = request_data(:password)
+        user_password = request_data(:password).text
         [user_login, user_password]
       end
 
@@ -150,28 +157,81 @@ module Teachbase
         data_loader.call_track_material(cs_tb_id, material_tb_id, time_spent)
       end
 
-      def submit_answer(_cs_tb_id, _task_tb_id, _object_type, _user_answer)
-        @logger.debug "OK"
+      def submit_answer(cs_tb_id, object_tb_id, object_type)
+        answer = { text: cached_answers_texts, attachments: cached_answers_files }
+        case object_type.to_sym
+        when :task
+          authsession.send_task_answer(cs_tb_id, object_tb_id, answer)
+        end
       end
 
-      def ask_answer
-        controller.answer.text.ask_answer
-        request_data(:string)
+      def ask_answer(params = {})
+        params[:answer_type] ||= :none
+        params[:mode] ||= :once
+        params[:saving] ||= :perm
+        case params[:mode]
+        when :once
+          request_data(params[:answer_type])
+        when :bulk
+          request_answer_bulk(params)
+        end
+      end
+
+      def clear_cached_answers
+        controller.tg_user.cache_messages.destroy_all
+      end
+
+      def cached_answers_texts
+        controller.tg_user.cache_messages.texts
+      end
+
+      def cached_answers_files
+        result = []
+        files = controller.tg_user.cache_messages.files
+        return result if files.empty?
+
+        files.each do |file_id|
+          result << { file: controller.tg_file.upload(file_id) }
+        end
+        result
+      end
+
+      def user_cached_answer
+        "#{cached_answers_texts}\n
+         #{Emoji.t(:bookmark_tabs)} #{I18n.t('attachments').capitalize}: #{cached_answers_files.size}"
       end
 
       private
+
+      def request_answer_bulk(params)
+        loop do
+          user_answer = request_data(params[:answer_type])
+
+          @logger.debug "user_answer: #{user_answer}"
+          break if user_answer.nil? || (user_answer.respond_to?(:text) && break_taking_data?(user_answer.text))
+          user_answer.save_message(params[:saving])
+          controller.answer.menu.ready
+        end
+      end
+
+      def break_taking_data?(msg)
+        if msg.respond_to?(:text)
+          result = !(msg.text =~ ABORT_ACTION_COMMAND).nil? || controller.respond.commands.command_by?(:value, msg.text)
+          !!result
+        elsif msg.nil?
+          !msg
+        end
+        # Will be add something for files on else
+      end
 
       def set_scenario
         change_scenario(settings.scenario)
       end
 
       def take_data
-        controller.respond.incoming_data.bot.listen do |message|
-          msg = message.respond_to?(:text) ? message.text : message.data # for debugger
-          @logger.debug "taking data: @#{message.from.username}: #{msg}"
-          break message.text if message.respond_to?(:text)
-        end
+        controller.take_data
       end
+
     end
   end
 end

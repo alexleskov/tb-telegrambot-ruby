@@ -6,7 +6,17 @@ module Teachbase
   module Bot
     class Answer < ActiveRecord::Base
       belongs_to :answerable, polymorphic: true
-      has_many :attachments, as: :imageable
+      has_many :attachments, as: :imageable, dependent: :destroy
+      has_many :comments, as: :commentable, dependent: :destroy
+
+     def attachments?
+        !attachments.empty?
+      end
+
+      def comments?
+        !comments.empty?
+      end
+
     end
   end
 end

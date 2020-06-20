@@ -8,14 +8,14 @@ class Teachbase::Bot::CallbackController < Teachbase::Bot::Controller
     save_message
   end
 
+  def save_message
+    @message_params = { data: message.data, message_type: "callback_data" }
+    super(:perm)
+  end
+
   private
 
   def on(command, &block)
     super(command, :data, &block)
-  end
-
-  def save_message(_result_data = {})
-    result = { data: @message.data, message_type: "callback_data" }
-    super(result)
   end
 end

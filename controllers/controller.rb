@@ -2,6 +2,7 @@
 
 require './lib/app_shell'
 require './lib/answers/answers'
+require './lib/filer'
 require './interfaces/breadcrumb'
 
 module Teachbase
@@ -10,39 +11,53 @@ module Teachbase
       include Formatter
       include Viewers
 
-      MSG_TYPES = %i[text data].freeze
-
-      attr_reader :respond, :answer, :appshell, :tg_user
+      attr_reader :respond, :answer, :appshell, :tg_user, :message, :message_params, :tg_file
 
       def initialize(params, dest)
         @respond = params[:respond]
         raise "Respond not found" unless respond
 
-        @tg_user = respond.incoming_data.tg_user
-        @message = respond.incoming_data.message
+        @tg_user = respond.msg_responder.tg_user
+        @message = respond.msg_responder.message
+        @message_params = {}
         @logger = AppConfigurator.new.load_logger
         @appshell = Teachbase::Bot::AppShell.new(self)
         @answer = Teachbase::Bot::Answers.new(respond, dest)
+        @tg_file = Teachbase::Bot::Filer.new(respond)
       rescue RuntimeError => e
         @logger.debug "Initialization Controller error: #{e}"
       end
 
-      protected
-
-      def find_msg_value(msg_type)
-        case msg_type
-        when :text
-          @message.text
-        when :data
-          @message.data
-        else
-          raise "Can't find message for #{@message}, type: #{msg_type}, available: #{MSG_TYPES}"
+      def take_data
+        respond.msg_responder.bot.listen do |taking_message|
+          @logger.debug "taking data: @#{taking_message.from.username}: #{taking_message}"
+          options = { bot: respond.msg_responder.bot, message: taking_message }
+          break MessageResponder.new(options).detect_type if taking_message
         end
       end
 
-      def on(command, msg_type, &block)
-        raise "No such message type '#{msg_type}'. Must be a one of #{MSG_TYPES}" unless MSG_TYPES.include?(msg_type)
+      def save_message(mode)
+        return unless tg_user || message
+        return if message_params.empty?
 
+        message_params.merge!({ message_id: message_id })
+        case mode
+        when :perm
+          tg_user.tg_account_messages.create!(message_params)
+        when :cache
+          tg_user.cache_messages.create!(message_params)
+        else
+          raise "No such mode: '#{mode}' for saving message"
+        end
+      end
+      
+      protected
+
+      def find_msg_value(msg_type)
+        message.public_send(msg_type) if message.respond_to?(msg_type)
+      end
+
+      def on(command, msg_type, &block)
         command =~ @message_value = find_msg_value(msg_type)
         return unless $LAST_MATCH_INFO
 
@@ -56,11 +71,8 @@ module Teachbase
         end
       end
 
-      def save_message(result_data = {})
-        return unless @tg_user || @message
-        return if result_data.empty?
-
-        @tg_user.tg_account_messages.create!(result_data)
+      def message_id
+        message.respond_to?(:message_id) ? message.message_id : message.message.message_id
       end
     end
   end

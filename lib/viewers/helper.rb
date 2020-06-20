@@ -12,26 +12,45 @@ module Viewers
       end
     end
 
-    def action_buttons(back_button = true)
-      build_approve_button + build_show_answers_button + build_to_section_button(back_button)
+    def action_buttons(params = {})
+      back_button_param = params[:back_button] || true
+      approve_button_param = params[:approve_button] || true
+      show_answers_button_param = params[:show_answers_button]
+      back = back_button_param ? build_to_section_button : []
+      approve = course_session.active? && approve_button_param ? build_approve_button : []
+      show_answers = show_answers_button_param ? build_show_answers_button : []
+      approve + show_answers + back
     end
 
     def button_sign(cont_type)
       "#{attach_emoji(cont_type)} #{name} #{attach_emoji(status)}"
     end
 
-    private
-
-    def build_approve_button
-      course_session.active? ? approve_button : []
+    def object_attachments(object)
+      attachments = ["#{Emoji.t(:bookmark_tabs)} <i>#{I18n.t('attachments').capitalize}</i>"]
+      object.attachments.each_with_index do |attach, ind|
+        attachments << "#{ind + 1}. #{attach_emoji(attach.category)}#{to_url_link(attach.url, attach.name)}"
+      end
+      attachments.join("\n")
     end
 
-    def build_to_section_button(back_button)
-      back_button ? section.back_button : []
+    def object_comments(object)
+      comments = ["#{Emoji.t(:lips)} <i>#{I18n.t('comments').capitalize}</i>"]
+      object.comments.each do |comment|
+        comments << "#{comment.user_name} #{I18n.t('commented').downcase}:
+                     \"#{comment.text}\""
+      end
+      comments.join("\n")
+    end
+
+    private
+
+    def build_to_section_button
+      section.back_button
     end
 
     def build_show_answers_button
-      answers && !answers.empty? ? show_answer_button : []
+      answers && !answers.empty? ? build_show_answer_button : []
     end
   end
 end

@@ -9,6 +9,7 @@ module Validator
 
   def validation(type, value)
     return unless value
+    return value if type.to_sym == :none
 
     @value = value
     public_send(type)
@@ -16,21 +17,26 @@ module Validator
 
   def login
     value =~ EMAIL_MASK || PHONE_MASK
+    Regexp.last_match
   end
 
   def email
     value =~ EMAIL_MASK
+    Regexp.last_match
   end
 
   def phone
     value =~ PHONE_MASK
+    Regexp.last_match
   end
 
   def password
     value =~ PASSWORD_MASK
+    Regexp.last_match
   end
 
   def string
     value.is_a?(String)
+    Regexp.last_match
   end
 end

@@ -25,7 +25,8 @@ class MenuButton
               :url,
               :commands,
               :back_button,
-              :sent_messages
+              :sent_messages,
+              :position
 
   def initialize(type, options)
     @logger = AppConfigurator.new.load_logger
@@ -37,6 +38,7 @@ class MenuButton
     @emoji = options[:emoji]
     @command_prefix = options[:command_prefix] || ""
     @back_button ||= options[:back_button]
+    @position = options[:position]
   end
 
   def create_buttons
@@ -45,11 +47,10 @@ class MenuButton
     raise "Expected an Array for buttons names. You gave #{buttons_sign.class}" unless buttons_sign.is_a?(Array)
 
     buttons = []
-    type_params = find_params
-    return unless type_params
+    return unless find_params
 
     buttons_sign.each_with_index do |button_sign, ind|
-      buttons << init_button(button_sign, type_params, ind)
+      buttons << init_button(button_sign, find_params, ind)
     end
     buttons
   end

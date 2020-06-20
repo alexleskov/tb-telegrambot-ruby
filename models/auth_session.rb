@@ -48,9 +48,16 @@ module Teachbase
         tb_api.request(:tasks, :course_sessions_tasks, session_id: cs_id, id: task_id).get
       end
 
+      def send_task_answer(cs_id, task_id, answer)
+        raise "Answer must be a Hash" unless answer.is_a?(Hash)
+
+        tb_api.request(:tasks, :course_sessions_tasks_task_answers, session_id: cs_id, id: task_id,
+                       payload: answer, content_type: "multipart/form-data").post
+      end
+
       def track_material(cs_id, material_id, time_spent)
-        tb_api.request(:course_sessions, :course_sessions_materials_track,
-                       session_id: cs_id, id: material_id, payload: { time_spent: time_spent }).post
+        tb_api.request(:course_sessions, :course_sessions_materials_track, session_id: cs_id,
+                       id: material_id, payload: { time_spent: time_spent }).post
       end
 
       private

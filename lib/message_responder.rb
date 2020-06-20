@@ -18,7 +18,7 @@ class MessageResponder
     tg_user.update!(first_name: message.from.first_name, last_name: message.from.last_name)
   end
 
-  def respond
+  def detect_type
     I18n.with_locale settings.localization.to_sym do
       Teachbase::Bot::Respond.new(self).detect_type
     end

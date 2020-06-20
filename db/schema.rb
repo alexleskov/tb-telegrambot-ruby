@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -12,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 17) do
+ActiveRecord::Schema.define(version: 19) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -25,7 +24,7 @@ ActiveRecord::Schema.define(version: 17) do
     t.bigint "answerable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[answerable_type answerable_id], name: "index_answers_on_answerable_type_and_answerable_id"
+    t.index ["answerable_type", "answerable_id"], name: "index_answers_on_answerable_type_and_answerable_id"
   end
 
   create_table "api_tokens", force: :cascade do |t|
@@ -49,7 +48,7 @@ ActiveRecord::Schema.define(version: 17) do
     t.bigint "imageable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[imageable_type imageable_id], name: "index_attachments_on_imageable_type_and_imageable_id"
+    t.index ["imageable_type", "imageable_id"], name: "index_attachments_on_imageable_type_and_imageable_id"
   end
 
   create_table "auth_sessions", force: :cascade do |t|
@@ -76,6 +75,32 @@ ActiveRecord::Schema.define(version: 17) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["tg_account_id"], name: "index_bot_messages_on_tg_account_id"
+  end
+
+  create_table "cache_messages", force: :cascade do |t|
+    t.integer "message_id"
+    t.string "data"
+    t.string "text"
+    t.string "message_type"
+    t.string "file_id"
+    t.string "file_size"
+    t.string "file_type"
+    t.bigint "tg_account_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tg_account_id"], name: "index_cache_messages_on_tg_account_id"
+  end
+
+  create_table "comments", force: :cascade do |t|
+    t.integer "tb_user_id"
+    t.string "text"
+    t.string "avatar_url"
+    t.string "user_name"
+    t.string "commentable_type"
+    t.bigint "commentable_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id"
   end
 
   create_table "course_sessions", force: :cascade do |t|
@@ -213,6 +238,9 @@ ActiveRecord::Schema.define(version: 17) do
     t.string "data"
     t.string "text"
     t.string "message_type"
+    t.string "file_id"
+    t.string "file_size"
+    t.string "file_type"
     t.bigint "tg_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -243,6 +271,7 @@ ActiveRecord::Schema.define(version: 17) do
   add_foreign_key "auth_sessions", "tg_accounts"
   add_foreign_key "auth_sessions", "users"
   add_foreign_key "bot_messages", "tg_accounts"
+  add_foreign_key "cache_messages", "tg_accounts"
   add_foreign_key "course_sessions", "users"
   add_foreign_key "materials", "course_sessions"
   add_foreign_key "materials", "sections"

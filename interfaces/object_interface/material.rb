@@ -5,6 +5,7 @@ module Teachbase
     module Interfaces
       module Material
         def print_material(material)
+          print_material_title(material)
           buttons = material.action_buttons
           if answer.content.respond_to?(material.content_type)
             answer.content.public_send(material.content_type, material.build_source)
@@ -24,6 +25,11 @@ module Teachbase
 
         def print_material_link(material)
           answer.content.url(link: material.source, link_name: "#{I18n.t('open').capitalize}: #{material.name}")
+        end
+
+        def print_material_title(material)
+          answer.text.send_out(create_title(object: material,
+                                            stages: %i[contents title]), disable_notification: true)
         end
       end
     end

@@ -4,8 +4,8 @@ require 'active_record'
 
 module Teachbase
   module Bot
-    class TgAccountMessage < ActiveRecord::Base
-      has_one :tg_account
+    class Comment < ActiveRecord::Base
+      belongs_to :commentable, polymorphic: true
     end
   end
 end

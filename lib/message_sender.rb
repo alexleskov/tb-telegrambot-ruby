@@ -79,9 +79,15 @@ class MessageSender
     @tg_user.bot_messages.order(created_at: :desc).first
   end
 
-  def save_message(result)
-    return unless @tg_user
+  def same_inline_keyboard?(result)
+    return unless last_message
 
+    result["reply_markup"]["inline_keyboard"] == last_message.inline_keyboard
+  end
+
+  def save_message(result)
+    return if same_inline_keyboard?(result) && !@tg_user
+    
     @tg_user.bot_messages.create!(fetch_msg_result_data(result))
   end
 

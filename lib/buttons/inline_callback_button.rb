@@ -40,9 +40,9 @@ class InlineCallbackButton < MenuButton
     def last_unical_callback(sent_messages)
       raise unless sent_messages
 
-      callbacks = sent_messages.order(created_at: :desc).where(message_type: "callback_data") # TODO: Add limit
+      callbacks = sent_messages.order(created_at: :desc).where(message_type: "callback_data").limit(5)
                                .select(:data)
-      raise "Can't find callbacks for back button" unless callbacks
+      return if callbacks.empty?
 
       result = callbacks.each_with_index do |clb, ind|
         break unless callbacks[ind + 1]

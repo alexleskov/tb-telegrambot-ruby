@@ -5,25 +5,34 @@ module Teachbase
     module Interfaces
       module Task
         def print_task(task)
-          buttons = task.action_buttons
-          msg = attachments?(task) ? "#{task.description}\n\n#{task_attachments(task)}" : task.description
-          answer.text.send_out(msg)
-          menu_content_main(buttons: buttons) unless buttons.empty?
+          buttons = task.action_buttons(show_answers_button: true)
+          title = create_title(object: task, stages: %i[contents title])
+          menu_content_main(buttons: buttons, mode: :edit_msg,
+                            text: "#{title}#{task_description(task)}") unless buttons.empty?
         end
 
-        private
+        def print_answers(task)
+          title = create_title(object: task, stages: %i[contents title answers])
+          answer.menu.back(text: "#{title}#{task_answers(task)}", mode: :edit_msg, disable_web_page_preview: true)
+        end
 
-        def task_attachments(task)
-          attachments = ["#{Emoji.t(:bookmark_tabs)} #{I18n.t('attachments').capitalize}"]
-          task.attachments.each_with_index do |attach, ind|
-            attachments << "#{ind + 1}. #{attach_emoji(attach.category)}#{to_url_link(attach.url, attach.name)}"
+        def task_description(task)
+          msg = "<pre>#{task.description}</pre>\n"
+          msg = "#{msg}#{object_attachments(task)}" if task.attachments?
+          msg
+        end
+
+        def task_answers(task)
+          answers = []
+          task.answers.order(created_at: :desc).each do |answer|
+            attachments = answer.attachments? ? "#{object_attachments(answer)}\n" : ""
+            comments = answer.comments? ? "\n#{object_comments(answer)}\n" : ""
+            answers << "<b>#{I18n.t('answer').capitalize} №#{answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(answer.status)} <i>#{I18n.t(answer.status).capitalize}</i></b>
+                        <pre>#{answer.text}</pre>\n#{attachments}#{comments}"
           end
-          attachments.join("\n")
+          answers.join("\n")
         end
 
-        def attachments?(task)
-          !task.attachments.empty?
-        end
       end
     end
   end

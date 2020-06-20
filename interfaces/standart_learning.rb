@@ -21,12 +21,7 @@ module Teachbase
         end
 
         def print_course_stats_info(course_session)
-          answer.menu.back(course_session.statistics(stages: %i[title info]))
-        end
-
-        def print_content_title(content)
-          answer.text.send_out(create_title(object: content,
-                                            stages: %i[contents title]), disable_notification: true)
+          answer.menu.back(text: course_session.statistics(stages: %i[title info]))
         end
 
         def menu_courses_list(course_sessions, params = {})
@@ -45,8 +40,7 @@ module Teachbase
         def menu_choosing_section(sections, params)
           cs = sections.first.course_session
           params[:object] = cs
-          title = "#{create_title(params)}
-                  #{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}"
+          title = "#{create_title(params)}#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}"
           if sections.empty?
             menu_empty_msg(text: title, buttons: cs.back_button)
           else
@@ -58,9 +52,7 @@ module Teachbase
           cs = sections.first.course_session
           title = create_title(object: cs, stages: %i[title sections menu], params: { state: option })
           menu_mode = option == :find_by_query_num ? :none : :edit_msg
-          answer.menu.back("#{title}
-                           #{create_sections_msg_with_state(sections)}",
-                           menu_mode)
+          answer.menu.back(text: "#{title}#{create_sections_msg_with_state(sections)}", mode: menu_mode)
         end
 
         private
