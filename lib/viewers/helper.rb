@@ -17,7 +17,7 @@ module Viewers
       params[:back_button] ||= true
       params[:approve_button] ||= true
 
-      buttons = [build_show_answers_button, build_approve_button, build_to_section_button ]
+      buttons = [build_show_answers_button, build_approve_button, build_to_section_button]
       keyboard = InlineCallbackKeyboard.collect(buttons: buttons).raw
       keyboard
     end

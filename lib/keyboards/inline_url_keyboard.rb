@@ -3,7 +3,7 @@
 require './lib/buttons/inline_url_button'
 require './lib/keyboards/keyboard'
 
-class InlineUrlKeyboard < Keyboard  
+class InlineUrlKeyboard < Keyboard
   def check_building_params
     super
     raise "Expected an Array for buttons urls. You gave #{buttons_actions.class}" unless buttons_actions.is_a?(Array)

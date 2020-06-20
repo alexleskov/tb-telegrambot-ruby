@@ -10,7 +10,7 @@ class InlineCallbackKeyboard < Keyboard
       g(params)
     end
   end
-  
+
   def check_building_params
     super
     raise "Expected an Array for callbacks datas. You gave #{buttons_actions.class}" unless buttons_actions.is_a?(Array)

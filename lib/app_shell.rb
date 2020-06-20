@@ -209,6 +209,7 @@ module Teachbase
 
           @logger.debug "user_answer: #{user_answer}"
           break if user_answer.nil? || (user_answer.respond_to?(:text) && break_taking_data?(user_answer.text))
+
           user_answer.save_message(params[:saving])
           controller.answer.menu.ready
         end
@@ -231,7 +232,6 @@ module Teachbase
       def take_data
         controller.take_data
       end
-
     end
   end
 end

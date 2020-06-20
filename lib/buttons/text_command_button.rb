@@ -3,7 +3,7 @@
 require './lib/buttons/button'
 
 class TextCommandButton < Button
-  ACTION_TYPE = :text_command.freeze
+  ACTION_TYPE = :text_command
 
   class << self
     def g(options)

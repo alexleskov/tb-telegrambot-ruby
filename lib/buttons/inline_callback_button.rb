@@ -3,7 +3,7 @@
 require './lib/buttons/button'
 
 class InlineCallbackButton < Button
-  ACTION_TYPE = :callback_data.freeze
+  ACTION_TYPE = :callback_data
 
   class << self
     def g(options)

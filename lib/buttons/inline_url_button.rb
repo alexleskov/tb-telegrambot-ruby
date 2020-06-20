@@ -3,7 +3,7 @@
 require './lib/buttons/button'
 
 class InlineUrlButton < Button
-  ACTION_TYPE = :url.freeze
+  ACTION_TYPE = :url
 
   class << self
     def g(options)

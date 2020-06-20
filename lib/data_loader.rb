@@ -175,10 +175,10 @@ module Teachbase
           attributes = Attribute.create(data_type_class.attribute_names, data_lms)
           attributes[:tb_id] = data_lms["id"] if data_lms["id"]
           addition_data_bd = content.public_send(addition_object).find_or_create_by!(attributes)
-          if data_lms.keys.any? { |key| ADDTION_OBJECTS.include?(key.to_sym) }
-            ADDTION_OBJECTS.keys.each do |sub_addition_object|
-              attach_addition_object(sub_addition_object, addition_data_bd, data_lms)
-            end
+          next unless data_lms.keys.any? { |key| ADDTION_OBJECTS.include?(key.to_sym) }
+
+          ADDTION_OBJECTS.keys.each do |sub_addition_object|
+            attach_addition_object(sub_addition_object, addition_data_bd, data_lms)
           end
         end
       end

@@ -40,7 +40,7 @@ module Teachbase
         return unless tg_user || message
         return if message_params.empty?
 
-        message_params.merge!({ message_id: message_id })
+        message_params.merge!(message_id: message_id)
         case mode
         when :perm
           tg_user.tg_account_messages.create!(message_params)
@@ -50,7 +50,7 @@ module Teachbase
           raise "No such mode: '#{mode}' for saving message"
         end
       end
-      
+
       protected
 
       def find_msg_value(msg_type)

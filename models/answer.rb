@@ -9,14 +9,13 @@ module Teachbase
       has_many :attachments, as: :imageable, dependent: :destroy
       has_many :comments, as: :commentable, dependent: :destroy
 
-     def attachments?
+      def attachments?
         !attachments.empty?
-      end
+       end
 
       def comments?
         !comments.empty?
       end
-
     end
   end
 end

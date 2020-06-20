@@ -87,7 +87,7 @@ class MessageSender
 
   def save_message(result)
     return if same_inline_keyboard?(result) && !@tg_user
-    
+
     @tg_user.bot_messages.create!(fetch_msg_result_data(result))
   end
 

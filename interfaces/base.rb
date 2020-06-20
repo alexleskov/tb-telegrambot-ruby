@@ -61,15 +61,15 @@ module Teachbase
         end
 
         def menu_content_main(params)
-          params.merge!({ type: :menu_inline, disable_web_page_preview: true, disable_notification: true,
-                          slices_count: 2 })
+          params.merge!(type: :menu_inline, disable_web_page_preview: true, disable_notification: true,
+                        slices_count: 2)
           params[:text] ||= I18n.t('start_menu_message')
           params[:mode] ||= :none
           answer.menu.create(params)
         end
 
         def menu_empty_msg(params)
-          params.merge!({ type: :menu_inline })
+          params.merge!(type: :menu_inline)
           params[:text] = "#{params[:text]}\n#{create_empty_msg}"
           params[:mode] ||= :none
           answer.menu.create(params)

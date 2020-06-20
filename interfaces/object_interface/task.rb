@@ -7,8 +7,10 @@ module Teachbase
         def print_task(task)
           buttons = task.action_buttons(show_answers_button: true)
           title = create_title(object: task, stages: %i[contents title])
-          menu_content_main(buttons: buttons, mode: :edit_msg,
-                            text: "#{title}#{task_description(task)}") unless buttons.empty?
+          unless buttons.empty?
+            menu_content_main(buttons: buttons, mode: :edit_msg,
+                              text: "#{title}#{task_description(task)}")
+          end
         end
 
         def print_answers(task)
@@ -32,7 +34,6 @@ module Teachbase
           end
           answers.join("\n")
         end
-
       end
     end
   end

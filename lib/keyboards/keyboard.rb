@@ -45,10 +45,10 @@ class Keyboard
 
     @value = []
     buttons.each do |button|
-      value << [ button ]
+      value << [button]
     end
     back = init_back_button(back_button) if back_button
-    back ? value << [ back ] : value
+    back ? value << [back] : value
   end
 
   def check_building_params
@@ -62,7 +62,7 @@ class Keyboard
     clear_trash(value)
     raise if value.empty?
 
-    value.map! { |button| [ button.first.value ] }
+    value.map! { |button| [button.first.value] }
   end
 
   def build_buttons
@@ -72,8 +72,8 @@ class Keyboard
     buttons_signs.each_with_index do |button_sign, ind|
       options = { button_sign: button_sign, command_prefix: command_prefix }
       options[:emoji] = emojis[ind] if emojis
-      options.merge!({ button_action_type.to_sym => buttons_actions[ind] }) if buttons_actions
-      options.merge!({ commands: commands }) if commands
+      options.merge!(button_action_type.to_sym => buttons_actions[ind]) if buttons_actions
+      options.merge!(commands: commands) if commands
       buttons << button_class.g(options)
     end
     buttons

@@ -33,8 +33,7 @@ module Teachbase
         Material.show_by_user_cs_tbid(cs_tb_id, id, material_tb_id)
       end
 
-      #appshell.user.course_sessions.find_by(tb_id: cs_tb_id).materials.find_by(tb_id: material_tb_id)
-
+      # appshell.user.course_sessions.find_by(tb_id: cs_tb_id).materials.find_by(tb_id: material_tb_id)
     end
   end
 end

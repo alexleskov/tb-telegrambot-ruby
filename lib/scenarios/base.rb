@@ -41,7 +41,7 @@ module Teachbase
           answer.menu.edit_settings
         end
 
-        def ready ; end
+        def ready; end
 
         def choose_localization
           answer.menu.choosing("Setting", :localization)

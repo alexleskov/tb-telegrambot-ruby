@@ -24,7 +24,6 @@ module Teachbase
             def course_sessions_tasks_task_answers
               "#{course_sessions_tasks}/task_answers"
             end
-
           end
         end
       end

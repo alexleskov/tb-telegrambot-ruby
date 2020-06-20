@@ -25,7 +25,6 @@ module Teachbase
           result
         end
       end
-
     end
   end
 end

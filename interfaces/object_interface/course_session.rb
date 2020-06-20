@@ -25,6 +25,7 @@ module Teachbase
 
         def course_main_buttons(callbacks)
           raise "Callback must be an Array. Given: '#{callbacks.class}'" unless callbacks.is_a?(Array)
+
           InlineCallbackKeyboard.g(buttons_signs: to_i18n(MAIN_BUTTONS),
                                    buttons_actions: callbacks,
                                    emojis: MAIN_BUTTONS_EMOJI).raw
@@ -40,7 +41,6 @@ module Teachbase
         def default_menu_params
           { mode: :none, type: :menu_inline }
         end
-
       end
     end
   end

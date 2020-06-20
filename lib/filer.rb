@@ -3,10 +3,9 @@
 module Teachbase
   module Bot
     class Filer
-
       URL_PATH = "https://api.telegram.org/file/bot"
       TMP_FOLDER = "tmp"
-      
+
       include Formatter
 
       attr_reader :bot, :tg_user
@@ -19,7 +18,7 @@ module Teachbase
       end
 
       def file_path(file_id)
-        bot.api.get_file({file_id: file_id})["result"]["file_path"]
+        bot.api.get_file(file_id: file_id)["result"]["file_path"]
       end
 
       def download_url(file_id)
@@ -32,7 +31,7 @@ module Teachbase
 
         local_file = IO.copy_stream(download, build_local_path(download))
         unless local_file == download.meta["content-length"].to_i
-          raise "Failed upload on local storage. File: #{download.base_uri}" 
+          raise "Failed upload on local storage. File: #{download.base_uri}"
         end
 
         File.open(build_local_path(download), 'rb')
@@ -47,7 +46,6 @@ module Teachbase
       def load_bot_token
         AppConfigurator.new.load_token
       end
-
     end
   end
 end

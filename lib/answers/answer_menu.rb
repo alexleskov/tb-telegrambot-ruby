@@ -30,14 +30,14 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   end
 
   def starting(params = {})
-    params.merge!({ type: :menu, slices_count: 2 })
+    params.merge!(type: :menu, slices_count: 2)
     params[:text] ||= I18n.t('start_menu_message').to_s
     params[:buttons] = TextCommandKeyboard.g(commands: @respond.commands, buttons_signs: %i[signin settings]).raw
     create(params)
   end
 
   def after_auth(params = {})
-    params.merge!({ type: :menu, slices_count: 2 })
+    params.merge!(type: :menu, slices_count: 2)
     params[:text] ||= I18n.t('start_menu_message').to_s
     params[:buttons] = TextCommandKeyboard.g(commands: @respond.commands,
                                              buttons_signs: %i[courses_list show_profile_state settings sign_out]).raw
@@ -45,21 +45,21 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   end
 
   def ready(params = {})
-    params.merge!({ type: :menu, slices_count: 1 })
+    params.merge!(type: :menu, slices_count: 1)
     params[:text] ||= "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_next_answer')} #{Emoji.t(:point_down)}"
     params[:buttons] = TextCommandKeyboard.g(commands: @respond.commands, buttons_signs: %i[ready]).raw
     create(params)
   end
 
   def settings(params = {})
-    params.merge!({ text: "<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
+    params.merge!(text: "<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
                       \n #{Emoji.t(:video_game)} #{I18n.t('scenario')}: #{I18n.t(to_snakecase(@settings.scenario))}
                       \n #{Emoji.t(:ab)} #{I18n.t('localization')}: #{I18n.t(@settings.localization)}",
-                    slices_count: 1, type: :menu_inline })
+                  slices_count: 1, type: :menu_inline)
     params[:mode] ||= :none
     params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
                                                 command_prefix: "edit_", buttons_actions: %i[settings]).raw
-    p "params[:buttons]: #{params[:buttons] }"
+    p "params[:buttons]: #{params[:buttons]}"
     create(params)
   end
 
@@ -73,23 +73,23 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   end
 
   def show_more(params)
-    params.merge!({ type: :menu_inline, text: "#{I18n.t('show_more')} (#{params[:all_count] - params[:offset_num]})?" })
+    params.merge!(type: :menu_inline, text: "#{I18n.t('show_more')} (#{params[:all_count] - params[:offset_num]})?")
     params[:mode] ||= :none
-    params[:buttons] = InlineCallbackKeyboard.collect(buttons: [ build_show_more_button(params) ]).raw
+    params[:buttons] = InlineCallbackKeyboard.collect(buttons: [build_show_more_button(params)]).raw
     create(params)
   end
 
   def back(params)
-    params.merge!({ type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [ build_back_button(params) ]).raw })
+    params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [build_back_button(params)]).raw)
     params[:mode] ||= :none
-    params[:text] ||= "#{I18n.t('start_menu_message')}"
+    params[:text] ||= I18n.t('start_menu_message').to_s
     create(params)
   end
 
   def custom_back(params)
-    params.merge!({ type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [ build_custom_back_button(params) ]).raw })
+    params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [build_custom_back_button(params)]).raw)
     params[:mode] ||= :none
-    params[:text] ||= "#{I18n.t('start_menu_message')}"
+    params[:text] ||= I18n.t('start_menu_message').to_s
     params[:disable_notification] ||= true
     create(params)
   end
@@ -97,20 +97,20 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   def open_url_by_object(params = {})
     raise "Must have object for this menu" unless params[:object]
 
-    params.merge!({ type: :menu_inline, buttons: InlineUrlKeyboard.collect(buttons: [ build_open_url_button(params) ]).raw })
+    params.merge!(type: :menu_inline, buttons: InlineUrlKeyboard.collect(buttons: [build_open_url_button(params)]).raw)
     params[:text] ||= params[:object].name
     create(params)
   end
 
   def sign_in_again
-    params = { type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [ InlineCallbackButton.sign_in ]).raw}
+    params = { type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in]).raw }
     params[:mode] ||= :none
     params[:text] ||= "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
     create(params)
   end
 
   def choosing(type, param_name, params = {})
-    params.merge!({ type: :menu_inline, slices_count: 2 })
+    params.merge!(type: :menu_inline, slices_count: 2)
     params[:text] ||= "<b>#{Emoji.t(:wrench)} #{I18n.t("choose_#{param_name.downcase}")}</b>"
     buttons_signs = to_constantize("#{param_name.upcase}_PARAMS", "Teachbase::Bot::#{type.capitalize}::")
     params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
@@ -123,7 +123,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   end
 
   def confirmation(params = {})
-    params.merge!({ type: :menu_inline, slices_count: 2 })
+    params.merge!(type: :menu_inline, slices_count: 2)
     params[:text] = params[:text] ? "#{default_title}\n#{params[:text]}" : default_title
     default_title = "<i>#{I18n.t('confirm_action')}</i> #{Emoji.t(:point_down)}"
     params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(CONFIRMATION),
@@ -148,7 +148,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
                               offset: params[:offset_num])
   end
 
-  def build_back_button(params)
+  def build_back_button(_params)
     InlineCallbackButton.back(@tg_user.tg_account_messages)
   end
 

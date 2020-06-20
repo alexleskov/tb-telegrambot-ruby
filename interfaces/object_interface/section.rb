@@ -27,7 +27,7 @@ module Teachbase
           InlineCallbackKeyboard.g(buttons_signs: to_i18n(CHOOSING_BUTTONS),
                                    buttons_actions: CHOOSING_BUTTONS,
                                    command_prefix: params[:command_prefix],
-                                   back_button: { mode: :basic, sent_messages: @tg_user.tg_account_messages}).raw
+                                   back_button: { mode: :basic, sent_messages: @tg_user.tg_account_messages }).raw
         end
 
         def section_contents_buttons(params)
