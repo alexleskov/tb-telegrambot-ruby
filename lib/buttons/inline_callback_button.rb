@@ -1,41 +1,41 @@
 # frozen_string_literal: true
 
-require './lib/buttons/menu_button'
+require './lib/buttons/button'
 
-class InlineCallbackButton < MenuButton
+class InlineCallbackButton < Button
+  ACTION_TYPE = :callback_data.freeze
+
   class << self
     def g(options)
       super(:callback_data, options)
     end
 
-    def nums
-      g(buttons_sign: give_indexes(buttons_sign))
-    end
-
     def back(sent_messages)
       return unless last_unical_callback(sent_messages)
 
-      g(callback_data: [last_unical_callback(sent_messages)],
-        buttons_sign: [I18n.t('back').to_s],
-        emoji: [:arrow_left])
+      g({ callback_data: last_unical_callback(sent_messages) }.merge!(back_button_default_params))
     end
 
     def custom_back(callback_data)
-      g(buttons_sign: [I18n.t('back')], callback_data: [callback_data], emoji: [:arrow_left])
+      g({ callback_data: callback_data }.merge!(back_button_default_params))
     end
 
     def more(options)
       raise unless options[:limit] || options[:offset]
 
-      g(callback_data: ["#{options[:command_prefix]}_lim:#{options[:limit]}_offset:#{options[:offset]}"],
-        buttons_sign: [I18n.t('show_more').to_s], emoji: [:arrow_down])
+      g(callback_data: "#{options[:command_prefix]}_lim:#{options[:limit]}_offset:#{options[:offset]}",
+        button_sign: I18n.t('show_more').to_s, emoji: :arrow_down)
     end
 
     def sign_in
-      g(callback_data: ["signin"], buttons_sign: [I18n.t('signin').to_s], emoji: [:rocket])
+      g(callback_data: "signin", button_sign: I18n.t('signin').to_s, emoji: :rocket)
     end
 
     private
+
+    def back_button_default_params
+      { button_sign: I18n.t('back').to_s, emoji: :arrow_left }
+    end
 
     def last_unical_callback(sent_messages)
       raise unless sent_messages
@@ -52,31 +52,16 @@ class InlineCallbackButton < MenuButton
     end
   end
 
-  def find_params
-    params = super
-    return unless params
-
-    create_callbacks(params)
+  def find_param
+    param = super
+    create_callback(param)
   end
 
   private
 
-  def create_callbacks(params)
-    return unless params
-    raise "Expected an Array for buttons names. You gave #{params.class}" unless params.is_a?(Array)
+  def create_callback(param)
+    return unless param
 
-    result = []
-    params.each do |param|
-      result << "#{command_prefix}#{param}"
-    end
-    result
-  end
-
-  def give_indexes(array)
-    raise "Expected an Array. Given '#{array.class}'" unless array.is_a?(Array)
-
-    indexes = []
-    array.each_with_index { |_item, i| indexes << i.to_s }
-    indexes
+    "#{command_prefix}#{param}"
   end
 end

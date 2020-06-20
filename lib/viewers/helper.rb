@@ -13,13 +13,13 @@ module Viewers
     end
 
     def action_buttons(params = {})
-      back_button_param = params[:back_button] || true
-      approve_button_param = params[:approve_button] || true
-      show_answers_button_param = params[:show_answers_button]
-      back = back_button_param ? build_to_section_button : []
-      approve = course_session.active? && approve_button_param ? build_approve_button : []
-      show_answers = show_answers_button_param ? build_show_answers_button : []
-      approve + show_answers + back
+      @params = params
+      params[:back_button] ||= true
+      params[:approve_button] ||= true
+
+      buttons = [build_show_answers_button, build_approve_button, build_to_section_button ]
+      keyboard = InlineCallbackKeyboard.collect(buttons: buttons).raw
+      keyboard
     end
 
     def button_sign(cont_type)
@@ -45,12 +45,19 @@ module Viewers
 
     private
 
-    def build_to_section_button
-      section.back_button
+    def build_show_answers_button
+      return unless respond_to?(:answers)
+      return unless answers && !answers.empty? && @params[:show_answers_button] && course_session.active?
+
+      InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
+                             callback_data: "answers_task_by_csid:#{cs_tb_id}_objid:#{tb_id}",
+                             emoji: :speech_balloon)
     end
 
-    def build_show_answers_button
-      answers && !answers.empty? ? build_show_answer_button : []
+    def build_to_section_button
+      return unless @params[:back_button]
+
+      section.back_button
     end
   end
 end

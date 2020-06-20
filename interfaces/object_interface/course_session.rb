@@ -10,40 +10,37 @@ module Teachbase
         STATE_EMOJI = %i[green_book closed_book arrows_counterclockwise].freeze
 
         def menu_course_main(params)
-          answer.menu.create(buttons: course_main_buttons(params[:callback_data]),
-                             type: :menu_inline,
-                             mode: :none,
-                             text: params[:text],
-                             slices_count: MAIN_BUTTONS.size)
+          answer.menu.create({ buttons: course_main_buttons(params[:callback_data]),
+                               text: params[:text],
+                               slices_count: MAIN_BUTTONS.size }.merge!(default_menu_params))
         end
 
         def menu_course_states(params)
-          answer.menu.create(buttons: course_state_buttons(params[:command_prefix]),
-                             mode: :none,
-                             type: :menu_inline,
-                             text: params[:text],
-                             slices_count: 2)
+          answer.menu.create({ buttons: course_state_buttons(params[:command_prefix]),
+                               text: params[:text],
+                               slices_count: 2 }.merge!(default_menu_params))
         end
 
         private
 
         def course_main_buttons(callbacks)
           raise "Callback must be an Array. Given: '#{callbacks.class}'" unless callbacks.is_a?(Array)
-          unless callbacks.size == MAIN_BUTTONS.size
-            raise "Given '#{callbacks.size}' callbacks for #{MAIN_BUTTONS.size} course buttons."
-          end
-
-          InlineCallbackButton.g(buttons_sign: to_i18n(MAIN_BUTTONS),
-                                 callback_data: callbacks,
-                                 emoji: MAIN_BUTTONS_EMOJI)
+          InlineCallbackKeyboard.g(buttons_signs: to_i18n(MAIN_BUTTONS),
+                                   buttons_actions: callbacks,
+                                   emojis: MAIN_BUTTONS_EMOJI).raw
         end
 
         def course_state_buttons(command_prefix)
-          InlineCallbackButton.g(buttons_sign: to_i18n(STATE_BUTTONS, command_prefix),
-                                 callback_data: STATE_BUTTONS,
-                                 command_prefix: command_prefix,
-                                 emoji: STATE_EMOJI)
+          InlineCallbackKeyboard.g(buttons_signs: to_i18n(STATE_BUTTONS, command_prefix),
+                                   buttons_actions: STATE_BUTTONS,
+                                   command_prefix: command_prefix,
+                                   emojis: STATE_EMOJI).raw
         end
+
+        def default_menu_params
+          { mode: :none, type: :menu_inline }
+        end
+
       end
     end
   end

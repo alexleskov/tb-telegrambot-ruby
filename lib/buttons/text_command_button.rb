@@ -1,15 +1,24 @@
 # frozen_string_literal: true
 
-require './lib/buttons/menu_button'
+require './lib/buttons/button'
 
-class TextCommandButton < MenuButton
+class TextCommandButton < Button
+  ACTION_TYPE = :text_command.freeze
+
   class << self
     def g(options)
       super(:text_command, options)
     end
   end
 
-  def init_button(button_sign, _type_params, _ind)
-    commands.show(button_sign).to_s
+  attr_reader :commands
+
+  def initialize(type, options)
+    @commands = options[:commands]
+    super(type, options)
+  end
+
+  def create
+    @value = commands.show(button_sign).to_s
   end
 end

@@ -26,8 +26,8 @@ module Viewers
       "#{title}#{create_stats_msg}"
     end
 
-    def back_button
-      InlineCallbackButton.custom_back("cs_sec_by_id:#{tb_id}")
+    def back_button_action
+      "cs_sec_by_id:#{tb_id}"
     end
 
     private

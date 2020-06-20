@@ -28,10 +28,12 @@ module Viewers
     private
 
     def build_approve_button(time_spent = 50)
+      return unless @params[:approve_button]
+
       cs_tb_id = course_session.tb_id
-      InlineCallbackButton.g(buttons_sign: [I18n.t('viewed').to_s],
-                             callback_data: ["approve_material_by_csid:#{cs_tb_id}_objid:#{tb_id}_time:#{time_spent}"],
-                             emoji: %i[white_check_mark])
+      InlineCallbackButton.g(button_sign: I18n.t('viewed').to_s,
+                             callback_data: "approve_material_by_csid:#{cs_tb_id}_objid:#{tb_id}_time:#{time_spent}",
+                             emoji: :white_check_mark)
     end
 
     def build_material_link_params(link, link_name)

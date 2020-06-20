@@ -70,7 +70,8 @@ module Teachbase
 
           appshell.course_session_update_progress(cs_tb_id)
           title = create_title(object: section, stages: %i[title contents])
-          menu_section_contents(section: section, contents: contents, text: title, back_button: true)
+          menu_section_contents(contents: contents, text: title,
+                                back_button: { mode: :custom, action: section.course_session.back_button_action })
         end
 
         def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
