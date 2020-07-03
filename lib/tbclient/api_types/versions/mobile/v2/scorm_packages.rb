@@ -3,7 +3,7 @@ module Teachbase
     module Types
       module Mobile
         module V2
-          class Scorms
+          class ScormPackages
             SOURCE = "course_sessions".freeze
 
             include Teachbase::API::ParamChecker
@@ -16,7 +16,7 @@ module Teachbase
               @request_options = request_options
             end
 
-            def course_sessions_quiz_stats_check
+            def course_sessions_scorm_packages
               check!(:ids, %i[course_session_id id], url_ids)
               "#{SOURCE}/#{url_ids[:course_session_id]}/scorm_packages/#{url_ids[:id]}"
             end

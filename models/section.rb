@@ -7,7 +7,6 @@ module Teachbase
     class Section < ActiveRecord::Base
       include Viewers::Section
 
-      OBJECTS = %i[materials scorm_packages quizzes tasks].freeze
       OBJECTS_CUSTOM_PARAMS = { materials: { "type" => :content_type },
                                 scorm_packages: { "title" => :name } }.freeze
       OBJECTS_TYPES = { materials: :material,
@@ -38,7 +37,7 @@ module Teachbase
 
       def contents_by_types
         objects = {}
-        OBJECTS.each do |content_type|
+        OBJECTS_TYPES.keys.each do |content_type|
           objects[content_type] = public_send(content_type).order(position: :asc)
         end
         objects

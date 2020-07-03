@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 class Teachbase::Bot::AnswerText < Teachbase::Bot::AnswerController
-  def initialize(respond, dest)
-    super(respond, dest)
-  end
-
   def create(options)
     super(options)
     raise "Option 'text' is missing" unless options[:text]
@@ -26,6 +22,10 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::AnswerController
 
   def empty_message(title = "")
     send_out "#{title}#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
+  end
+
+  def undefined_action
+    send_out "#{Emoji.t(:baby)} <i>#{I18n.t('undefined_action')}</i>"
   end
 
   def error

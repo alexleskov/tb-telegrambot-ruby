@@ -4,6 +4,8 @@ require './interfaces/object_interface/course_session'
 require './interfaces/object_interface/material'
 require './interfaces/object_interface/section'
 require './interfaces/object_interface/task'
+require './interfaces/object_interface/scorm_package'
+require './interfaces/object_interface/quiz'
 
 module Teachbase
   module Bot
@@ -14,6 +16,8 @@ module Teachbase
         include Teachbase::Bot::Interfaces::Material
         include Teachbase::Bot::Interfaces::Section
         include Teachbase::Bot::Interfaces::Task
+        include Teachbase::Bot::Interfaces::ScormPackage
+        include Teachbase::Bot::Interfaces::Quiz
 
         def self.included(base)
           base.extend ClassMethods
@@ -72,14 +76,18 @@ module Teachbase
           params.merge!(type: :menu_inline)
           params[:text] = "#{params[:text]}\n#{create_empty_msg}"
           params[:mode] ||= :none
-          answer.menu.create(params)
+          back_button = InlineCallbackButton.custom_back(params[:back_button][:action])
+          params[:buttons] = InlineCallbackKeyboard.collect(buttons: [back_button]).raw
+          answer.menu.create(params)          
         end
 
         def menu_confirm_answer(params)
           raise unless params[:object]
 
-          cs_tb_id = params[:object].course_session.tb_id
-          params[:command_prefix] = "confirm_csid:#{cs_tb_id}_objid:#{params[:object].tb_id}_t:#{object_type(params[:object])}_p:"
+          object = params[:object]
+          cs_tb_id = object.course_session.tb_id
+          
+          params[:command_prefix] = "confirm_csid:#{cs_tb_id}_secid:#{object.id}_objid:#{object.tb_id}_t:#{object_type(object)}_p:"
           params[:text] = "<b>#{I18n.t('send').capitalize} #{I18n.t('answer').downcase}</b>\n<pre>#{params[:user_answer]}</pre>"
           answer.menu.confirmation(params)
         end

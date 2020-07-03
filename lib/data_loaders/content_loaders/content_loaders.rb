@@ -1,0 +1,38 @@
+# frozen_string_literal: true
+
+require './lib/data_loaders/content_loader_controller'
+require './lib/data_loaders/content_loaders/material_loader'
+require './lib/data_loaders/content_loaders/task_loader'
+require './lib/data_loaders/content_loaders/scorm_package_loader'
+require './lib/data_loaders/content_loaders/quiz_loader'
+
+module Teachbase
+  module Bot
+    class ContentLoaders
+      def initialize(appshell, section_loader)
+        raise "'#{appshell}' is not AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
+        raise "'#{section_loader} is not SectionLoader" unless section_loader.is_a?(Teachbase::Bot::SectionLoader)
+
+        @appshell = appshell
+        @section_loader = section_loader
+      end
+
+      def material(params)
+        Teachbase::Bot::MaterialLoader.new(@appshell, @section_loader, params)
+      end
+
+      def task(params)
+        Teachbase::Bot::TaskLoader.new(@appshell, @section_loader, params)
+      end
+
+      def scorm_package(params)
+        Teachbase::Bot::ScormPackageLoader.new(@appshell, @section_loader, params)
+      end
+
+      def quiz(params)
+        Teachbase::Bot::QuizLoader.new(@appshell, @section_loader, params)
+      end
+
+    end
+  end
+end

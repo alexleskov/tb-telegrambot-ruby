@@ -37,6 +37,5 @@ module Validator
 
   def string
     value.is_a?(String)
-    Regexp.last_match
   end
 end

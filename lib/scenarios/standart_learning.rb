@@ -53,22 +53,23 @@ module Teachbase
         def show_sections(cs_tb_id, option)
           sections = appshell.course_session_sections(cs_tb_id)
           sections_by_option = find_sections_by(option, sections)
-
           if sections.empty? || sections_by_option.empty?
             cs = appshell.course_session_info(cs_tb_id)
             title = create_title(object: cs, stages: %i[title sections menu], params: { state: option })
-            return menu_empty_msg(text: title, buttons: create_sections_back_button(cs_tb_id), mode: :edit_msg)
+            return menu_empty_msg(text: title, back_button: { mode: :custom, action: cs.back_button_action },
+                                  mode: :edit_msg)
           end
 
           menu_sections_by_option(sections_by_option, option)
         end
 
         def show_section_contents(section_position, cs_tb_id)
-          section = appshell.course_session_section(:position, section_position, cs_tb_id)
+
+          section = appshell.data_loader.cs(tb_id: cs_tb_id).section(:position, section_position)
           contents = appshell.course_session_section_contents(section_position, cs_tb_id)
           return answer.text.empty_message unless contents
 
-          appshell.course_session_update_progress(cs_tb_id)
+          appshell.section_update_progress(section_position, cs_tb_id)
           title = create_title(object: section, stages: %i[title contents])
           menu_section_contents(contents: contents, text: title,
                                 back_button: { mode: :custom, action: section.course_session.back_button_action })
@@ -86,12 +87,13 @@ module Teachbase
           check_status { appshell.update_all_course_sessions }
         end
 
-        def track_material(cs_tb_id, material_tb_id, time_spent)
-          check_status { appshell.track_material(cs_tb_id, material_tb_id, time_spent) }
+        def track_material(cs_tb_id, sec_id, material_tb_id, time_spent)
+          check_status { appshell.track_material(cs_tb_id, sec_id, material_tb_id, time_spent) }
         end
 
         def submit_answer_task(cs_tb_id, task_tb_id)
-          task = appshell.course_session_task(cs_tb_id, task_tb_id)
+          task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
+
           return unless task
 
           answer.text.ask_answer
@@ -102,22 +104,21 @@ module Teachbase
         end
 
         def answers_task(cs_tb_id, task_tb_id)
-          task = appshell.course_session_task(cs_tb_id, task_tb_id)
+          task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
           return unless task
 
           print_answers(task)
         end
 
-        def confirm_answer(cs_tb_id, object_tb_id, type, param)
-          object = appshell.public_send("course_session_#{type}", cs_tb_id, object_tb_id)
+        def confirm_answer(cs_tb_id, sec_id, object_tb_id, type, param)
           if param.to_sym == :decline
             appshell.clear_cached_answers
             answer.text.declined
           else
-            result = check_status { appshell.submit_answer(cs_tb_id, object_tb_id, type) }
+            result = check_status { appshell.submit_answer(cs_tb_id, sec_id, object_tb_id, type) }
             appshell.clear_cached_answers if result
           end
-          answer.menu.custom_back(callback_data: "/sec#{object.section_id}_cs#{cs_tb_id}")
+          answer.menu.custom_back(callback_data: "/sec#{sec_id}_cs#{cs_tb_id}")
         end
 
         def courses_list
@@ -195,8 +196,8 @@ module Teachbase
           end
 
           on %r{^approve_material_by_csid:} do
-            @message_value =~ %r{^approve_material_by_csid:(\d*)_objid:(\d*)_time:(\d*)}
-            track_material($1, $2, $3)
+            @message_value =~ %r{^approve_material_by_csid:(\d*)_secid:(\d*)_objid:(\d*)_time:(\d*)}
+            track_material($1, $2, $3, $4)
           end
 
           on %r{submit_task_by_csid:} do
@@ -210,8 +211,8 @@ module Teachbase
           end
 
           on %r{confirm_csid:} do
-            @message_value =~ %r{^confirm_csid:(\d*)_objid:(\d*)_t:(\w*)_p:(\w*)}
-            confirm_answer($1, $2, $3, $4)
+            @message_value =~ %r{^confirm_csid:(\d*)_secid:(\d*)_objid:(\d*)_t:(\w*)_p:(\w*)}
+            confirm_answer($1, $2, $3, $4, $5)
           end
         end
 
@@ -241,7 +242,7 @@ module Teachbase
           case option
           when :find_by_query_num
             ask_enter_the_number(:section)
-            sections.where(position: appshell.request_data(:string))
+            sections.where(position: appshell.request_data(:string).text)
           when :show_all
             sections
           when :show_avaliable

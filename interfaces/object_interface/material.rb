@@ -6,7 +6,7 @@ module Teachbase
       module Material
         def print_material(material)
           print_material_title(material)
-          buttons = material.action_buttons
+          buttons = material.action_buttons(approve_button: true)
           if answer.content.respond_to?(material.content_type)
             answer.content.public_send(material.content_type, material.build_source)
           else

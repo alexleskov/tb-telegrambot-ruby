@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 class Teachbase::Bot::AnswerContent < Teachbase::Bot::AnswerController
-  def initialize(respond, dest)
-    super(respond, dest)
-  end
 
   def create(options)
     super(options)

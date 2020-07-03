@@ -4,10 +4,6 @@ require './lib/buttons/text_command_button'
 require './lib/keyboards/keyboard'
 
 class TextCommandKeyboard < Keyboard
-  def initialize(params)
-    super(params)
-  end
-
   def raw
     raise "Can't find keyboard value" unless value
 

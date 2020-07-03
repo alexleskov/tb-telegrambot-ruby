@@ -5,7 +5,7 @@ module Teachbase
     module Interfaces
       module Task
         def print_task(task)
-          buttons = task.action_buttons(show_answers_button: true)
+          buttons = task.action_buttons(show_answers_button: true, approve_button: true)
           title = create_title(object: task, stages: %i[contents title])
           unless buttons.empty?
             menu_content_main(buttons: buttons, mode: :edit_msg,
@@ -19,7 +19,7 @@ module Teachbase
         end
 
         def task_description(task)
-          msg = "<pre>#{task.description}</pre>\n"
+          msg = "<pre>#{task.description}</pre>\n\n"
           msg = "#{msg}#{object_attachments(task)}" if task.attachments?
           msg
         end
@@ -30,7 +30,7 @@ module Teachbase
             attachments = answer.attachments? ? "#{object_attachments(answer)}\n" : ""
             comments = answer.comments? ? "\n#{object_comments(answer)}\n" : ""
             answers << "<b>#{I18n.t('answer').capitalize} №#{answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(answer.status)} <i>#{I18n.t(answer.status).capitalize}</i></b>
-                        <pre>#{answer.text}</pre>\n#{attachments}#{comments}"
+                        <pre>#{answer.text}</pre>\n\n#{attachments}#{comments}"
           end
           answers.join("\n")
         end

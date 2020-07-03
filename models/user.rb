@@ -22,18 +22,22 @@ module Teachbase
       end
 
       def sections_by_cs_tbid(cs_tb_id)
-        Section.list_by_user_cs_tbid(cs_tb_id, id)
+        Teachbase::Bot::Section.list_by_user_cs_tbid(cs_tb_id, id)
       end
 
       def section_by_cs_tbid(cs_tb_id, section_id)
-        Section.show_by_user_cs_tbid(cs_tb_id, section_id, id)
+        Teachbase::Bot::Section.show_by_user_cs_tbid(cs_tb_id, section_id, id).first
       end
 
       def material_by_cs_tbid(cs_tb_id, material_tb_id)
-        Material.show_by_user_cs_tbid(cs_tb_id, id, material_tb_id)
+        Teachbase::Bot::Material.show_by_user_cs_tbid(cs_tb_id, material_tb_id, id).first
       end
 
-      # appshell.user.course_sessions.find_by(tb_id: cs_tb_id).materials.find_by(tb_id: material_tb_id)
+      def task_by_cs_tbid(cs_tb_id, task_tb_id)
+        Teachbase::Bot::Task.show_by_user_cs_tbid(cs_tb_id, task_tb_id, id).first
+      end
+
+      # appshell.user.course_sessions.find_by(tb_id: cs_tb_id).tasks.find_by(tb_id: task_tb_id)
     end
   end
 end

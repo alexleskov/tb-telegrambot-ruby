@@ -7,8 +7,6 @@ require 'active_record'
 module Teachbase
   module Bot
     class AuthSession < ActiveRecord::Base
-      CONTENT_TYPES_CNAME = { quizzes: :quiz, scorm_packages: :scorms }.freeze
-
       belongs_to :user
       belongs_to :tg_account
       belongs_to :api_token
@@ -23,7 +21,7 @@ module Teachbase
         tb_api.request(:user, :profile).get
       end
 
-      def load_course_sessions(state, options = { order_by: "progress", order_direction: "asc", page: 1, per_page: 100 })
+      def load_course_sessions(state, options = {})
         tb_api.request(:course_sessions, :course_sessions, options.merge!(filter: state.to_s)).get
       end
 
@@ -35,17 +33,20 @@ module Teachbase
         tb_api.request(:course_sessions, :course_sessions_progress, id: cs_id).get
       end
 
-      def load_content(type, cs_id, content_id)
-        source_type = correct_content_type(type)
-        tb_api.request(source_type, "course_sessions_#{type}".to_sym, session_id: cs_id, id: content_id).get
-      end
-
       def load_material(cs_id, material_id)
         tb_api.request(:materials, :course_sessions_materials, session_id: cs_id, id: material_id).get
       end
 
       def load_task(cs_id, task_id)
         tb_api.request(:tasks, :course_sessions_tasks, session_id: cs_id, id: task_id).get
+      end
+
+      def load_scorm_package(cs_id, scorm_package_id)
+        tb_api.request(:scorm_packages, :course_sessions_scorm_packages, course_session_id: cs_id, id: scorm_package_id).get
+      end
+
+      def load_quiz(cs_id, quiz_id)
+        tb_api.request(:quiz, :course_sessions_quizzes, course_session_id: cs_id, id: quiz_id).get
       end
 
       def send_task_answer(cs_id, task_id, answer)
@@ -58,13 +59,6 @@ module Teachbase
       def track_material(cs_id, material_id, time_spent)
         tb_api.request(:course_sessions, :course_sessions_materials_track, session_id: cs_id,
                                                                            id: material_id, payload: { time_spent: time_spent }).post
-      end
-
-      private
-
-      def correct_content_type(type)
-        content_type = CONTENT_TYPES_CNAME[type.to_sym]
-        content_type || type
       end
     end
   end

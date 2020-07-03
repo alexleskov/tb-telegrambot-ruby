@@ -42,9 +42,10 @@ module Teachbase
           params[:object] = cs
           title = "#{create_title(params)}#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}"
           if sections.empty?
-            menu_empty_msg(text: title, buttons: cs.back_button)
+            menu_empty_msg(text: title, back_button: { mode: :custom, action: cs.back_button_action })
           else
-            menu_section_main(text: title, command_prefix: params[:command_prefix], back_button: true)
+            menu_section_main(text: title, command_prefix: params[:command_prefix],
+                              back_button: { mode: :basic, sent_messages: @tg_user.tg_account_messages })
           end
         end
 

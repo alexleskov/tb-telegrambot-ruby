@@ -60,7 +60,7 @@ class Keyboard
     raise "Can't find keyboard value" unless value
 
     clear_trash(value)
-    raise if value.empty?
+    raise "Can't give keyboard. No buttons here" if value.empty?
 
     value.map! { |button| [button.first.value] }
   end

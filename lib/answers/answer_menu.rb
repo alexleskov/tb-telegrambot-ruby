@@ -10,11 +10,6 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   SCENARIO_EMOJI = %i[books bicyclist].freeze
   CONFIRMATION = %i[accept decline].freeze
 
-  def initialize(respond, dest)
-    @logger = AppConfigurator.new.load_logger
-    super(respond, dest)
-  end
-
   def create(options)
     super(options)
     buttons = options[:buttons]
@@ -59,7 +54,6 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     params[:mode] ||= :none
     params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
                                                 command_prefix: "edit_", buttons_actions: %i[settings]).raw
-    p "params[:buttons]: #{params[:buttons]}"
     create(params)
   end
 
@@ -80,7 +74,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   end
 
   def back(params)
-    params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [build_back_button(params)]).raw)
+    params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [build_back_button]).raw)
     params[:mode] ||= :none
     params[:text] ||= I18n.t('start_menu_message').to_s
     create(params)
@@ -124,8 +118,8 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
 
   def confirmation(params = {})
     params.merge!(type: :menu_inline, slices_count: 2)
-    params[:text] = params[:text] ? "#{default_title}\n#{params[:text]}" : default_title
     default_title = "<i>#{I18n.t('confirm_action')}</i> #{Emoji.t(:point_down)}"
+    params[:text] = params[:text] ? "#{default_title}\n#{params[:text]}" : default_title
     params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(CONFIRMATION),
                                                 command_prefix: params[:command_prefix],
                                                 buttons_actions: CONFIRMATION,
@@ -148,7 +142,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
                               offset: params[:offset_num])
   end
 
-  def build_back_button(_params)
+  def build_back_button
     InlineCallbackButton.back(@tg_user.tg_account_messages)
   end
 

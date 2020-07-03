@@ -15,8 +15,6 @@ module Viewers
     def action_buttons(params = {})
       @params = params
       params[:back_button] ||= true
-      params[:approve_button] ||= true
-
       buttons = [build_show_answers_button, build_approve_button, build_to_section_button]
       keyboard = InlineCallbackKeyboard.collect(buttons: buttons).raw
       keyboard
@@ -44,6 +42,8 @@ module Viewers
     end
 
     private
+
+    def build_approve_button ; end
 
     def build_show_answers_button
       return unless respond_to?(:answers)

@@ -2,7 +2,7 @@
 
 require './lib/scenarios/scenarios'
 require './lib/authorizer'
-require './lib/data_loader'
+require './lib/data_loaders/data_loaders'
 
 module Teachbase
   module Bot
@@ -27,7 +27,7 @@ module Teachbase
         @controller = controller
         @settings = controller.respond.msg_responder.settings
         @authorizer = Teachbase::Bot::Authorizer.new(self)
-        @data_loader = Teachbase::Bot::DataLoader.new(self)
+        @data_loader = Teachbase::Bot::DataLoaders.new(self)
         set_scenario
       end
 
@@ -37,7 +37,7 @@ module Teachbase
       end
 
       def user_info
-        data_loader.call_profile
+        data_loader.user.profile
       end
 
       def user_fullname(option = :string)
@@ -62,56 +62,52 @@ module Teachbase
         authorizer.unauthorize
       end
 
-      def course_sessions_list(state, limit_count, offset_num)
-        data_loader.call_cs_list(state: state, limit: limit_count, offset: offset_num)
-        user.course_sessions_by(state: state, limit: limit_count, offset: offset_num, scenario: settings.scenario)
+      def course_sessions_list(state, limit, offset)
+        data_loader.cs.list(state: state, limit: limit, offset: offset, scenario: settings.scenario)
       end
 
       def course_session_info(cs_tb_id)
-        data_loader.call_cs_info(cs_tb_id)
-        user.course_sessions.find_by(tb_id: cs_tb_id)
+        data_loader.cs(tb_id: cs_tb_id).info
+      end
+
+      def section_update_progress(section_position, cs_tb_id)
+        data_loader.section(option: :position, value: section_position, cs_tb_id: cs_tb_id).progress
       end
 
       def course_session_update_progress(cs_tb_id)
-        data_loader.call_cs_progress(cs_tb_id)
-      end
-
-      def course_session_section(param, value, cs_tb_id)
-        raise "No such option: '#{option}" unless %i[position id].include?(param.to_sym)
-
-        user.sections_by_cs_tbid(cs_tb_id).find_by(param.to_sym => value)
-      end
-
-      def sections_by_cs(cs_tb_id, param, value)
-        course_sessions.sections.show_by_cs_tb_id(cs_tb_id).find_by(param.to_sym => value)
+        data_loader.cs(tb_id: cs_tb_id).progress
       end
 
       def course_session_sections(cs_tb_id)
-        data_loader.call_cs_sections(cs_tb_id)
-        user.course_sessions.find_by(tb_id: cs_tb_id).sections.order(position: :asc)
+        data_loader.cs(tb_id: cs_tb_id).sections
       end
 
       def course_session_section_contents(section_position, cs_tb_id)
-        section_bd = course_session_section(:position, section_position, cs_tb_id)
-        return unless section_bd
+        section_loader = data_loader.section(option: :position, value: section_position, cs_tb_id: cs_tb_id)
+        result = section_loader.contents
+        return unless result
 
-        data_loader.call_cs_sec_contents(section_bd)
-        section_bd.contents_by_types
+        section_loader.db_entity.contents_by_types
       end
 
       def course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
-        data_loader.call_cs_sec_content(content_type, cs_tb_id, sec_id, content_tb_id)
-        user.section_by_cs_tbid(cs_tb_id, sec_id).public_send(content_type).find_by(tb_id: content_tb_id)
-      end
-
-      def course_session_task(cs_tb_id, task_tb_id)
-        user.course_sessions.find_by(tb_id: cs_tb_id).tasks.find_by(tb_id: task_tb_id)
+        content_loader = data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content
+        case content_type.to_sym # TO DO: Delete after refactroing
+        when :materials
+          content_loader.material(tb_id: content_tb_id).me
+        when :tasks
+          content_loader.task(tb_id: content_tb_id).me
+        when :scorm_packages
+          content_loader.scorm_package(tb_id: content_tb_id).me
+        when :quizzes
+          content_loader.quiz(tb_id: content_tb_id).me
+        end
       end
 
       def update_all_course_sessions
         courses = {}
         Teachbase::Bot::DataLoader::CS_STATES.each do |state|
-          courses[state] = data_loader.call_cs_list(state: state, mode: :with_reload)
+          courses[state] = data_loader.cs.list(state: state, mode: :with_reload)
         end
         courses
       end
@@ -153,15 +149,19 @@ module Teachbase
         user.profile.public_send("#{state}_courses_count").to_i
       end
 
-      def track_material(cs_tb_id, material_tb_id, time_spent)
-        data_loader.call_track_material(cs_tb_id, material_tb_id, time_spent)
+      def track_material(cs_tb_id, sec_id, material_tb_id, time_spent)
+        data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content
+                   .material(tb_id: material_tb_id).track(time_spent)
       end
 
-      def submit_answer(cs_tb_id, object_tb_id, object_type)
-        answer = { text: cached_answers_texts, attachments: cached_answers_files }
+      def submit_answer(cs_tb_id, sec_id, object_tb_id, object_type)
+        answer = { text: cached_answers_texts, attachments: cached_answers_files }        
         case object_type.to_sym
         when :task
-          authsession.send_task_answer(cs_tb_id, object_tb_id, answer)
+          data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content
+                     .task(tb_id: object_tb_id).submit(answer)
+        else
+          raise "Can't submit answer"
         end
       end
 
@@ -191,7 +191,7 @@ module Teachbase
         return result if files.empty?
 
         files.each do |file_id|
-          result << { file: controller.tg_file.upload(file_id) }
+          result << { file: controller.filer.upload(file_id) }
         end
         result
       end

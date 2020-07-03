@@ -27,7 +27,7 @@ module Teachbase
           InlineCallbackKeyboard.g(buttons_signs: to_i18n(CHOOSING_BUTTONS),
                                    buttons_actions: CHOOSING_BUTTONS,
                                    command_prefix: params[:command_prefix],
-                                   back_button: { mode: :basic, sent_messages: @tg_user.tg_account_messages }).raw
+                                   back_button: params[:back_button]).raw
         end
 
         def section_contents_buttons(params)
@@ -36,6 +36,7 @@ module Teachbase
           contents.keys.each do |content_type|
             contents[content_type].each { |content| buttons << build_cont_button(content, content_type) }
           end
+          buttons = buttons.sort_by { |button| button.position }
           InlineCallbackKeyboard.collect(buttons: buttons,
                                          back_button: params[:back_button]).raw
         end
@@ -43,7 +44,8 @@ module Teachbase
         def build_cont_button(content, content_type)
           cs_tb_id = content.course_session.tb_id
           InlineCallbackButton.g(button_sign: content.button_sign(content_type).to_s,
-                                 callback_data: "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}")
+                                 callback_data: "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}",
+                                 position: content.position)
         end
       end
     end

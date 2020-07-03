@@ -7,6 +7,7 @@ class CreateScormPackages < ActiveRecord::Migration[5.2]
       t.integer :position, null: false
       t.string :name
       t.string :status
+      t.string :source
       t.references :section, foreign_key: true
       t.references :course_session, foreign_key: true
       t.references :user, foreign_key: true

@@ -11,7 +11,7 @@ module Teachbase
       include Formatter
       include Viewers
 
-      attr_reader :respond, :answer, :appshell, :tg_user, :message, :message_params, :tg_file
+      attr_reader :respond, :answer, :appshell, :tg_user, :message, :message_params, :filer
 
       def initialize(params, dest)
         @respond = params[:respond]
@@ -23,7 +23,7 @@ module Teachbase
         @logger = AppConfigurator.new.load_logger
         @appshell = Teachbase::Bot::AppShell.new(self)
         @answer = Teachbase::Bot::Answers.new(respond, dest)
-        @tg_file = Teachbase::Bot::Filer.new(respond)
+        @filer = Teachbase::Bot::Filer.new(respond)
       rescue RuntimeError => e
         @logger.debug "Initialization Controller error: #{e}"
       end
