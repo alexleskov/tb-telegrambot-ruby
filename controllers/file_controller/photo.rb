@@ -4,7 +4,7 @@ require './controllers/file_controller'
 
 module Teachbase
   module Bot
-    module FileController
+    class FileController
       class Photo < Teachbase::Bot::FileController
         def initialize(params)
           @type = "photo"
