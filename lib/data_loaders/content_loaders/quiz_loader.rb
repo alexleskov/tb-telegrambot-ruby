@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class QuizLoader < Teachbase::Bot::ContentLoaderController
       CUSTOM_ATTRS = {}.freeze
-      METHOD_CNAME = :quizzes.freeze
+      METHOD_CNAME = :quizzes
 
       def model_class
         Teachbase::Bot::Quiz

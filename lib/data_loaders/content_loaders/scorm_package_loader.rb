@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class ScormPackageLoader < Teachbase::Bot::ContentLoaderController
       CUSTOM_ATTRS = {}.freeze
-      METHOD_CNAME = :scorm_packages.freeze
+      METHOD_CNAME = :scorm_packages
 
       def model_class
         Teachbase::Bot::ScormPackage

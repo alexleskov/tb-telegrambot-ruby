@@ -78,7 +78,7 @@ module Teachbase
           params[:mode] ||= :none
           back_button = InlineCallbackButton.custom_back(params[:back_button][:action])
           params[:buttons] = InlineCallbackKeyboard.collect(buttons: [back_button]).raw
-          answer.menu.create(params)          
+          answer.menu.create(params)
         end
 
         def menu_confirm_answer(params)
@@ -86,7 +86,7 @@ module Teachbase
 
           object = params[:object]
           cs_tb_id = object.course_session.tb_id
-          
+
           params[:command_prefix] = "confirm_csid:#{cs_tb_id}_secid:#{object.id}_objid:#{object.tb_id}_t:#{object_type(object)}_p:"
           params[:text] = "<b>#{I18n.t('send').capitalize} #{I18n.t('answer').downcase}</b>\n<pre>#{params[:user_answer]}</pre>"
           answer.menu.confirmation(params)

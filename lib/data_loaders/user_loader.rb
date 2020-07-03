@@ -8,7 +8,7 @@ module Teachbase
       attr_reader :lms_info
 
       def me
-        lms_load        
+        lms_load
         update_data(lms_info.merge!("tb_id" => lms_info["id"]))
       end
 
@@ -16,7 +16,7 @@ module Teachbase
         Teachbase::Bot::ProfileLoader.new(self).me
       end
 
-      def db_entity(mode = :none)
+      def db_entity(_mode = :none)
         call_data { appshell.user }
       end
 
@@ -29,7 +29,6 @@ module Teachbase
       def lms_load
         @lms_info = call_data { appshell.authsession.load_profile }
       end
-
     end
   end
 end

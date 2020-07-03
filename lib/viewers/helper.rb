@@ -43,7 +43,7 @@ module Viewers
 
     private
 
-    def build_approve_button ; end
+    def build_approve_button; end
 
     def build_show_answers_button
       return unless respond_to?(:answers)

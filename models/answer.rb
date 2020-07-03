@@ -11,7 +11,7 @@ module Teachbase
 
       def attachments?
         !attachments.empty?
-       end
+      end
 
       def comments?
         !comments.empty?

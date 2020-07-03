@@ -2,17 +2,21 @@
 
 require './controllers/controller'
 
-class Teachbase::Bot::FileController < Teachbase::Bot::Controller
-  attr_reader :type
+module Teachbase
+  module Bot
+    class FileController < Teachbase::Bot::Controller
+      attr_reader :type
 
-  def initialize(params)
-    super(params, :chat)
-  end
+      def initialize(params)
+        super(params, :chat)
+      end
 
-  def save_message(mode)
-    return unless file
+      def save_message(mode)
+        return unless file
 
-    @message_params = { file_id: file.file_id, file_size: file.file_size, file_type: type, message_type: "file" }
-    super(mode)
+        @message_params = { file_id: file.file_id, file_size: file.file_size, file_type: type, message_type: "file" }
+        super(mode)
+      end
+    end
   end
 end

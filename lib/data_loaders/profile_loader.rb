@@ -35,7 +35,6 @@ module Teachbase
       def model_class
         Teachbase::Bot::Profile
       end
-
     end
   end
 end

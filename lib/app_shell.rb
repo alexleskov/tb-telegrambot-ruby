@@ -155,7 +155,7 @@ module Teachbase
       end
 
       def submit_answer(cs_tb_id, sec_id, object_tb_id, object_type)
-        answer = { text: cached_answers_texts, attachments: cached_answers_files }        
+        answer = { text: cached_answers_texts, attachments: cached_answers_files }
         case object_type.to_sym
         when :task
           data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content

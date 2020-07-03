@@ -8,6 +8,5 @@ module Viewers
     def title
       "#{attach_emoji(:scorm_package)} #{I18n.t('content').capitalize}: #{name}"
     end
-
   end
 end

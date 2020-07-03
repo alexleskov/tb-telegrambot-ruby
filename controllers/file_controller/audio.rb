@@ -2,13 +2,19 @@
 
 require './controllers/file_controller'
 
-class Teachbase::Bot::FileController::Audio < Teachbase::Bot::FileController
-  def initialize(params)
-    @type = "audio"
-    super(params)
-  end
+module Teachbase
+  module Bot
+    module FileController
+      class Audio < Teachbase::Bot::FileController
+        def initialize(params)
+          @type = "audio"
+          super(params)
+        end
 
-  def file
-    message.audio
+        def file
+          message.audio
+        end
+      end
+    end
   end
 end

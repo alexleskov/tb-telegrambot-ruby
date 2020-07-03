@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class Teachbase::Bot::AnswerContent < Teachbase::Bot::AnswerController
-
   def create(options)
     super(options)
     MessageSender.new(msg_params).send

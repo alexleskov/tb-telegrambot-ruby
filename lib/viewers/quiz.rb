@@ -7,6 +7,6 @@ module Viewers
 
     def title
       "#{attach_emoji(:quiz)} #{I18n.t('quiz').capitalize}: #{name}"
-    end    
+    end
   end
 end

@@ -84,20 +84,20 @@ module Teachbase
 
       def lms_load(options)
         @lms_info = call_data do
-                      case options[:data].to_sym
-                      when :listing
-                        options[:params] ||= { order_by: "progress", order_direction: "asc", page: 1, per_page: 100 }
-                        appshell.authsession.load_course_sessions(options[:state], options[:params])
-                      when :progress
-                        appshell.authsession.load_cs_progress(tb_id)
-                      when :info
-                        appshell.authsession.load_cs_info(tb_id)
-                      when :sections
-                        lms_load(data: :info)["sections"]
-                      else
-                        raise "Can't call such data: '#{options[:data]}'"
-                      end
-                    end
+          case options[:data].to_sym
+          when :listing
+            options[:params] ||= { order_by: "progress", order_direction: "asc", page: 1, per_page: 100 }
+            appshell.authsession.load_course_sessions(options[:state], options[:params])
+          when :progress
+            appshell.authsession.load_cs_progress(tb_id)
+          when :info
+            appshell.authsession.load_cs_info(tb_id)
+          when :sections
+            lms_load(data: :info)["sections"]
+          else
+            raise "Can't call such data: '#{options[:data]}'"
+          end
+        end
       end
 
       def last_version

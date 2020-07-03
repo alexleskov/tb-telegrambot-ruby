@@ -36,7 +36,7 @@ module Teachbase
           contents.keys.each do |content_type|
             contents[content_type].each { |content| buttons << build_cont_button(content, content_type) }
           end
-          buttons = buttons.sort_by { |button| button.position }
+          buttons = buttons.sort_by(&:position)
           InlineCallbackKeyboard.collect(buttons: buttons,
                                          back_button: params[:back_button]).raw
         end

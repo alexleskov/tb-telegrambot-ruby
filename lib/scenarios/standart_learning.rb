@@ -64,7 +64,6 @@ module Teachbase
         end
 
         def show_section_contents(section_position, cs_tb_id)
-
           section = appshell.data_loader.cs(tb_id: cs_tb_id).section(:position, section_position)
           contents = appshell.course_session_section_contents(section_position, cs_tb_id)
           return answer.text.empty_message unless contents

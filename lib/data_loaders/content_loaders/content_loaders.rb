@@ -32,7 +32,6 @@ module Teachbase
       def quiz(params)
         Teachbase::Bot::QuizLoader.new(@appshell, @section_loader, params)
       end
-
     end
   end
 end

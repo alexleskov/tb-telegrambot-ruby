@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class TaskLoader < Teachbase::Bot::ContentLoaderController
       CUSTOM_ATTRS = {}.freeze
-      METHOD_CNAME = :tasks.freeze
+      METHOD_CNAME = :tasks
 
       def me
         super
@@ -26,11 +26,11 @@ module Teachbase
 
       def lms_upload(options)
         @lms_info = call_data do
-                      case options[:data].to_sym
-                      when :submit_answer
-                        appshell.authsession.send_task_answer(cs_tb_id, tb_id, options[:answer])
-                      end
-                    end
+          case options[:data].to_sym
+          when :submit_answer
+            appshell.authsession.send_task_answer(cs_tb_id, tb_id, options[:answer])
+          end
+        end
       end
 
       def lms_load

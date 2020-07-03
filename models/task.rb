@@ -20,7 +20,7 @@ module Teachbase
                   AND tasks.tb_id = :id', cs_tb_id: cs_tb_id, user_id: user_id, id: id)
         end
       end
- 
+
       def attachments?
         !attachments.empty?
       end

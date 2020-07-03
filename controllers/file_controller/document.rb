@@ -2,13 +2,19 @@
 
 require './controllers/file_controller'
 
-class Teachbase::Bot::FileController::Document < Teachbase::Bot::FileController
-  def initialize(params)
-    @type = "document"
-    super(params)
-  end
+module Teachbase
+  module Bot
+    module FileController
+      class Document < Teachbase::Bot::FileController
+        def initialize(params)
+          @type = "document"
+          super(params)
+        end
 
-  def file
-    message.document
+        def file
+          message.document
+        end
+      end
+    end
   end
 end
