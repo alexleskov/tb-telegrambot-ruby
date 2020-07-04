@@ -9,52 +9,48 @@ module Teachbase
 
         DEFAULT_COUNT_PAGINAION = 4
 
-        def self.included(base)
-          base.extend ClassMethods
-        end
-
-        module ClassMethods; end
-
         def show_profile_state
-          appshell.user_info
+          data_loader.user.profile
           user = appshell.user
           return answer.text.empty_message unless user.profile && user
 
           print_user_profile(user)
         end
 
-        def show_course_sessions_list(state, limit_count = DEFAULT_COUNT_PAGINAION, offset_num = 0)
-          offset_num = offset_num.to_i
-          limit_count = limit_count.to_i
-          course_sessions = appshell.course_sessions_list(state, limit_count, offset_num)
-          cs_count = appshell.cs_count_by(state)
+        def show_cs_list(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0)
+          offset = offset.to_i
+          limit = limit.to_i
+          course_sessions = appshell.data_loader.cs.list(state: state, limit: limit, offset: offset,
+                                                         scenario: appshell.settings.scenario)
+          appshell.data_loader.user.profile
+          cs_count = appshell.user.profile.cs_count_by(state)
           print_course_state(state)
           return answer.text.empty_message if course_sessions.empty?
 
           menu_courses_list(course_sessions, stages: %i[title])
-          offset_num += limit_count
-          return if offset_num >= cs_count
+          offset += limit
+          return if offset >= cs_count
 
           answer.menu.show_more(object_type: :course_sessions, all_count: cs_count, state: state,
-                                limit_count: limit_count, offset_num: offset_num)
+                                limit_count: limit, offset_num: offset)
         end
 
         def show_course_session_info(cs_tb_id)
-          cs = appshell.course_session_info(cs_tb_id)
+          cs = appshell.data_loader.cs(tb_id: cs_tb_id).info
           print_course_stats_info(cs)
         end
 
         def sections_choosing_menu(cs_tb_id)
-          sections = appshell.course_session_sections(cs_tb_id)
+          sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
           menu_choosing_section(sections, stages: %i[title sections],
                                           command_prefix: "show_sections_by_csid:#{cs_tb_id}_param:")
         end
 
         def show_sections(cs_tb_id, option)
-          sections = appshell.course_session_sections(cs_tb_id)
+          sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
           sections_by_option = find_sections_by(option, sections)
           if sections.empty? || sections_by_option.empty?
-            cs = appshell.course_session_info(cs_tb_id)
+            cs = appshell.data_loader.cs(tb_id: cs_tb_id).info
             title = create_title(object: cs, stages: %i[title sections menu], params: { state: option })
             return menu_empty_msg(text: title, back_button: { mode: :custom, action: cs.back_button_action },
                                   mode: :edit_msg)
@@ -64,33 +60,27 @@ module Teachbase
         end
 
         def show_section_contents(section_position, cs_tb_id)
-          section = appshell.data_loader.cs(tb_id: cs_tb_id).section(:position, section_position)
-          contents = appshell.course_session_section_contents(section_position, cs_tb_id)
+          section_loader = appshell.data_loader.section(option: :position, value: section_position, cs_tb_id: cs_tb_id)
+          contents = section_loader.contents
           return answer.text.empty_message unless contents
 
-          appshell.section_update_progress(section_position, cs_tb_id)
-          title = create_title(object: section, stages: %i[title contents])
-          menu_section_contents(contents: contents, text: title,
-                                back_button: { mode: :custom, action: section.course_session.back_button_action })
+          contents_by_types = section_loader.db_entity.contents_by_types
+          appshell.data_loader.section(option: :position, value: section_position, cs_tb_id: cs_tb_id).progress
+          title = create_title(object: section_loader.db_entity, stages: %i[title contents])
+          menu_section_contents(contents: contents_by_types, text: title,
+                                back_button: { mode: :custom, action: section_loader.db_entity
+                                                                      .course_session.back_button_action })
         end
 
         def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
           object_type = Teachbase::Bot::Section::OBJECTS_TYPES[type.to_sym]
-          content = appshell.course_session_section_content(type, cs_tb_id, sec_id, content_tb_id)
+          content = load_content(type, cs_tb_id, sec_id, content_tb_id).me
           return answer.text.empty_message unless content
 
           respond_to?("print_#{object_type}") ? public_send("print_#{object_type}", content) : answer.text.error
         end
 
-        def courses_update
-          check_status { appshell.update_all_course_sessions }
-        end
-
-        def track_material(cs_tb_id, sec_id, material_tb_id, time_spent)
-          check_status { appshell.track_material(cs_tb_id, sec_id, material_tb_id, time_spent) }
-        end
-
-        def submit_answer_task(cs_tb_id, task_tb_id)
+        def take_answer_task(cs_tb_id, task_tb_id)
           task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
 
           return unless task
@@ -110,13 +100,7 @@ module Teachbase
         end
 
         def confirm_answer(cs_tb_id, sec_id, object_tb_id, type, param)
-          if param.to_sym == :decline
-            appshell.clear_cached_answers
-            answer.text.declined
-          else
-            result = check_status { appshell.submit_answer(cs_tb_id, sec_id, object_tb_id, type) }
-            appshell.clear_cached_answers if result
-          end
+          pre_submit_answer(cs_tb_id, sec_id, object_tb_id, type, param)
           answer.menu.custom_back(callback_data: "/sec#{sec_id}_cs#{cs_tb_id}")
         end
 
@@ -153,16 +137,16 @@ module Teachbase
           end
 
           on %r{courses_archived} do
-            show_course_sessions_list(:archived)
+            show_cs_list(:archived)
           end
 
           on %r{courses_active} do
-            show_course_sessions_list(:active)
+            show_cs_list(:active)
           end
 
           on %r{show_course_sessions_list} do
             @message_value =~ %r{^show_course_sessions_list:(\w*)_lim:(\d*)_offset:(\d*)}
-            show_course_sessions_list($1, $2, $3)
+            show_cs_list($1, $2, $3)
           end
 
           on %r{courses_update} do
@@ -201,7 +185,7 @@ module Teachbase
 
           on %r{submit_task_by_csid:} do
             @message_value =~ %r{submit_task_by_csid:(\d*)_objid:(\d*)}
-            submit_answer_task($1, $2)
+            take_answer_task($1, $2)
           end
 
           on %r{answers_task_by_csid:} do

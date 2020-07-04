@@ -32,6 +32,14 @@ module Teachbase
                                          scenario: params[:scenario])
       end
 
+      def update_all_states
+        courses = {}
+        CS_STATES.each do |state|
+          courses[state] = data_loader.cs.list(state: state, mode: :with_reload)
+        end
+        courses
+      end
+
       def info
         update_data(lms_load(data: :info))
       end

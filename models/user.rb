@@ -36,8 +36,6 @@ module Teachbase
       def task_by_cs_tbid(cs_tb_id, task_tb_id)
         Teachbase::Bot::Task.show_by_user_cs_tbid(cs_tb_id, task_tb_id, id).first
       end
-
-      # appshell.user.course_sessions.find_by(tb_id: cs_tb_id).tasks.find_by(tb_id: task_tb_id)
     end
   end
 end

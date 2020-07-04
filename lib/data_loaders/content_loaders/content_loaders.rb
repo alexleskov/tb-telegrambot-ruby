@@ -17,6 +17,12 @@ module Teachbase
         @section_loader = section_loader
       end
 
+      def load_by(params)
+        raise unless respond_to?(params[:type]) && params[:tb_id]
+
+        public_send(params[:type], tb_id: params[:tb_id])
+      end
+
       def material(params)
         Teachbase::Bot::MaterialLoader.new(@appshell, @section_loader, params)
       end

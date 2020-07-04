@@ -36,14 +36,10 @@ module Teachbase
         authorizer.user
       end
 
-      def user_info
-        data_loader.user.profile
-      end
-
       def user_fullname(option = :string)
-        user_in_db = authorizer.authsession? ? user(:without_api) : nil
-        user_name = if user_in_db && [user_in_db.first_name, user_in_db.last_name].none?(nil)
-                      [user_in_db.first_name, user_in_db.last_name]
+        user_db = authorizer.authsession? ? user(:without_api) : nil
+        user_name = if user_db && [user_db.first_name, user_db.last_name].none?(nil)
+                      [user_db.first_name, user_db.last_name]
                     else
                       controller.tg_user.user_fullname
                     end
@@ -54,62 +50,12 @@ module Teachbase
         user(mode)
         return unless authsession.is_a?(Teachbase::Bot::AuthSession)
 
-        user_info
+        data_loader.user.profile
         authsession
       end
 
       def logout
         authorizer.unauthorize
-      end
-
-      def course_sessions_list(state, limit, offset)
-        data_loader.cs.list(state: state, limit: limit, offset: offset, scenario: settings.scenario)
-      end
-
-      def course_session_info(cs_tb_id)
-        data_loader.cs(tb_id: cs_tb_id).info
-      end
-
-      def section_update_progress(section_position, cs_tb_id)
-        data_loader.section(option: :position, value: section_position, cs_tb_id: cs_tb_id).progress
-      end
-
-      def course_session_update_progress(cs_tb_id)
-        data_loader.cs(tb_id: cs_tb_id).progress
-      end
-
-      def course_session_sections(cs_tb_id)
-        data_loader.cs(tb_id: cs_tb_id).sections
-      end
-
-      def course_session_section_contents(section_position, cs_tb_id)
-        section_loader = data_loader.section(option: :position, value: section_position, cs_tb_id: cs_tb_id)
-        result = section_loader.contents
-        return unless result
-
-        section_loader.db_entity.contents_by_types
-      end
-
-      def course_session_section_content(content_type, cs_tb_id, sec_id, content_tb_id)
-        content_loader = data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content
-        case content_type.to_sym # TO DO: Delete after refactroing
-        when :materials
-          content_loader.material(tb_id: content_tb_id).me
-        when :tasks
-          content_loader.task(tb_id: content_tb_id).me
-        when :scorm_packages
-          content_loader.scorm_package(tb_id: content_tb_id).me
-        when :quizzes
-          content_loader.quiz(tb_id: content_tb_id).me
-        end
-      end
-
-      def update_all_course_sessions
-        courses = {}
-        Teachbase::Bot::DataLoader::CS_STATES.each do |state|
-          courses[state] = data_loader.cs.list(state: state, mode: :with_reload)
-        end
-        courses
       end
 
       def change_scenario(scenario_name)
@@ -127,7 +73,7 @@ module Teachbase
       end
 
       def request_data(validate_type)
-        data = take_data
+        data = controller.take_data
         return if break_taking_data?(data)
 
         value = data.respond_to?(:text) ? data.text : data.file
@@ -142,27 +88,6 @@ module Teachbase
         controller.answer.text.ask_password
         user_password = request_data(:password).text
         [user_login, user_password]
-      end
-
-      def cs_count_by(state)
-        user_info
-        user.profile.public_send("#{state}_courses_count").to_i
-      end
-
-      def track_material(cs_tb_id, sec_id, material_tb_id, time_spent)
-        data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content
-                   .material(tb_id: material_tb_id).track(time_spent)
-      end
-
-      def submit_answer(cs_tb_id, sec_id, object_tb_id, object_type)
-        answer = { text: cached_answers_texts, attachments: cached_answers_files }
-        case object_type.to_sym
-        when :task
-          data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content
-                     .task(tb_id: object_tb_id).submit(answer)
-        else
-          raise "Can't submit answer"
-        end
       end
 
       def ask_answer(params = {})
@@ -227,10 +152,6 @@ module Teachbase
 
       def set_scenario
         change_scenario(settings.scenario)
-      end
-
-      def take_data
-        controller.take_data
       end
     end
   end
