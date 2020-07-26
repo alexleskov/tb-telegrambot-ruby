@@ -99,7 +99,6 @@ module Teachbase
         entity.course_session.tb_id
       end
 
-      
       def sign_by_object_type(type)
         case type.to_sym
         when :section

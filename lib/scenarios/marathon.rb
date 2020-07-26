@@ -11,7 +11,7 @@ module Teachbase
         end
 
         def match_text_action
-          super 
+          super
         end
       end
     end

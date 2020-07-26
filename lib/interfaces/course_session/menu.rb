@@ -5,7 +5,6 @@ module Teachbase
     class Interfaces
       class CourseSession
         class Menu < Teachbase::Bot::InterfaceController
-          
           MAIN_BUTTONS = %w[open course_results].freeze
           MAIN_BUTTONS_EMOJI = %i[mortar_board information_source].freeze
           STATE_BUTTONS = %w[active archived update].freeze

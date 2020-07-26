@@ -23,7 +23,6 @@ module Teachbase
         def type_like_sym
           :task
         end
-
       end
 
       def attachments?

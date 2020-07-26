@@ -8,7 +8,7 @@ module Teachbase
           @answer = answer
           @entity = entity
         end
-        
+
         def text(params = {})
           self.class::Text.new(params, @answer, @entity)
         end

@@ -5,7 +5,6 @@ module Teachbase
     class Interfaces
       class Quiz
         class Text < Teachbase::Bot::InterfaceController
-
         end
       end
     end

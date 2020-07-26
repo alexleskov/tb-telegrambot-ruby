@@ -22,70 +22,68 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     MessageSender.new(msg_params).send
   end
 
-=begin
-
-  def starting(params = {})
-    params.merge!(type: :menu, slices_count: 2)
-    params[:text] ||= I18n.t('start_menu_message').to_s
-    params[:buttons] = TextCommandKeyboard.g(commands: @respond.commands, buttons_signs: %i[sign_in settings]).raw
-    create(params)
-  end
-
-  def after_auth(params = {})
-    params.merge!(type: :menu, slices_count: 2)
-    params[:text] ||= I18n.t('start_menu_message').to_s
-    params[:buttons] = TextCommandKeyboard.g(commands: @respond.commands,
-                                             buttons_signs: %i[courses_list show_profile_state settings sign_out]).raw
-    create(params)
-  end
-
-  def settings(params = {})
-    params.merge!(text: "<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
-                      \n #{Emoji.t(:video_game)} #{I18n.t('scenario')}: #{I18n.t(to_snakecase(@settings.scenario))}
-                      \n #{Emoji.t(:ab)} #{I18n.t('localization')}: #{I18n.t(@settings.localization)}",
-                  slices_count: 1, type: :menu_inline)
-    params[:mode] ||= :none
-    params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
-                                                command_prefix: "edit_", buttons_actions: %i[settings]).raw
-    create(params)
-  end
-
-  def edit_settings
-    params = { text: "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>", slices_count: 2, type: :menu_inline }
-    params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(Teachbase::Bot::Setting::PARAMS),
-                                                command_prefix: "settings:",
-                                                buttons_actions: Teachbase::Bot::Setting::PARAMS,
-                                                back_button: { mode: :basic, sent_messages: @tg_user.tg_account_messages }).raw
-    create(params)
-  end
-
-  def sign_in_again
-    params = { type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in]).raw }
-    params[:mode] ||= :none
-    params[:text] ||= "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
-    create(params)
-  end
-
-  def choosing(type, param_name, params = {})
-    params.merge!(type: :menu_inline, slices_count: 2)
-    params[:text] ||= "<b>#{Emoji.t(:wrench)} #{I18n.t("choose_#{param_name.downcase}")}</b>"
-    buttons_signs = to_constantize("#{param_name.upcase}_PARAMS", "Teachbase::Bot::#{type.capitalize}::")
-    params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
-                                                command_prefix: "#{param_name.downcase}_param:",
-                                                buttons_actions: buttons_signs,
-                                                emojis: to_constantize("#{param_name.upcase}_EMOJI",
-                                                                       "Teachbase::Bot::AnswerMenu::"),
-                                                back_button: { mode: :basic, sent_messages: @tg_user.tg_account_messages }).raw
-    create(params)
-  end
-
-  def ready(params = {})
-    params.merge!(type: :menu, slices_count: 1)
-    params[:text] ||= "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_next_answer')} #{Emoji.t(:point_down)}"
-    params[:buttons] = TextCommandKeyboard.g(commands: @respond.commands, buttons_signs: %i[ready]).raw
-    create(params)
-  end
-=end
+  #
+  #   def starting(params = {})
+  #     params.merge!(type: :menu, slices_count: 2)
+  #     params[:text] ||= I18n.t('start_menu_message').to_s
+  #     params[:buttons] = TextCommandKeyboard.g(commands: @respond.commands, buttons_signs: %i[sign_in settings]).raw
+  #     create(params)
+  #   end
+  #
+  #   def after_auth(params = {})
+  #     params.merge!(type: :menu, slices_count: 2)
+  #     params[:text] ||= I18n.t('start_menu_message').to_s
+  #     params[:buttons] = TextCommandKeyboard.g(commands: @respond.commands,
+  #                                              buttons_signs: %i[courses_list show_profile_state settings sign_out]).raw
+  #     create(params)
+  #   end
+  #
+  #   def settings(params = {})
+  #     params.merge!(text: "<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
+  #                       \n #{Emoji.t(:video_game)} #{I18n.t('scenario')}: #{I18n.t(to_snakecase(@settings.scenario))}
+  #                       \n #{Emoji.t(:ab)} #{I18n.t('localization')}: #{I18n.t(@settings.localization)}",
+  #                   slices_count: 1, type: :menu_inline)
+  #     params[:mode] ||= :none
+  #     params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
+  #                                                 command_prefix: "edit_", buttons_actions: %i[settings]).raw
+  #     create(params)
+  #   end
+  #
+  #   def edit_settings
+  #     params = { text: "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>", slices_count: 2, type: :menu_inline }
+  #     params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(Teachbase::Bot::Setting::PARAMS),
+  #                                                 command_prefix: "settings:",
+  #                                                 buttons_actions: Teachbase::Bot::Setting::PARAMS,
+  #                                                 back_button: { mode: :basic, sent_messages: @tg_user.tg_account_messages }).raw
+  #     create(params)
+  #   end
+  #
+  #   def sign_in_again
+  #     params = { type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in]).raw }
+  #     params[:mode] ||= :none
+  #     params[:text] ||= "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+  #     create(params)
+  #   end
+  #
+  #   def choosing(type, param_name, params = {})
+  #     params.merge!(type: :menu_inline, slices_count: 2)
+  #     params[:text] ||= "<b>#{Emoji.t(:wrench)} #{I18n.t("choose_#{param_name.downcase}")}</b>"
+  #     buttons_signs = to_constantize("#{param_name.upcase}_PARAMS", "Teachbase::Bot::#{type.capitalize}::")
+  #     params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
+  #                                                 command_prefix: "#{param_name.downcase}_param:",
+  #                                                 buttons_actions: buttons_signs,
+  #                                                 emojis: to_constantize("#{param_name.upcase}_EMOJI",
+  #                                                                        "Teachbase::Bot::AnswerMenu::"),
+  #                                                 back_button: { mode: :basic, sent_messages: @tg_user.tg_account_messages }).raw
+  #     create(params)
+  #   end
+  #
+  #   def ready(params = {})
+  #     params.merge!(type: :menu, slices_count: 1)
+  #     params[:text] ||= "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_next_answer')} #{Emoji.t(:point_down)}"
+  #     params[:buttons] = TextCommandKeyboard.g(commands: @respond.commands, buttons_signs: %i[ready]).raw
+  #     create(params)
+  #   end
 
   def show_more(params)
     params.merge!(type: :menu_inline)

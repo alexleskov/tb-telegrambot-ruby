@@ -33,7 +33,7 @@ module Teachbase
           appshell.logout
           closing
         rescue RuntimeError => e
-           interface.sys.text.on_error(e)
+          interface.sys.text.on_error(e)
         end
 
         def settings
@@ -45,7 +45,7 @@ module Teachbase
           interface.sys.menu(back_button: build_back_button_data).edit_settings
         end
 
-        #def ready; end
+        # def ready; end
 
         def choose_localization
           interface.sys.menu(back_button: build_back_button_data).choosing("Setting", :localization)
@@ -85,7 +85,7 @@ module Teachbase
           raise unless type
 
           appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
-                              .content.load_by(type: type, tb_id: content_tb_id)
+                  .content.load_by(type: type, tb_id: content_tb_id)
         end
 
         def courses_update
@@ -95,7 +95,7 @@ module Teachbase
         def track_material(cs_tb_id, sec_id, tb_id, time_spent)
           check_status do
             appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content
-                                .material(tb_id: tb_id).track(time_spent)
+                    .material(tb_id: tb_id).track(time_spent)
           end
         end
 

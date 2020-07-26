@@ -147,7 +147,7 @@ module Teachbase
         end
 
         def match_text_action
-          super 
+          super
 
           on %r{^/sec(\d*)_cs(\d*)} do
             @message_value =~ %r{^/sec(\d*)_cs(\d*)}

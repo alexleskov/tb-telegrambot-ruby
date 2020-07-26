@@ -5,7 +5,6 @@ module Teachbase
     class Interfaces
       class Base
         class Text < Teachbase::Bot::InterfaceController
-          
           def on_enter
             answer.text.send_out("#{Emoji.t(:rocket)}<b>#{I18n.t('enter')} #{I18n.t('in')} #{I18n.t(params[:account_name])}</b>")
           end
@@ -58,8 +57,6 @@ module Teachbase
           def ask_answer
             answer.text.ask_answer(params[:text])
           end
-
-
         end
       end
     end

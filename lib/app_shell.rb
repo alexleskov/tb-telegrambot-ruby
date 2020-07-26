@@ -11,7 +11,7 @@ module Teachbase
       include Validator
 
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
-      DAFAULT_ACCOUNT_NAME = "teachbase".freeze
+      DAFAULT_ACCOUNT_NAME = "teachbase"
 
       attr_reader :controller,
                   :data_loader,
@@ -66,8 +66,8 @@ module Teachbase
 
         controller.class.send(:include, to_constantize("Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}"))
         controller.interface.sys_class = to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}")
-        #controller.interface.sys_class::Menu.send(:include, to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}::Menu"))
-        #controller.interface.sys_class::Text.send(:include, to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}::Text"))
+        # controller.interface.sys_class::Menu.send(:include, to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}::Menu"))
+        # controller.interface.sys_class::Text.send(:include, to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}::Text"))
 
         settings.update!(scenario: scenario_name)
       end

@@ -5,7 +5,6 @@ module Teachbase
     class Interfaces
       class Base
         class Menu < Teachbase::Bot::InterfaceController
-          
           def sign_in_again
             params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in]).raw)
             params[:mode] ||= :none
@@ -93,7 +92,6 @@ module Teachbase
           def settings_class
             Teachbase::Bot::Setting
           end
-
         end
       end
     end

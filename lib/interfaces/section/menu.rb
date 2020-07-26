@@ -29,7 +29,7 @@ module Teachbase
             answer.menu.create(buttons: contents_buttons,
                                mode: :none,
                                type: :menu_inline,
-                               text: "#{create_title(params)}") 
+                               text: create_title(params).to_s)
           end
 
           private
@@ -67,7 +67,6 @@ module Teachbase
                                    callback_data: "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}",
                                    position: content.position)
           end
-
         end
       end
     end
