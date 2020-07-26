@@ -28,7 +28,7 @@ class InlineCallbackButton < Button
     end
 
     def sign_in
-      g(callback_data: "signin", button_sign: I18n.t('signin').to_s, emoji: :rocket)
+      g(callback_data: "sign_in", button_sign: I18n.t('sign_in').to_s, emoji: :rocket)
     end
 
     private

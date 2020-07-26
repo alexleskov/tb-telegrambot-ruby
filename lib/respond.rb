@@ -39,8 +39,24 @@ module Teachbase
         Teachbase::Bot::TextController.new(@params).match_text_action
       end
 
+      def audio
+        Teachbase::Bot::FileController::Audio.new(@params)
+      end
+
       def document
         Teachbase::Bot::FileController::Document.new(@params)
+      end
+
+      def video
+        Teachbase::Bot::FileController::Video.new(@params)
+      end
+
+      def video_note
+        Teachbase::Bot::FileController::VideoNote.new(@params)
+      end
+
+      def voice
+        Teachbase::Bot::FileController::Voice.new(@params)
       end
 
       def photo

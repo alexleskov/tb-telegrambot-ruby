@@ -5,16 +5,15 @@ module Teachbase
     module Scenarios
       module StandartLearning
         include Teachbase::Bot::Scenarios::Base
-        include Teachbase::Bot::Interfaces::StandartLearning
 
         DEFAULT_COUNT_PAGINAION = 4
 
         def show_profile_state
-          data_loader.user.profile
+          appshell.data_loader.user.profile
           user = appshell.user
-          return answer.text.empty_message unless user.profile && user
+          return interface.sys.text.is_empty unless user.profile && user
 
-          print_user_profile(user)
+          interface.user(user).text.profile
         end
 
         def show_cs_list(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0)
@@ -24,117 +23,65 @@ module Teachbase
                                                          scenario: appshell.settings.scenario)
           appshell.data_loader.user.profile
           cs_count = appshell.user.profile.cs_count_by(state)
-          print_course_state(state)
-          return answer.text.empty_message if course_sessions.empty?
+          interface.cs.text.state(state)
+          return interface.sys.text.is_empty if course_sessions.empty?
 
-          menu_courses_list(course_sessions, stages: %i[title])
+          course_sessions.each do |cs|
+            interface.cs(cs).menu(stages: %i[title], callback_data: ["cs_sec_by_id:#{cs.tb_id}",
+                                                                     "cs_info_id:#{cs.tb_id}"]).main
+          end
           offset += limit
           return if offset >= cs_count
 
-          answer.menu.show_more(object_type: :course_sessions, all_count: cs_count, state: state,
-                                limit_count: limit, offset_num: offset)
+          interface.sys.menu(object_type: :course_sessions, all_count: cs_count, state: state,
+                             limit_count: limit, offset_num: offset).show_more
         end
 
         def show_course_session_info(cs_tb_id)
           cs = appshell.data_loader.cs(tb_id: cs_tb_id).info
-          print_course_stats_info(cs)
+          interface.cs(cs).menu(stages: %i[title info]).stats_info
         end
 
         def sections_choosing_menu(cs_tb_id)
           sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
-          menu_choosing_section(sections, stages: %i[title sections],
-                                          command_prefix: "show_sections_by_csid:#{cs_tb_id}_param:")
+          return interface.sys.text.is_empty if sections.empty?
+
+          cs = sections.first.course_session
+          interface.section(cs).menu(stages: %i[title sections],
+                                     command_prefix: "show_sections_by_csid:#{cs.tb_id}_param:",
+                                     back_button: build_back_button_data).main
         end
 
         def show_sections(cs_tb_id, option)
-          sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
-          sections_by_option = find_sections_by(option, sections)
-          if sections.empty? || sections_by_option.empty?
-            cs = appshell.data_loader.cs(tb_id: cs_tb_id).info
-            title = create_title(object: cs, stages: %i[title sections menu], params: { state: option })
-            return menu_empty_msg(text: title, back_button: { mode: :custom, action: cs.back_button_action },
-                                  mode: :edit_msg)
-          end
+          all_sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
+          sections_by_option = find_sections_by(option, all_sections)
+          return interface.sys.text.is_empty if all_sections.empty? || sections_by_option.empty?
 
-          menu_sections_by_option(sections_by_option, option)
+          cs = sections_by_option.first.course_session
+          interface.section(cs).menu(stages: %i[title sections menu],
+                                     params: { state: option }).show_by_option(sections_by_option, option)
         end
 
         def show_section_contents(section_position, cs_tb_id)
-          section_loader = appshell.data_loader.section(option: :position, value: section_position, cs_tb_id: cs_tb_id)
-          contents = section_loader.contents
-          return answer.text.empty_message unless contents
+          section_loader = appshell.data_loader.section(option: :position, value: section_position,
+                                                        cs_tb_id: cs_tb_id)
+          return interface.sys.text.is_empty unless section_loader.contents
 
-          contents_by_types = section_loader.db_entity.contents_by_types
           appshell.data_loader.section(option: :position, value: section_position, cs_tb_id: cs_tb_id).progress
-          title = create_title(object: section_loader.db_entity, stages: %i[title contents])
-          menu_section_contents(contents: contents_by_types, text: title,
-                                back_button: { mode: :custom, action: section_loader.db_entity
-                                                                      .course_session.back_button_action })
-        end
-
-        def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
-          object_type = Teachbase::Bot::Section::OBJECTS_TYPES[type.to_sym]
-          content = load_content(type, cs_tb_id, sec_id, content_tb_id).me
-          return answer.text.empty_message unless content
-
-          respond_to?("print_#{object_type}") ? public_send("print_#{object_type}", content) : answer.text.error
-        end
-
-        def take_answer_task(cs_tb_id, task_tb_id)
-          task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
-
-          return unless task
-
-          answer.text.ask_answer
-          appshell.ask_answer(mode: :bulk, saving: :cache)
-          answer.menu.after_auth
-          menu_confirm_answer(object: task, disable_web_page_preview: true, mode: :none,
-                              user_answer: appshell.user_cached_answer)
-        end
-
-        def answers_task(cs_tb_id, task_tb_id)
-          task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
-          return unless task
-
-          print_answers(task)
-        end
-
-        def confirm_answer(cs_tb_id, sec_id, object_tb_id, type, param)
-          pre_submit_answer(cs_tb_id, sec_id, object_tb_id, type, param)
-          answer.menu.custom_back(callback_data: "/sec#{sec_id}_cs#{cs_tb_id}")
+          section = section_loader.db_entity
+          interface.section(section)
+                   .menu(stages: %i[title contents], back_button: { mode: :custom,
+                                                                    action: section.course_session.back_button_action })
+                   .contents
         end
 
         def courses_list
-          menu_choosing_course_state
+          interface.cs.menu(text: "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>",
+                            command_prefix: "courses_").states
         end
 
         def match_data
-          on %r{signin} do
-            signin
-          end
-
-          on %r{edit_settings} do
-            edit_settings
-          end
-
-          on %r{^settings:localization} do
-            choose_localization
-          end
-
-          on %r{^localization_param:} do
-            @message_value =~ %r{^localization_param:(\w*)}
-            change_language($1)
-          end
-
-          on %r{settings:scenario} do
-            choose_scenario
-          end
-
-          on %r{^scenario_param:} do
-            @message_value =~ %r{^scenario_param:(\w*)}
-            mode = $1
-            change_scenario(mode)
-          end
+          super
 
           on %r{courses_archived} do
             show_cs_list(:archived)
@@ -200,40 +147,11 @@ module Teachbase
         end
 
         def match_text_action
+          super 
+
           on %r{^/sec(\d*)_cs(\d*)} do
             @message_value =~ %r{^/sec(\d*)_cs(\d*)}
             show_section_contents($1, $2)
-          end
-
-          on %r{^/start} do
-            answer.text.greeting_message(appshell.user_fullname(:string))
-            answer.menu.starting
-          end
-
-          on %r{^/settings} do
-            settings
-          end
-
-          on %r{^/close} do
-            print_farewell
-          end
-        end
-
-        private
-
-        def find_sections_by(option, sections)
-          case option
-          when :find_by_query_num
-            ask_enter_the_number(:section)
-            sections.where(position: appshell.request_data(:string).text)
-          when :show_all
-            sections
-          when :show_avaliable
-            sections.where(is_available: true, is_publish: true)
-          when :show_unvaliable
-            sections.where(is_available: false)
-          else
-            raise "No such option: '#{option}' for showing sections"
           end
         end
       end

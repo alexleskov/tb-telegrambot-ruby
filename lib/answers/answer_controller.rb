@@ -7,7 +7,7 @@ module Teachbase
 
       MSG_DESTS = %i[chat from].freeze
 
-      attr_reader :msg_params
+      attr_reader :msg_params, :command_list
 
       def initialize(respond, dest)
         @logger = AppConfigurator.new.load_logger
@@ -17,6 +17,7 @@ module Teachbase
         @respond = respond
         @settings = respond.msg_responder.settings
         @tg_user = respond.msg_responder.tg_user
+        @command_list = respond.commands
         @msg_params = {}
       end
 

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require './lib/app_shell'
-require './lib/answers/answers'
 require './lib/filer'
-require './interfaces/breadcrumb'
+require './lib/breadcrumb'
+require './lib/interfaces/interfaces'
 
 module Teachbase
   module Bot
@@ -11,7 +11,13 @@ module Teachbase
       include Formatter
       include Viewers
 
-      attr_reader :respond, :answer, :appshell, :tg_user, :message, :message_params, :filer
+      attr_reader :respond,
+                  :appshell,
+                  :tg_user,
+                  :message,
+                  :message_params,
+                  :filer,
+                  :interface
 
       def initialize(params, dest)
         @respond = params[:respond]
@@ -21,9 +27,9 @@ module Teachbase
         @message = respond.msg_responder.message
         @message_params = {}
         @logger = AppConfigurator.new.load_logger
-        @appshell = Teachbase::Bot::AppShell.new(self)
-        @answer = Teachbase::Bot::Answers.new(respond, dest)
+        @interface = Teachbase::Bot::Interfaces.new(respond, dest)
         @filer = Teachbase::Bot::Filer.new(respond)
+        @appshell = Teachbase::Bot::AppShell.new(self)
       rescue RuntimeError => e
         @logger.debug "Initialization Controller error: #{e}"
       end

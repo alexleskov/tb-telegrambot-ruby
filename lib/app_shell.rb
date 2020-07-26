@@ -11,12 +11,14 @@ module Teachbase
       include Validator
 
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
+      DAFAULT_ACCOUNT_NAME = "teachbase".freeze
 
       attr_reader :controller,
                   :data_loader,
                   :settings,
                   :authorizer,
-                  :authsession
+                  :authsession,
+                  :account_name
       attr_accessor :access_mode
 
       def initialize(controller, access_mode = :with_api)
@@ -24,6 +26,7 @@ module Teachbase
         @access_mode = access_mode
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
 
+        @account_name ||= DAFAULT_ACCOUNT_NAME
         @controller = controller
         @settings = controller.respond.msg_responder.settings
         @authorizer = Teachbase::Bot::Authorizer.new(self)
@@ -61,8 +64,12 @@ module Teachbase
       def change_scenario(scenario_name)
         raise "No such scenario: '#{scenario_name}'" unless Teachbase::Bot::Scenarios::LIST.include?(scenario_name)
 
-        settings.update!(scenario: scenario_name)
         controller.class.send(:include, to_constantize("Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}"))
+        controller.interface.sys_class = to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}")
+        #controller.interface.sys_class::Menu.send(:include, to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}::Menu"))
+        #controller.interface.sys_class::Text.send(:include, to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}::Text"))
+
+        settings.update!(scenario: scenario_name)
       end
 
       def change_localization(lang)
@@ -81,11 +88,11 @@ module Teachbase
       end
 
       def request_user_data
-        controller.answer.text.ask_login
+        controller.interface.sys.text.ask_login
         user_login = request_data(:login).text
         raise unless user_login
 
-        controller.answer.text.ask_password
+        controller.interface.sys.text.ask_password
         user_password = request_data(:password).text
         [user_login, user_password]
       end
@@ -131,12 +138,11 @@ module Teachbase
       def request_answer_bulk(params)
         loop do
           user_answer = request_data(params[:answer_type])
-
           @logger.debug "user_answer: #{user_answer}"
           break if user_answer.nil? || (user_answer.respond_to?(:text) && break_taking_data?(user_answer.text))
 
           user_answer.save_message(params[:saving])
-          controller.answer.menu.ready
+          controller.interface.sys.menu(params).ready
         end
       end
 

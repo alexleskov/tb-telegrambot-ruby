@@ -68,7 +68,7 @@ module Teachbase
       end
 
       def cs_id
-        Teachbase::Bot::CourseSession.find_by(tb_id: cs_tb_id).id
+        Teachbase::Bot::CourseSession.find_by!(tb_id: cs_tb_id).id
       end
 
       def init_cs_loader

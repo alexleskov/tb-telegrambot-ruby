@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/viewers/helper'
 require './lib/viewers/course_session'
 require './lib/viewers/section'
 require './lib/viewers/user'

@@ -19,6 +19,11 @@ module Teachbase
             .where('course_sessions.tb_id = :cs_tb_id AND course_sessions.user_id = :user_id
                   AND tasks.tb_id = :id', cs_tb_id: cs_tb_id, user_id: user_id, id: id)
         end
+
+        def type_like_sym
+          :task
+        end
+
       end
 
       def attachments?

@@ -9,7 +9,9 @@ module Teachbase
 
       PARAMS = %i[localization scenario].freeze
       LOCALIZATION_PARAMS = %i[ru en].freeze
-      SCENARIO_PARAMS = %i[standart_learning marathon].freeze
+      LOCALIZATION_EMOJI = %i[ru us].freeze
+      SCENARIO_PARAMS = %i[standart_learning marathon battle].freeze
+      SCENARIO_EMOJI = %i[books bicyclist trophy].freeze
     end
   end
 end

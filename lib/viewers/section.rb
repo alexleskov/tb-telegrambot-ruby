@@ -3,7 +3,6 @@
 module Viewers
   module Section
     include Formatter
-    include Viewers::Helper
 
     def title(params)
       section_state = params ? params[:state] : :open

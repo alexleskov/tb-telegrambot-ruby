@@ -5,6 +5,14 @@ module Teachbase
     module Scenarios
       module Marathon
         include Teachbase::Bot::Scenarios::Base
+
+        def match_data
+          super
+        end
+
+        def match_text_action
+          super 
+        end
       end
     end
   end

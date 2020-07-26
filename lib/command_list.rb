@@ -5,7 +5,7 @@ require './models/command'
 module Teachbase
   module Bot
     class CommandList
-      @sign_and_emoji = [:signin, Emoji.t(:rocket)],
+      @sign_and_emoji = [:sign_in, Emoji.t(:rocket)],
                         [:sign_out, Emoji.t(:door)],
                         [:settings, Emoji.t(:wrench)],
                         [:show_profile_state, Emoji.t(:mortar_board)],

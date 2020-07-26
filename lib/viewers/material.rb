@@ -3,7 +3,6 @@
 module Viewers
   module Material
     include Formatter
-    include Viewers::Helper
 
     YOUTUBE_HOST = "https://youtu.be/"
 
@@ -26,16 +25,6 @@ module Viewers
     end
 
     private
-
-    def build_approve_button(time_spent = 50)
-      return unless @params[:approve_button] && course_session.active?
-
-      cs_tb_id = course_session.tb_id
-      sec_id = section.id
-      InlineCallbackButton.g(button_sign: I18n.t('viewed').to_s,
-                             callback_data: "approve_material_by_csid:#{cs_tb_id}_secid:#{sec_id}_objid:#{tb_id}_time:#{time_spent}",
-                             emoji: :white_check_mark)
-    end
 
     def build_material_link_params(link, link_name)
       { link: link, link_name: link_name }
