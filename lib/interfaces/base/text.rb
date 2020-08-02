@@ -43,7 +43,7 @@ module Teachbase
           end
 
           def ask_next_action
-            answer.text.send_out("<i>#{I18n.t('start_menu_message').to_s}</i>")
+            answer.text.send_out("<i>#{I18n.t('start_menu_message')}</i>")
           end
 
           def on_error(error = "Undefined error")

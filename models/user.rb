@@ -15,13 +15,13 @@ module Teachbase
       def course_sessions_by(params)
         sessions_list = course_sessions.order(started_at: :desc)
         params[:scenario] ||= "standart_learning"
-        result =  if params[:scenario].to_s == "standart_learning"
-                    sessions_list.where(status: params[:state].to_s)
-                  else
-                    sessions_list.joins('LEFT JOIN course_categories ON course_categories.course_session_id = course_sessions.id
-                                         LEFT JOIN categories ON categories.id = course_categories.category_id')
-                                 .where('course_sessions.status = :status AND categories.name ILIKE :category', status: params[:state].to_s,
-                                                                                                                category: find_category_cname_by(params[:scenario]))
+        result = if params[:scenario].to_s == "standart_learning"
+                   sessions_list.where(status: params[:state].to_s)
+                 else
+                   sessions_list.joins('LEFT JOIN course_categories ON course_categories.course_session_id = course_sessions.id
+                                        LEFT JOIN categories ON categories.id = course_categories.category_id')
+                                .where('course_sessions.status = :status AND categories.name ILIKE :category', status: params[:state].to_s,
+                                                                                                               category: find_category_cname_by(params[:scenario]))
                   end
         return result unless params[:limit] && params[:offset]
 

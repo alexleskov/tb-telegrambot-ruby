@@ -14,7 +14,7 @@ module Teachbase
       has_many :tasks, dependent: :destroy
       has_many :scorm_packages, dependent: :destroy
       has_many :course_categories, dependent: :destroy
-      has_many :categories, :through => :course_categories
+      has_many :categories, through: :course_categories
 
       def list_state(state)
         order(name: :asc).where(status: state.to_s)

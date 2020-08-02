@@ -76,7 +76,6 @@ module Teachbase
             InlineCallbackButton.g(callback_data: "show_section_additions_by_csid:#{cs_tb_id}_secid:#{entity.id}",
                                    button_sign: I18n.t('attachments').to_s, emoji: :link)
           end
-
         end
       end
     end

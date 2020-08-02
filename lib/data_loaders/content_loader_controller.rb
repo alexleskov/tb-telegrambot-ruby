@@ -5,7 +5,7 @@ module Teachbase
     class ContentLoaderController < Teachbase::Bot::DataLoaderController
       ADDTION_OBJECTS = { attachments: :attachment,
                           answers: :answer,
-                          comments: :comment}.freeze
+                          comments: :comment }.freeze
 
       attr_reader :lms_info, :cs_tb_id, :tb_id, :section_loader
 

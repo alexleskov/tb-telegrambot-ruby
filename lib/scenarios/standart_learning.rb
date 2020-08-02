@@ -45,7 +45,7 @@ module Teachbase
           check_status do
             return interface.sys.text.is_empty unless section_loader.contents
 
-              section_loader.progress
+            section_loader.progress
           end
           section = section_loader.db_entity
           interface.section(section)

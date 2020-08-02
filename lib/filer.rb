@@ -7,7 +7,7 @@ module Teachbase
       TMP_FOLDER = "tmp"
 
       include Formatter
-      
+
       def initialize(respond)
         @logger = AppConfigurator.new.load_logger
         @tg_user = respond.msg_responder.tg_user

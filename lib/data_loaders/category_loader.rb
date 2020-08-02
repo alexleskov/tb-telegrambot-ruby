@@ -18,16 +18,15 @@ module Teachbase
         update_data(lms_info.merge!("tb_id" => lms_info["id"]))
       end
 
-# Endpoint deleted in Teachbase
-=begin 
-      def list
-        lms_load
-        lms_info.each do |course_type_lms|
-          @tb_id = lms_info["id"]
-          update_data(course_type_lms.merge!("tb_id" => lms_info["id"]))
-        end
-      end
-=end
+      # Endpoint deleted in Teachbase
+      #
+      #       def list
+      #         lms_load
+      #         lms_info.each do |course_type_lms|
+      #           @tb_id = lms_info["id"]
+      #           update_data(course_type_lms.merge!("tb_id" => lms_info["id"]))
+      #         end
+      #       end
 
       def db_entity(mode = :with_create)
         call_data do
@@ -46,12 +45,11 @@ module Teachbase
 
       private
 
-# Endpoint deleted in Teachbase
-=begin 
-      def lms_load
-        @lms_info = call_data { appshell.authsession.load_course_types }
-      end
-=end
+      # Endpoint deleted in Teachbase
+      #
+      #       def lms_load
+      #         @lms_info = call_data { appshell.authsession.load_course_types }
+      #       end
     end
   end
 end

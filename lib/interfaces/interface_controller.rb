@@ -66,12 +66,11 @@ module Teachbase
 
       def description
         return "" unless entity.description && !entity.description.empty?
-        
-        msg = "#{Emoji.t(:scroll)} #{to_bolder(I18n.t("description"))}:\n#{sanitize_html(entity.description)}\n\n"
+
+        msg = "#{Emoji.t(:scroll)} #{to_bolder(I18n.t('description'))}:\n#{sanitize_html(entity.description)}\n\n"
         return msg unless entity.respond_to?("attachments?") && entity.attachments?
 
         "#{msg}#{attachments(entity)}"
-
       end
 
       def action_buttons

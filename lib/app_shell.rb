@@ -135,7 +135,7 @@ module Teachbase
       def call_tbapi(type, version)
         login = user.email? ? user.email : user.phone
         authsession.api_auth(type.to_sym, version.to_i, user_login: login,
-                             password: user.password.decrypt(:symmetric, :password => authorizer.send(:encrypt_key)))
+                                                        password: user.password.decrypt(:symmetric, password: authorizer.send(:encrypt_key)))
       end
 
       private

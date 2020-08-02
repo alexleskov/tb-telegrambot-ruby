@@ -3,10 +3,9 @@
 module Formatter
   NOT_VAILD_URL_REGEXP = %r{^(\/\/|\/)}.freeze
   ONLY_FILE_NAME_REGEXP = %r{(.+?)(\.[^.]*$|$)}.freeze
-  DEFAULT_URL_PROTOCOL = "http://".freeze
-  DELIMETER = "\n".freeze
+  DEFAULT_URL_PROTOCOL = "http://"
+  DELIMETER = "\n"
   HOST = "https://go.teachbase.ru"
-
 
   def to_bolder(string)
     "<b>#{string}</b>"
@@ -98,15 +97,15 @@ module Formatter
       attach_emoji(:image) + to_url_link("#{HOST}#{url}", image_name)
     when "list"
       result = []
-        data["items"].each_with_index do |item, ind|
-          mark = data["style"] == "ordered" ? "#{ind + 1}." : "•"
-          result << "#{mark} #{item}"
-        end
+      data["items"].each_with_index do |item, ind|
+        mark = data["style"] == "ordered" ? "#{ind + 1}." : "•"
+        result << "#{mark} #{item}"
+      end
       to_paragraph(result)
     when "code"
-      "<pre>#{data["code"]}</pre>"
+      "<pre>#{data['code']}</pre>"
     when "quote"
-       data["caption"].empty? ? data["text"] : "#{data["text"]}\n#{to_italic(data["caption"])}"
+      data["caption"].empty? ? data["text"] : "#{data['text']}\n#{to_italic(data['caption'])}"
     else
       "Undefined content"
     end

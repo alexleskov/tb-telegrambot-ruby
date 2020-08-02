@@ -50,11 +50,11 @@ module Teachbase
           return interface.sys.text.is_empty if links.empty?
 
           links.each do |link_param|
-             interface.sys.text.link(link_param["url"], link_param["label"])
+            interface.sys.text.link(link_param["url"], link_param["label"])
           end
         end
 
-        def ready ; end
+        def ready; end
 
         def edit_settings
           interface.sys.menu(back_button: build_back_button_data).edit_settings
@@ -94,11 +94,10 @@ module Teachbase
         end
 
         def load_content(content_type, cs_tb_id, sec_id, content_tb_id)
-          #type = Teachbase::Bot::Section::OBJECTS_TYPES[content_type.to_sym]
+          # type = Teachbase::Bot::Section::OBJECTS_TYPES[content_type.to_sym]
           appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
                   .content.load_by(type: content_type, tb_id: content_tb_id)
         end
-
 
         def courses_list
           interface.cs.menu(text: "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>",

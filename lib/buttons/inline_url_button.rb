@@ -23,6 +23,5 @@ class InlineUrlButton < Button
     def url_valid?(url)
       url !~ Formatter::NOT_VAILD_URL_REGEXP
     end
-
   end
 end
