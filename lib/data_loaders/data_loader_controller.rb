@@ -11,6 +11,8 @@ require './models/attachment'
 require './models/answer'
 require './models/comment'
 require './models/cache_message'
+require './models/category'
+require './models/course_category'
 require './lib/attribute'
 
 module Teachbase

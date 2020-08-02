@@ -8,6 +8,7 @@ class CreateSections < ActiveRecord::Migration[5.2]
       t.string :name
       t.integer :opened_at
       t.integer :position, null: false
+      t.integer :links_count, default: 0
       t.references :course_session, foreign_key: true
       t.references :user, foreign_key: true
 

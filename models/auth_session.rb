@@ -49,6 +49,10 @@ module Teachbase
         tb_api.request(:quiz, :course_sessions_quizzes, course_session_id: cs_id, id: quiz_id).get
       end
 
+      def load_course_types
+        tb_api.request(:course_types, :course_types).get
+      end
+
       def send_task_answer(cs_id, task_id, answer)
         raise "Answer must be a Hash" unless answer.is_a?(Hash)
 

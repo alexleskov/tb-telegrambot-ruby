@@ -9,8 +9,11 @@ module Viewers
     def build_source
       case content_type.to_sym
       when :text
-        text = category == "rich_text" ? source : content
-        sanitize_html(text)
+        if editor_js
+          to_text_by_editorjs(content)
+        else
+          sanitize_html(source)
+        end
       when :image, :video, :audio, :pdf
         source
       when :youtube

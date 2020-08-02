@@ -11,7 +11,18 @@ class InlineUrlButton < Button
     end
 
     def to_open(url, text = "")
-      g(button_sign: "#{I18n.t('open').capitalize} #{text}", url: url, emoji: :link)
+      g(button_sign: "#{I18n.t('open').capitalize} #{text}", url: to_default_protocol(url), emoji: :gem)
     end
+
+    private
+
+    def to_default_protocol(url)
+      url_valid?(url) ? url : url.gsub(Formatter::NOT_VAILD_URL_REGEXP, Formatter::DEFAULT_URL_PROTOCOL)
+    end
+
+    def url_valid?(url)
+      url !~ Formatter::NOT_VAILD_URL_REGEXP
+    end
+
   end
 end

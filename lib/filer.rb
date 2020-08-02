@@ -7,18 +7,15 @@ module Teachbase
       TMP_FOLDER = "tmp"
 
       include Formatter
-
-      attr_reader :bot, :tg_user
-
+      
       def initialize(respond)
         @logger = AppConfigurator.new.load_logger
-        @respond = respond
         @tg_user = respond.msg_responder.tg_user
         @bot = respond.msg_responder.bot
       end
 
       def file_path(file_id)
-        bot.api.get_file(file_id: file_id)["result"]["file_path"]
+        @bot.api.get_file(file_id: file_id)["result"]["file_path"]
       end
 
       def download_url(file_id)
@@ -40,7 +37,7 @@ module Teachbase
       private
 
       def build_local_path(download)
-        "/#{TMP_FOLDER}/#{tg_user.id}_#{download.base_uri.to_s.split('/')[-1]}"
+        "/#{TMP_FOLDER}/#{@tg_user.id}_#{chomp_file_name(download.base_uri)}"
       end
 
       def load_bot_token

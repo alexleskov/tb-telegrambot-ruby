@@ -9,13 +9,14 @@ class CreateCourseSessions < ActiveRecord::Migration[5.2]
       t.string :application_status
       t.string :status
       t.string :navigation
-      t.string :scenario_mode, default: "standart_learning"
+      t.string :description
+      t.string :custom_author_names
       t.integer :tb_id, null: false
       t.integer :deadline
       t.integer :listeners_count
       t.integer :progress
       t.integer :started_at
-      t.integer :changed_at
+      t.integer :edited_at
       t.boolean :can_download
       t.boolean :success
       t.boolean :full_access

@@ -10,10 +10,12 @@ module Teachbase
       def me
         lms_load
         update_data(lms_info.merge!("tb_id" => lms_info["id"]))
+        profile.me
+        db_entity
       end
 
       def profile
-        Teachbase::Bot::ProfileLoader.new(self).me
+        Teachbase::Bot::ProfileLoader.new(self)
       end
 
       def db_entity(_mode = :none)

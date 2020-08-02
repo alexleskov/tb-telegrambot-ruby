@@ -3,8 +3,6 @@
 class Breadcrumb
   include Formatter
 
-  DELIMETER = "\n"
-
   class << self
     def g(object, stages, params = {})
       new(object, stages, params).build_crumbs
@@ -52,7 +50,7 @@ class Breadcrumb
   def build_crumbs
     result = []
     stages.each { |stage| result << public_send(stage) }
-    result << to_bolder(result.pop.dup) + DELIMETER
-    result.join(DELIMETER) + DELIMETER
+    result << to_bolder(result.pop.dup) + Formatter::DELIMETER
+    to_paragraph(result)
   end
 end

@@ -3,6 +3,8 @@
 require './lib/data_loaders/data_loader_controller'
 require './lib/data_loaders/user_loader'
 require './lib/data_loaders/course_session_loader'
+require './lib/data_loaders/course_category_loader'
+require './lib/data_loaders/category_loader'
 require './lib/data_loaders/profile_loader'
 require './lib/data_loaders/section_loader'
 require './lib/data_loaders/content_loaders/content_loaders'

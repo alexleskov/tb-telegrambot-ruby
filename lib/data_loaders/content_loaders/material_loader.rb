@@ -31,6 +31,8 @@ module Teachbase
       def lms_load
         @lms_info = call_data { appshell.authsession.load_material(cs_tb_id, tb_id) }
         fetch_video_file
+        #p "lms_info: #{lms_info}"
+        lms_info
       end
 
       def fetch_video_file

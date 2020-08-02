@@ -11,7 +11,8 @@ module Teachbase
                         [:show_profile_state, Emoji.t(:mortar_board)],
                         [:courses_list, Emoji.t(:books)],
                         [:update_profile_data, Emoji.t(:arrows_counterclockwise)],
-                        [:ready, Emoji.t(:hand)]
+                        [:ready, Emoji.t(:hand)],
+                        [:more_actions, Emoji.t(:link)]
       class << self
         attr_reader :sign_and_emoji
       end

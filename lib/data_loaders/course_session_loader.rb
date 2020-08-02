@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class CourseSessionLoader < Teachbase::Bot::DataLoaderController
       CS_STATES = %i[active archived].freeze
-      CUSTOM_ATTRS = { "updated_at" => :changed_at }.freeze
+      CUSTOM_ATTRS = { "updated_at" => :edited_at }.freeze
 
       attr_reader :tb_id, :lms_info
 
@@ -20,22 +20,22 @@ module Teachbase
         state = params[:state].to_s
         delete_all_by_state(state) if mode == :with_reload
         lms_load(data: :listing, state: state)
-        current_index = params[:offset] || 0
-        stop_index = params[:limit] ? params[:offset] + params[:limit] : lms_info.size - 1
-        loop do
-          @tb_id = lms_info[current_index]["id"]
-          update_data(lms_info[current_index].merge!("status" => state))
-          current_index += 1
-          break if current_index == stop_index + 1 || lms_info[current_index].nil?
+        courses_list = lms_info
+        lms_info.each do |course_lms|
+          @tb_id = course_lms["id"]
+          next if course_lms["updated_at"] == db_entity.edited_at
+
+          update_data(course_lms.merge!("status" => state))
+          categories
         end
         appshell.user.course_sessions_by(state: state, limit: params[:limit], offset: params[:offset],
-                                         scenario: params[:scenario])
+                                         scenario: params[:category])
       end
 
       def update_all_states
         courses = {}
         CS_STATES.each do |state|
-          courses[state] = data_loader.cs.list(state: state, mode: :with_reload)
+          courses[state] = appshell.data_loader.cs.list(state: state, mode: :with_reload)
         end
         courses
       end
@@ -48,13 +48,15 @@ module Teachbase
         update_data(lms_load(data: :progress))
       end
 
+      def categories
+        Teachbase::Bot::CourseCategoryLoader.new(self).me
+      end
+
       def sections
         call_data do
-          return last_version.sections if last_version && !last_version.sections.empty?
-
-          cs_db = db_entity
-          cs_db&.sections&.destroy_all
-          lms_load(data: :sections).each_with_index do |section_lms, ind|
+          db_entity&.sections&.destroy_all
+          lms_load(data: :sections)
+          lms_info.each_with_index do |section_lms, ind|
             init_sec_loader(:position, ind + 1).update_data(section_lms)
           end
         end
@@ -79,9 +81,13 @@ module Teachbase
           when :with_create
             appshell.user.course_sessions.find_or_create_by!(tb_id: tb_id)
           else
-            appshell.user.course_sessions.find_by(tb_id: tb_id)
+            appshell.user.course_sessions.find_by!(tb_id: tb_id)
           end
         end
+      end
+
+      def cs_id
+        db_entity(:no_create).id
       end
 
       private
@@ -94,7 +100,8 @@ module Teachbase
         @lms_info = call_data do
           case options[:data].to_sym
           when :listing
-            options[:params] ||= { order_by: "progress", order_direction: "asc", page: 1, per_page: 100 }
+            options[:params] ||= { page: 1, per_page: 100 }
+            options[:params].merge!(order_by: "started_at", order_direction: "desc")
             appshell.authsession.load_course_sessions(options[:state], options[:params])
           when :progress
             appshell.authsession.load_cs_progress(tb_id)
@@ -109,7 +116,7 @@ module Teachbase
       end
 
       def last_version
-        appshell.user.course_sessions.find_by(tb_id: tb_id, changed_at: info.changed_at)
+        appshell.user.course_sessions.find_by(tb_id: tb_id, edited_at: lms_load(data: :info)["updated_at"])
       end
     end
   end

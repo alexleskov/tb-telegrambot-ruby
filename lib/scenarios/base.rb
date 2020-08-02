@@ -6,6 +6,8 @@ module Teachbase
       module Base
         include Formatter
 
+        DEFAULT_COUNT_PAGINAION = 3
+
         def starting
           interface.sys.text(user_name: appshell.user_fullname, account_name: appshell.account_name).greetings
           interface.sys.menu.starting
@@ -17,12 +19,14 @@ module Teachbase
         end
 
         def sign_in
-          t_params = { user_name: appshell.user_fullname, account_name: appshell.account_name }
-          interface.sys.text(t_params).on_enter
+          interface.sys.text(user_name: appshell.user_fullname,
+                             account_name: appshell.account_name).on_enter
           auth = appshell.authorization
           raise unless auth
 
-          interface.sys.text(t_params).greetings
+          interface.sys.text(user_name: appshell.user_fullname,
+                             account_name: appshell.account_name).greetings
+          courses_update
           interface.sys.menu.after_auth
         rescue RuntimeError => e
           interface.sys.menu.sign_in_again
@@ -41,11 +45,20 @@ module Teachbase
                              localization: appshell.settings.localization).settings
         end
 
+        def more_actions
+          links = appshell.data_loader.user.profile.links
+          return interface.sys.text.is_empty if links.empty?
+
+          links.each do |link_param|
+             interface.sys.text.link(link_param["url"], link_param["label"])
+          end
+        end
+
+        def ready ; end
+
         def edit_settings
           interface.sys.menu(back_button: build_back_button_data).edit_settings
         end
-
-        # def ready; end
 
         def choose_localization
           interface.sys.menu(back_button: build_back_button_data).choosing("Setting", :localization)
@@ -81,11 +94,34 @@ module Teachbase
         end
 
         def load_content(content_type, cs_tb_id, sec_id, content_tb_id)
-          type = Teachbase::Bot::Section::OBJECTS_TYPES[content_type.to_sym]
-          raise unless type
-
+          #type = Teachbase::Bot::Section::OBJECTS_TYPES[content_type.to_sym]
           appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
-                  .content.load_by(type: type, tb_id: content_tb_id)
+                  .content.load_by(type: content_type, tb_id: content_tb_id)
+        end
+
+
+        def courses_list
+          interface.cs.menu(text: "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>",
+                            command_prefix: "courses_").states
+        end
+
+        def show_cs_list(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0)
+          offset = offset.to_i
+          limit = limit.to_i
+          course_sessions = appshell.data_loader.cs.list(state: state, category: appshell.settings.scenario)
+          interface.cs.text.state(state)
+          return interface.sys.text.is_empty if course_sessions.empty?
+
+          cs_count = course_sessions.size
+          course_sessions.limit(limit).offset(offset).each do |cs|
+            interface.cs(cs).menu(stages: %i[title], callback_data: ["cs_sec_by_id:#{cs.tb_id}",
+                                                                     "cs_info_id:#{cs.tb_id}"]).main
+          end
+          offset += limit
+          return if offset >= course_sessions.size
+
+          interface.sys.menu(object_type: :course_sessions, all_count: course_sessions.size, state: state,
+                             limit_count: limit, offset_num: offset).show_more
         end
 
         def courses_update
@@ -101,7 +137,7 @@ module Teachbase
 
         def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
           object_type = Teachbase::Bot::Section::OBJECTS_TYPES[type.to_sym]
-          entity = load_content(type, cs_tb_id, sec_id, content_tb_id).me
+          entity = load_content(object_type, cs_tb_id, sec_id, content_tb_id).me
           return interface.sys.text.is_empty unless entity
 
           interface_controller = interface.public_send(object_type, entity)
@@ -121,6 +157,13 @@ module Teachbase
           else
             interface.sys.text.on_error
           end
+        end
+
+        def show_section_additions(cs_tb_id, sec_id)
+          links = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).links
+          return interface.sys.text.is_empty if links.empty?
+
+          interface.sys.menu(build_back_button_data.merge!(links: links)).links
         end
 
         def take_answer_task(cs_tb_id, task_tb_id)
@@ -184,6 +227,33 @@ module Teachbase
             @message_value =~ %r{^scenario_param:(\w*)}
             mode = $1
             change_scenario(mode)
+          end
+
+          on %r{courses_archived} do
+            show_cs_list(:archived)
+          end
+
+          on %r{courses_active} do
+            show_cs_list(:active)
+          end
+
+          on %r{show_course_sessions_list} do
+            @message_value =~ %r{^show_course_sessions_list:(\w*)_lim:(\d*)_offset:(\d*)}
+            show_cs_list($1, $2, $3)
+          end
+
+          on %r{^open_content:} do
+            @message_value =~ %r{^open_content:(\w*)_by_csid:(\d*)_secid:(\d*)_objid:(\d*)}
+            open_section_content($1, $2, $3, $4)
+          end
+
+          on %r{^show_section_additions_by_csid:} do
+            @message_value =~ %r{^show_section_additions_by_csid:(\d*)_secid:(\d*)}
+            show_section_additions($1, $2)
+          end
+
+          on %r{courses_update} do
+            courses_update
           end
         end
 

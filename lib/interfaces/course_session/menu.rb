@@ -5,7 +5,7 @@ module Teachbase
     class Interfaces
       class CourseSession
         class Menu < Teachbase::Bot::InterfaceController
-          MAIN_BUTTONS = %w[open course_results].freeze
+          MAIN_BUTTONS = %w[open information].freeze
           MAIN_BUTTONS_EMOJI = %i[mortar_board information_source].freeze
           STATE_BUTTONS = %w[active archived update].freeze
           STATE_EMOJI = %i[green_book closed_book arrows_counterclockwise].freeze
@@ -23,7 +23,7 @@ module Teachbase
           end
 
           def stats_info
-            answer.menu.back(text: "#{create_title(params)}#{entity.statistics}")
+            answer.menu.back(text: "#{create_title(params)}#{entity.statistics}\n\n#{description}\n")
           end
 
           private

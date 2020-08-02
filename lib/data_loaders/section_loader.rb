@@ -20,14 +20,20 @@ module Teachbase
         return unless db_entity || db_entity.empty?
 
         lms_load(data: :info)
-        with_content_types(:destroy_all) { build_content_objects }
+        db_entity.update!(links_count: lms_info["links"].size)
+        with_content_types(:destroy_all) { content_objects(:build) }
       end
 
       def progress
         return unless db_entity || db_entity.empty?
 
         lms_load(data: :contents_progress)
-        with_content_types(:none) { update_content_objects }
+        with_content_types(:none) { content_objects(:update) }
+      end
+
+      def links
+        lms_load(data: :info)
+        lms_info["links"]
       end
 
       def content
@@ -57,18 +63,17 @@ module Teachbase
         model_class::OBJECTS_TYPES.keys.each do |content_type|
           raise "No such content type: #{content_type}." unless db_entity.respond_to?(content_type)
           raise "Can't find lms_info. Given: '#{lms_info}'" unless lms_info
-
-          @content_type = content_type
-          @content_params = build_content_attrs(content_type)
           db_entity.public_send(content_type).destroy_all if mode == :destroy_all
           next if lms_info[content_type.to_s].empty?
 
+          @content_type = content_type
+          @content_params = build_content_attrs(content_type)
           yield
         end
       end
 
       def cs_id
-        Teachbase::Bot::CourseSession.find_by!(tb_id: cs_tb_id).id
+        init_cs_loader.cs_id
       end
 
       def init_cs_loader
@@ -90,6 +95,7 @@ module Teachbase
         end
       end
 
+=begin
       def update_content_objects
         lms_info[@content_type.to_s].each do |content_lms|
           content_db = db_entity.public_send(@content_type).find_by(tb_id: content_lms["id"])
@@ -99,14 +105,22 @@ module Teachbase
           content_db.update!(attributes)
         end
       end
+=end
 
-      def build_content_objects
+      def content_objects(mode)
         lms_info[@content_type.to_s].each do |content_lms|
+          entity_params = { tb_id: content_lms["id"], user_id: appshell.user.id, course_session_id: cs_id }
+          p "content_lms: #{content_lms}"
+          entity_params.merge!(position: content_lms["position"]) if content_lms["position"]
+          content_db =  if mode == :build
+                          db_entity.public_send(@content_type).find_or_create_by!(entity_params)
+                        else
+                          db_entity.public_send(@content_type).find_by(entity_params)    
+                        end
+          next unless content_db
+
           attributes = Attribute.create(@content_params, content_lms, model_class::OBJECTS_CUSTOM_PARAMS[@content_type])
-          db_entity.public_send(@content_type).find_or_create_by!(position: content_lms["position"],
-                                                                  tb_id: content_lms["id"],
-                                                                  user_id: appshell.user.id,
-                                                                  course_session_id: cs_id).update!(attributes)
+          content_db.update!(attributes)
         end
       end
 

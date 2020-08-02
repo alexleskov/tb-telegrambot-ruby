@@ -5,12 +5,11 @@ module Teachbase
     class ContentLoaderController < Teachbase::Bot::DataLoaderController
       ADDTION_OBJECTS = { attachments: :attachment,
                           answers: :answer,
-                          blocks: :block,
-                          comments: :comment }.freeze
+                          comments: :comment}.freeze
 
       attr_reader :lms_info, :cs_tb_id, :tb_id, :section_loader
 
-      def initialize(appshell, section_loader, params)
+      def initialize(appshell, section_loader, params = {})
         @section_loader = section_loader
         @tb_id = params[:tb_id]
         @cs_tb_id = section_loader.cs_tb_id

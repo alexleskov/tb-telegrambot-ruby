@@ -6,6 +6,10 @@ module EmojiAliaser
       Emoji.t(:white_check_mark)
     end
 
+    def white_medium_small_square
+      Emoji.t(:white_medium_small_square)
+    end
+
     def arrow_forward
       Emoji.t(:arrow_forward)
     end

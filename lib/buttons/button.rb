@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Button
+  include Formatter
+  
   class << self
     def g(type, options)
       entity = new(type, options)

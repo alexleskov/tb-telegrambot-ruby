@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -12,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 19) do
+ActiveRecord::Schema.define(version: 21) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -25,7 +24,7 @@ ActiveRecord::Schema.define(version: 19) do
     t.bigint "answerable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[answerable_type answerable_id], name: "index_answers_on_answerable_type_and_answerable_id"
+    t.index ["answerable_type", "answerable_id"], name: "index_answers_on_answerable_type_and_answerable_id"
   end
 
   create_table "api_tokens", force: :cascade do |t|
@@ -49,7 +48,7 @@ ActiveRecord::Schema.define(version: 19) do
     t.bigint "imageable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[imageable_type imageable_id], name: "index_attachments_on_imageable_type_and_imageable_id"
+    t.index ["imageable_type", "imageable_id"], name: "index_attachments_on_imageable_type_and_imageable_id"
   end
 
   create_table "auth_sessions", force: :cascade do |t|
@@ -92,6 +91,13 @@ ActiveRecord::Schema.define(version: 19) do
     t.index ["tg_account_id"], name: "index_cache_messages_on_tg_account_id"
   end
 
+  create_table "categories", force: :cascade do |t|
+    t.string "name"
+    t.integer "tb_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "comments", force: :cascade do |t|
     t.integer "tb_user_id"
     t.string "text"
@@ -101,7 +107,16 @@ ActiveRecord::Schema.define(version: 19) do
     t.bigint "commentable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[commentable_type commentable_id], name: "index_comments_on_commentable_type_and_commentable_id"
+    t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id"
+  end
+
+  create_table "course_categories", force: :cascade do |t|
+    t.bigint "course_session_id"
+    t.bigint "category_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_course_categories_on_category_id"
+    t.index ["course_session_id"], name: "index_course_categories_on_course_session_id"
   end
 
   create_table "course_sessions", force: :cascade do |t|
@@ -111,13 +126,14 @@ ActiveRecord::Schema.define(version: 19) do
     t.string "application_status"
     t.string "status"
     t.string "navigation"
-    t.string "scenario_mode", default: "standart_learning"
+    t.string "description"
+    t.string "custom_author_names"
     t.integer "tb_id", null: false
     t.integer "deadline"
     t.integer "listeners_count"
     t.integer "progress"
     t.integer "started_at"
-    t.integer "changed_at"
+    t.integer "edited_at"
     t.boolean "can_download"
     t.boolean "success"
     t.boolean "full_access"
@@ -199,6 +215,7 @@ ActiveRecord::Schema.define(version: 19) do
     t.string "name"
     t.integer "opened_at"
     t.integer "position", null: false
+    t.integer "links_count", default: 0
     t.bigint "course_session_id"
     t.bigint "user_id"
     t.datetime "created_at", null: false
@@ -274,6 +291,8 @@ ActiveRecord::Schema.define(version: 19) do
   add_foreign_key "auth_sessions", "users"
   add_foreign_key "bot_messages", "tg_accounts"
   add_foreign_key "cache_messages", "tg_accounts"
+  add_foreign_key "course_categories", "categories"
+  add_foreign_key "course_categories", "course_sessions"
   add_foreign_key "course_sessions", "users"
   add_foreign_key "materials", "course_sessions"
   add_foreign_key "materials", "sections"

@@ -21,11 +21,14 @@ module Teachbase
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
 
             params[:mode] ||= option == :find_by_query_num ? :none : :edit_msg
-            answer.menu.back(text: "#{create_title(params)}#{build_list_msg_with_state(sections)}",
-                             mode: params[:mode])
+            answer.menu.custom_back(text: "#{create_title(params)}#{build_list_msg_with_state(sections.sort_by(&:position))}",
+                                    mode: params[:mode],
+                                    callback_data: entity.back_button_action)
           end
 
           def contents
+            raise "Entity must be a Section" unless entity.is_a?(Teachbase::Bot::Section)
+
             answer.menu.create(buttons: contents_buttons,
                                mode: :none,
                                type: :menu_inline,
@@ -53,11 +56,12 @@ module Teachbase
 
           def contents_buttons
             buttons = []
-            contents = entity.contents_by_types
-            contents.keys.each do |content_type|
-              contents[content_type].each { |content| buttons << build_content_button(content, content_type) }
+            contents_by_types = entity.contents_by_types
+            contents_by_types.keys.each do |content_type|
+              contents_by_types[content_type].each { |content| buttons << build_content_button(content, content_type) }
             end
             buttons = buttons.sort_by(&:position)
+            buttons.unshift(build_addition_links_button) if entity.links_count > 0
             InlineCallbackKeyboard.collect(buttons: buttons,
                                            back_button: params[:back_button]).raw
           end
@@ -67,6 +71,12 @@ module Teachbase
                                    callback_data: "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}",
                                    position: content.position)
           end
+
+          def build_addition_links_button
+            InlineCallbackButton.g(callback_data: "show_section_additions_by_csid:#{cs_tb_id}_secid:#{entity.id}",
+                                   button_sign: I18n.t('attachments').to_s, emoji: :link)
+          end
+
         end
       end
     end

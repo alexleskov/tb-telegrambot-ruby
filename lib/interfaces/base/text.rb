@@ -25,6 +25,10 @@ module Teachbase
             answer.text.send_out("#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t(action.to_s)}: <b>#{I18n.t(status.to_s)}</b>")
           end
 
+          def link(url, link_name)
+            answer.content.url(link: url, link_name: link_name)
+          end
+
           def update_status(status)
             answer.text.send_out(sign_by_status(status))
           end
@@ -36,6 +40,10 @@ module Teachbase
           def is_empty(title_options = { text: "" })
             params[:text] ||= "#{create_title(title_options)}\n"
             answer.text.send_out("\n#{params[:text]}\n#{sing_on_empty}")
+          end
+
+          def ask_next_action
+            answer.text.send_out("<i>#{I18n.t('start_menu_message').to_s}</i>")
           end
 
           def on_error(error = "Undefined error")

@@ -20,10 +20,10 @@ module Viewers
 
     def statistics
       "\n #{Emoji.t(:runner)}#{I18n.t('started_at')}: #{time_by(:started_at)}
-       \n #{Emoji.t(:alarm_clock)}#{I18n.t('deadline')}: #{time_by(:deadline)}
-       \n #{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{progress}%
-       \n #{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}
-       \n #{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}"
+       #{Emoji.t(:alarm_clock)}#{I18n.t('deadline')}: #{time_by(:deadline)}
+       #{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{progress}%
+       #{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}
+       #{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}"
     end
 
     def back_button_action

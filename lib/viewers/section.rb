@@ -16,7 +16,7 @@ module Viewers
     end
 
     def open
-      "<i>#{I18n.t('open')}</i>: /sec#{position}_cs#{course_session.tb_id}"
+      "<i>#{I18n.t('open')}</i>: #{back_button_action}"
     end
 
     def section_unable
@@ -32,7 +32,12 @@ module Viewers
     end
 
     def back_button
-      InlineCallbackButton.custom_back("/sec#{position}_cs#{course_session.tb_id}")
+      InlineCallbackButton.custom_back(back_button_action)
     end
+
+    def back_button_action
+      "/sec#{id}_cs#{course_session.tb_id}"
+    end
+
   end
 end

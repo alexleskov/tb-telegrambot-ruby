@@ -14,7 +14,6 @@ module Teachbase
         @logger = AppConfigurator.new.load_logger
         @appshell = appshell
         @tg_user = appshell.controller.tg_user
-        @encrypt_key = AppConfigurator.new.load_encrypt_key
       end
 
       def call_authsession(access_mode)
@@ -90,7 +89,11 @@ module Teachbase
       end
 
       def encrypt_password(password)
-        password.encrypt(:symmetric, password: @encrypt_key)
+        password.encrypt(:symmetric, password: encrypt_key)
+      end
+
+      def encrypt_key
+        AppConfigurator.new.load_encrypt_key
       end
 
       def kind_of_login(user_login)

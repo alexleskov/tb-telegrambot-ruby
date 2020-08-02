@@ -53,7 +53,7 @@ module Teachbase
         user(mode)
         return unless authsession.is_a?(Teachbase::Bot::AuthSession)
 
-        data_loader.user.profile
+        data_loader.user.me
         authsession
       end
 
@@ -66,9 +66,6 @@ module Teachbase
 
         controller.class.send(:include, to_constantize("Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}"))
         controller.interface.sys_class = to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}")
-        # controller.interface.sys_class::Menu.send(:include, to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}::Menu"))
-        # controller.interface.sys_class::Text.send(:include, to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}::Text"))
-
         settings.update!(scenario: scenario_name)
       end
 
@@ -89,12 +86,14 @@ module Teachbase
 
       def request_user_data
         controller.interface.sys.text.ask_login
-        user_login = request_data(:login).text
+        user_login = request_data(:login)
         raise unless user_login
 
         controller.interface.sys.text.ask_password
-        user_password = request_data(:password).text
-        [user_login, user_password]
+        user_password = request_data(:password)
+        raise unless user_password
+
+        [user_login.text, user_password.text]
       end
 
       def ask_answer(params = {})
@@ -131,6 +130,12 @@ module Teachbase
       def user_cached_answer
         "#{cached_answers_texts}\n
          #{Emoji.t(:bookmark_tabs)} #{I18n.t('attachments').capitalize}: #{cached_answers_files.size}"
+      end
+
+      def call_tbapi(type, version)
+        login = user.email? ? user.email : user.phone
+        authsession.api_auth(type.to_sym, version.to_i, user_login: login,
+                             password: user.password.decrypt(:symmetric, :password => authorizer.send(:encrypt_key)))
       end
 
       private
