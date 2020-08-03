@@ -86,6 +86,8 @@ After installation and configuration you can start the telegram bot:
 bin/bot
 ```
 
-If all is ok on starting console you will see message:
+If all is ok on starting in console you will see message:
 
+```bush
 `"DEBUG -- : Starting telegram bot"
+```
