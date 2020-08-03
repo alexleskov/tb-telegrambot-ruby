@@ -40,7 +40,7 @@ telegram_bot_client.run do |bot|
     end
     MessageResponder.new(options).detect_type
      rescue => e
-    # logger.debug "Error: #{e}"
+     logger.debug "Error: #{e}"
     # end
   end
 end
