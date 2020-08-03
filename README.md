@@ -32,6 +32,8 @@ Go `config/secrets.yml.sample` for sample configuration. Set up needed params:
 
 [Obtain a token](https://core.telegram.org/bots#6-botfather) for your bot.
 
+===
+
 `api_client_id, api_client_secret`
 
 [Obtain client_id and client_secret](https://help.teachbase.ru/hc/ru/articles/360009569014#h_6144c047-c233-488c-9f0a-dcb7126e1513) from your organization's account on Teachbase LMS.
