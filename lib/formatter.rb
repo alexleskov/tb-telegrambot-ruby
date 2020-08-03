@@ -73,7 +73,7 @@ module Formatter
   end
 
   def attach_emoji(sign)
-    EmojiAliaser.respond_to?(sign) ? EmojiAliaser.public_send(sign) : Emoji.t(:arrow_right)
+    EmojiAliaser.respond_to?(sign) ? EmojiAliaser.public_send(sign) : ""
   end
 
   def sanitize_html(html)
