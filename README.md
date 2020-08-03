@@ -28,6 +28,8 @@ rake db:migrate
 
 Go `config/secrets.yml.sample` for sample configuration. Set up needed params:
 
+---------------------
+
 `telegram_bot_token`
 
 [Obtain a token](https://core.telegram.org/bots#6-botfather) for your bot.
@@ -38,24 +40,37 @@ Go `config/secrets.yml.sample` for sample configuration. Set up needed params:
 
 [Obtain client_id and client_secret](https://help.teachbase.ru/hc/ru/articles/360009569014#h_6144c047-c233-488c-9f0a-dcb7126e1513) from your organization's account on Teachbase LMS.
 
+---------------------
+
 `api_account_id`
 
 Account ID your organization's account on Teachbase LMS. Can obtain from support by the letter on help@teachbase.ru.
 
+---------------------
+
 `lms_host: 'https://go.teachbase.ru'`
+
 Default is https://go.teachbase.ru. Requires no changes for this param. Just use as set.
+
+---------------------
 
 `token_expiration_time: '7200'`
 
 Dafault user's token expiration time for `access_token`. Requires no changes for this param. Just use as set.
 
+---------------------
+
 `rest_client: 'RestClient'`
 
 Adapter for sending http-requests. Default is RestClient.
 
+---------------------
+
 `encrypt_key`
 
 Secret word for user password encryption.
+
+---------------------
 
 `parse_mode: 'HTML'`
 
