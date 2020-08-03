@@ -32,7 +32,7 @@ Go `config/secrets.yml.sample` for sample configuration. Set up needed params:
 
 [Obtain a token](https://core.telegram.org/bots#6-botfather) for your bot.
 
-============
+---------------------
 
 `api_client_id, api_client_secret`
 
