@@ -7,7 +7,7 @@ Telegram bot for studying in LMS Teachbase.Fight against your friends in the Bat
 ## Installation
 
 Set up gems:
-```ruby
+```bush
 bundle install
 ```
 
@@ -17,7 +17,7 @@ Go `config/database.yml.sample` for sample configuration. Used PosrgreSQL on def
 
 Database install and migration:
 
-```ruby
+```bush
 rake db:create
 rake db:migrate
 ```
@@ -82,7 +82,7 @@ Used `'HTML'` on default.
 
 After installation and configuration you can start the telegram bot:
 
-```ruby
+```bush
 bin/bot
 ```
 
