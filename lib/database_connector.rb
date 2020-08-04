@@ -8,7 +8,7 @@ class DatabaseConnector
     def establish_connection
       ActiveRecord::Base.logger = Logger.new(active_record_logger_path)
 
-      env = ENV["TB_BOT_ENV"] || 'development'
+      env = ENV["RAILS_ENV"] || 'development'
       configuration = YAML.safe_load(IO.read(database_config_path))[env]
 
       ActiveRecord::Base.establish_connection(configuration)
