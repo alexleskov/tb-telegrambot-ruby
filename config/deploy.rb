@@ -1,8 +1,8 @@
 # config valid for current version and patch releases of Capistrano
 lock "~> 3.14.1"
 
-set :application, "my_app_name"
-set :repo_url, "https://github.com/AlexanderShvaykin/tb-telegrambot-ruby.git"
+set :application, "tb-telegrambot"
+set :repo_url, "https://github.com/alexleskov/tb-telegrambot-ruby.git"
 
 ask :branch, `git rev-parse --abbrev-ref HEAD`.chomp
 
