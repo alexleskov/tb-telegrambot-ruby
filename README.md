@@ -26,57 +26,49 @@ rake db:migrate
 
 ### Bot configuration
 
-Go `config/secrets.yml.sample` for sample configuration. Set up needed params:
+Go `config/secrets.yml.sample` for sample configuration. Set up all needed params.
 
----------------------
+
+[Obtain a token](https://core.telegram.org/bots#6-botfather) for your bot:
 
 `telegram_bot_token`
 
-[Obtain a token](https://core.telegram.org/bots#6-botfather) for your bot.
 
----------------------
+[Obtain client_id and client_secret](https://help.teachbase.ru/hc/ru/articles/360009569014#h_6144c047-c233-488c-9f0a-dcb7126e1513) from your organization's account on Teachbase LMS:
 
 `api_client_id, api_client_secret`
 
-[Obtain client_id and client_secret](https://help.teachbase.ru/hc/ru/articles/360009569014#h_6144c047-c233-488c-9f0a-dcb7126e1513) from your organization's account on Teachbase LMS.
 
----------------------
+Organization's Account ID on Teachbase LMS. Can be obtain by request on help@teachbase.ru:
 
 `api_account_id`
 
-Account ID your organization's account on Teachbase LMS. Can obtain from support by the letter on help@teachbase.ru.
 
----------------------
+Default host is https://go.teachbase.ru. Requires no changes for this param. Just use as set:
 
 `lms_host: 'https://go.teachbase.ru'`
 
-Default is https://go.teachbase.ru. Requires no changes for this param. Just use as set.
 
----------------------
+Dafault user's token expiration time for `access_token`. Requires no changes. Just use as set:
 
 `token_expiration_time: '7200'`
 
-Dafault user's token expiration time for `access_token`. Requires no changes for this param. Just use as set.
 
----------------------
+Adapter for http-requests sender. Default is RestClient:
 
 `rest_client: 'RestClient'`
 
-Adapter for sending http-requests. Default is RestClient.
 
----------------------
+Secret word for user password encryption:
 
 `encrypt_key`
 
-Secret word for user password encryption.
 
----------------------
+Parse mode for formatting text messages in Telegram API. More: https://core.telegram.org/bots/api#formatting-options
+Used to `'HTML'` on default.
 
 `parse_mode: 'HTML'`
 
-Parse mode for formatting text messages in Telegram API. More: https://core.telegram.org/bots/api#formatting-options
-
-Used `'HTML'` on default.
 
 ### Bot starting
 
@@ -101,5 +93,13 @@ and run:
 
 ```bash
 bundle exec cap production deploy
+```
+
+Another commands:
+
+```bash
+bundle exec cap production deploy:restart_bot
+bundle exec cap production deploy:start_bot
+bundle exec cap production deploy:stop_bot
 ```
 
