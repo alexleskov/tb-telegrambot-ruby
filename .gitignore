@@ -4,3 +4,4 @@
 config/secrets.yml
 config/database.yml
 debug.log
+tmp

@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+pid = File.read("./tmp/bot.pid")
+`kill -15 #{pid}`
