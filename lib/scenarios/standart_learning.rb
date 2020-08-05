@@ -26,7 +26,7 @@ module Teachbase
           cs = sections.first.course_session
           interface.section(cs).menu(stages: %i[title sections],
                                      command_prefix: "show_sections_by_csid:#{cs.tb_id}_param:",
-                                     back_button: build_back_button_data).main
+                                     back_button: { mode: :custom, action: "courses_list" }).main
         end
 
         def show_sections(cs_tb_id, option)
@@ -62,8 +62,8 @@ module Teachbase
             show_course_session_info($1)
           end
 
-          on %r{^cs_sec_by_id:} do
-            @message_value =~ %r{^cs_sec_by_id:(\d*)}
+          on %r{^/cs_sec_id} do
+            @message_value =~ %r{^/cs_sec_id(\d*)}
             sections_choosing_menu($1)
           end
 
@@ -100,6 +100,11 @@ module Teachbase
 
         def match_text_action
           super
+
+          on %r{^/cs_sec_id} do
+            @message_value =~ %r{^/cs_sec_id(\d*)}
+            sections_choosing_menu($1)
+          end
 
           on %r{^/sec(\d*)_cs(\d*)} do
             @message_value =~ %r{^/sec(\d*)_cs(\d*)}

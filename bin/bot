@@ -39,8 +39,8 @@ telegram_bot_client.run do |bot|
       logger.debug "#{message.from.id} - @#{message.from.username}: #{message}"
     end
     MessageResponder.new(options).detect_type
-     rescue => e
-     logger.debug "Error: #{e}"
+  rescue => e
+    logger.debug "Error: #{e}"
     # end
   end
 end

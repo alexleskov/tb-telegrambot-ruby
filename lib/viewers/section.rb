@@ -7,7 +7,7 @@ module Viewers
     def title(params)
       section_state = params ? params[:state] : :open
       emoji = attach_emoji(section_state) || Emoji.t(:open_file_folder)
-      " #{emoji} <b>#{I18n.t('section')} #{position}:</b> #{name}"
+      " #{emoji} #{I18n.t('section')} #{position}: #{to_bolder(name)}"
     end
 
     def title_with_state(state)

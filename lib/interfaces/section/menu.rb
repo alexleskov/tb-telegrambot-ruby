@@ -13,7 +13,7 @@ module Teachbase
             answer.menu.create(buttons: main_buttons,
                                mode: :none,
                                type: :menu_inline,
-                               text: "#{create_title(params)}#{entity.sign_aval_sections_count_from}",
+                               text: "#{create_title(params)}#{entity.statistics}\n\n#{description}\n#{entity.sign_aval_sections_count_from}",
                                slices_count: 3)
           end
 

@@ -6,7 +6,7 @@ module Teachbase
       module Base
         include Formatter
 
-        DEFAULT_COUNT_PAGINAION = 3
+        DEFAULT_COUNT_PAGINAION = 10
 
         def starting
           interface.sys.text(user_name: appshell.user_fullname, account_name: appshell.account_name).greetings
@@ -94,7 +94,6 @@ module Teachbase
         end
 
         def load_content(content_type, cs_tb_id, sec_id, content_tb_id)
-          # type = Teachbase::Bot::Section::OBJECTS_TYPES[content_type.to_sym]
           appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
                   .content.load_by(type: content_type, tb_id: content_tb_id)
         end
@@ -108,14 +107,11 @@ module Teachbase
           offset = offset.to_i
           limit = limit.to_i
           course_sessions = appshell.data_loader.cs.list(state: state, category: appshell.settings.scenario)
-          interface.cs.text.state(state)
           return interface.sys.text.is_empty if course_sessions.empty?
 
           cs_count = course_sessions.size
-          course_sessions.limit(limit).offset(offset).each do |cs|
-            interface.cs(cs).menu(stages: %i[title], callback_data: ["cs_sec_by_id:#{cs.tb_id}",
-                                                                     "cs_info_id:#{cs.tb_id}"]).main
-          end
+          sign_by_state = course_sessions.first.sign_course_state
+          interface.cs.menu(text: sign_by_state).main(course_sessions.limit(limit).offset(offset))
           offset += limit
           return if offset >= course_sessions.size
 
@@ -226,6 +222,10 @@ module Teachbase
             @message_value =~ %r{^scenario_param:(\w*)}
             mode = $1
             change_scenario(mode)
+          end
+
+          on %r{courses_list} do
+            courses_list
           end
 
           on %r{courses_archived} do

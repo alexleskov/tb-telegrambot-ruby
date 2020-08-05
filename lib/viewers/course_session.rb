@@ -2,6 +2,8 @@
 
 module Viewers
   module CourseSession
+    include Formatter
+
     def time_by(option)
       raise "Can't get time by param: '#{option}" unless respond_to?(option)
 
@@ -15,7 +17,7 @@ module Viewers
 
     def title(params)
       cover_url = params ? params[:cover_url] : icon_url
-      "#{Emoji.t(:book)} <a href='#{cover_url}'>#{I18n.t('course')}</a>: #{name}"
+      "#{Emoji.t(:book)} <a href='#{cover_url}'>#{I18n.t('course')}</a>: #{to_bolder(name)}"
     end
 
     def statistics
@@ -26,8 +28,12 @@ module Viewers
        #{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}"
     end
 
+    def sign_course_state
+      "#{attach_emoji(status.to_sym)} <b>#{I18n.t("courses_#{status}").capitalize}</b>"
+    end
+
     def back_button_action
-      "cs_sec_by_id:#{tb_id}"
+      "/cs_sec_id#{tb_id}"
     end
 
     def sign_aval_sections_count_from

@@ -5,21 +5,23 @@ module Teachbase
     class Interfaces
       class CourseSession
         class Menu < Teachbase::Bot::InterfaceController
-          MAIN_BUTTONS = %w[open information].freeze
-          MAIN_BUTTONS_EMOJI = %i[mortar_board information_source].freeze
           STATE_BUTTONS = %w[active archived update].freeze
           STATE_EMOJI = %i[green_book closed_book arrows_counterclockwise].freeze
-
-          def main
-            answer.menu.create({ buttons: main_buttons(params[:callback_data]),
-                                 text: create_title(params),
-                                 slices_count: MAIN_BUTTONS.size }.merge!(default_params))
+          
+          def main(course_sessions)
+            params[:mode] ||= :none
+            answer.menu.custom_back(text: "#{create_title(params)}\n\n#{build_list_courses_by_state(course_sessions)}",
+                                    mode: params[:mode],
+                                    callback_data: "courses_list")
           end
 
           def states
-            answer.menu.create({ buttons: state_buttons(params[:command_prefix]),
-                                 text: params[:text],
-                                 slices_count: 2 }.merge!(default_params))
+            params[:mode] ||= :none
+            answer.menu.create(buttons: state_buttons(params[:command_prefix]),
+                               text: params[:text],
+                               mode: params[:mode],
+                               slices_count: 2,
+                               type: :menu_inline)
           end
 
           def stats_info
@@ -28,12 +30,14 @@ module Teachbase
 
           private
 
-          def main_buttons(callbacks)
-            raise "Callback must be an Array. Given: '#{callbacks.class}'" unless callbacks.is_a?(Array)
+          def build_list_courses_by_state(course_sessions)
+            result = []
+            course_sessions.each do |course_session|
+              result << "#{course_session.title(cover_url: "")}\n<i>#{I18n.t('open')}</i>: #{course_session.back_button_action}"
+            end
+            return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
-            InlineCallbackKeyboard.g(buttons_signs: to_i18n(MAIN_BUTTONS),
-                                     buttons_actions: callbacks,
-                                     emojis: MAIN_BUTTONS_EMOJI).raw
+            result.join("\n")
           end
 
           def state_buttons(command_prefix)
