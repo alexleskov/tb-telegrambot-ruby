@@ -1,0 +1,8 @@
+.idea
+.bundle
+.ruby-version
+config/secrets.yml
+config/database.yml
+debug.log
+tmp
+log

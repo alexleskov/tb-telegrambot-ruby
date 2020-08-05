@@ -91,3 +91,15 @@ If all is ok on starting in console you will see message:
 ```bush
 `"DEBUG -- : Starting telegram bot"
 ```
+
+
+### Deploy
+
+Setup ssh config for production server
+Push all changes
+and run:
+
+```bash
+bundle exec cap production deploy
+```
+

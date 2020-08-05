@@ -18,6 +18,11 @@ require './lib/viewers/viewers'
 require './lib/message_responder'
 require './lib/message_sender'
 
+Process.setproctitle("tb_bot")
+File.open("./tmp/bot.pid", "w") do |f|
+  f << Process.pid
+end
+
 config = AppConfigurator.new
 config.configure
 
