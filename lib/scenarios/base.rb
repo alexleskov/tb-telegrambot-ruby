@@ -13,11 +13,6 @@ module Teachbase
           interface.sys.menu.starting
         end
 
-        def closing
-          interface.sys.text(user_name: appshell.user_fullname).farewell
-          interface.sys.menu.starting
-        end
-
         def sign_in
           interface.sys.text(user_name: appshell.user_fullname,
                              account_name: appshell.account_name).on_enter
@@ -29,16 +24,21 @@ module Teachbase
           courses_update
           interface.sys.menu.after_auth
         rescue RuntimeError => e
-          interface.sys.menu.sign_in_again
+          title = if e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
+                    "#{I18n.t('error')} #{e}\n#{I18n.t('try_again')}"
+                  end
+          interface.sys.menu(text: title).sign_in_again
         end
 
         def sign_out
-          interface.sys.text.on_farewell
+          interface.sys.text(user_name: appshell.user_fullname).farewell
           appshell.logout
-          closing
+          interface.sys.menu.starting
         rescue RuntimeError => e
           interface.sys.text.on_error(e)
         end
+
+        alias closing sign_out
 
         def settings
           interface.sys.menu(scenario: appshell.settings.scenario,

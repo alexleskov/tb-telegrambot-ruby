@@ -110,7 +110,8 @@ class MessageSender
     case mode
     when :edit_msg
       return send_msg_by_type(params) unless last_message
-      #raise "Can't find last message for editing" unless last_message
+
+      # raise "Can't find last message for editing" unless last_message
 
       params[:message_id] = last_message.message_id
       if %i[text menu].include?(msg_type)
