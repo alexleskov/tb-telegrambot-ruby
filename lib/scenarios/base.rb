@@ -25,7 +25,7 @@ module Teachbase
           interface.sys.menu.after_auth
         rescue RuntimeError => e
           title = if e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
-                    "#{I18n.t('error')} #{e.to_s}\n#{I18n.t('try_again')}"
+                    "#{I18n.t('error')} #{e}\n#{I18n.t('try_again')}"
                   end
           interface.sys.menu(text: title).sign_in_again
         end

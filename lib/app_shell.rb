@@ -52,7 +52,7 @@ module Teachbase
       def authorization(mode = access_mode)
         user(mode)
         return unless authsession.is_a?(Teachbase::Bot::AuthSession)
-        
+
         data_loader.user.me
         authsession
       end

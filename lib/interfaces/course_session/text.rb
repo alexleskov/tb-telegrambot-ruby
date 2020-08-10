@@ -5,8 +5,8 @@ module Teachbase
     class Interfaces
       class CourseSession
         class Text < Teachbase::Bot::InterfaceController
-          def state(state)
-            answer.text.send_out("#{entity.sign_course_state}")
+          def state(_state)
+            answer.text.send_out(entity.sign_course_state.to_s)
           end
         end
       end

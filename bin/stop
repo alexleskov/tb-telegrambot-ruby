@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 pid = File.read("./tmp/bot.pid")
 `kill -15 #{pid}`

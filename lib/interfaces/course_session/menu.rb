@@ -7,7 +7,7 @@ module Teachbase
         class Menu < Teachbase::Bot::InterfaceController
           STATE_BUTTONS = %w[active archived update].freeze
           STATE_EMOJI = %i[green_book closed_book arrows_counterclockwise].freeze
-          
+
           def main(course_sessions)
             params[:mode] ||= :none
             answer.menu.custom_back(text: "#{create_title(params)}\n\n#{build_list_courses_by_state(course_sessions)}",
@@ -33,7 +33,7 @@ module Teachbase
           def build_list_courses_by_state(course_sessions)
             result = []
             course_sessions.each do |course_session|
-              result << "#{course_session.title(cover_url: "")}\n<i>#{I18n.t('open')}</i>: #{course_session.back_button_action}"
+              result << "#{course_session.title(cover_url: '')}\n<i>#{I18n.t('open')}</i>: #{course_session.back_button_action}"
             end
             return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
