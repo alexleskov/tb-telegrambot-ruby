@@ -96,7 +96,7 @@ module Teachbase
           when 301, 302, 307
             e.response.follow_redirection
           else
-            raise e.response
+            raise e
           end
         end
         show_answer(response, answer_type)
