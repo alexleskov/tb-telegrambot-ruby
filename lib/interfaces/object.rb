@@ -10,7 +10,6 @@ module Teachbase
         end
 
         def destroy(params)
-          p "params: #{params}"
           @answer.destroy.create(params)
         end
 

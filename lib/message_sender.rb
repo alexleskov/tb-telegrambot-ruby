@@ -57,7 +57,6 @@ class MessageSender
     return if delete_bot_message.nil? || bot_messages.empty?
 
     msg_on_destroy = find_msg_on_destroy
-    p "msg_on_destroy.message_id: #{msg_on_destroy.message_id}"
     bot.api.delete_message(message_id: msg_on_destroy.message_id, chat_id: msg_on_destroy.chat_id)
   end
 
