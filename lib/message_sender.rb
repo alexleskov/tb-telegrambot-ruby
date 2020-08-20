@@ -14,6 +14,8 @@ class MessageSender
               :parse_mode,
               :disable_notification,
               :disable_web_page_preview,
+              :delete_bot_message,
+              :bot_messages,
               :mode,
               :text,
               :menu_data,
@@ -24,6 +26,7 @@ class MessageSender
     @bot = msg_params[:bot]
     @chat = msg_params[:chat]
     @tg_user = msg_params[:tg_user]
+    @bot_messages = @tg_user.bot_messages
     @text = msg_params[:text]
     @menu_type = msg_params[:menu]
     @parse_mode = msg_params[:parse_mode] || AppConfigurator.new.load_parse_mode
@@ -32,6 +35,7 @@ class MessageSender
     @reply_to_message_id = msg_params[:reply_to_message_id]
     @reply_to_tg_id = msg_params[:reply_to_tg_id]
     @menu_data = msg_params[:menu_data]
+    @delete_bot_message = msg_params[:delete_bot_message]
     @mode = msg_params[:mode] || find_menu_mode
     @msg_type = find_msg_type(msg_params)
     @msg_data = find_msg_data(msg_params)
@@ -43,52 +47,60 @@ class MessageSender
     params[:parse_mode] = parse_mode
     params[:disable_notification] = disable_notification
     params[:disable_web_page_preview] = disable_web_page_preview
-    params[:chat_id] = reply_to_tg_id || chat.id
+    params[:chat_id] = find_chat_id
     params[:reply_to_message_id] = reply_to_message_id if reply_to_message_id
     sending_message = create_message(params)
-    save_message(sending_message["result"]) if sending_message["result"]["reply_markup"]
+    save_message(sending_message["result"])
+  end
+
+  def destroy
+    return if delete_bot_message.nil? || bot_messages.empty?
+
+    msg_on_destroy = find_msg_on_destroy
+    p "msg_on_destroy.message_id: #{msg_on_destroy.message_id}"
+    bot.api.delete_message(message_id: msg_on_destroy.message_id, chat_id: msg_on_destroy.chat_id)
   end
 
   private
 
-  def find_menu_mode
-    if menu_type == :menu_inline && mode != :none
-      :edit_msg
-    else
-      :none
+  def find_msg_on_destroy
+    case delete_bot_message.to_sym
+    when :last
+      bot_messages.last_sended
+    when :previous
+      bot_messages.previous_sended
     end
   end
 
+  def find_chat_id
+    reply_to_tg_id ? reply_to_tg_id.to_i : chat.id
+  end
+
+  def find_menu_mode
+    menu_type == :menu_inline && mode != :none ? :edit_msg : :none
+  end
+
   def find_msg_data(msg_params)
-    if msg_type == :menu
-      create_menu
-    else
-      msg_params[msg_type]
-    end
+    msg_type == :menu ? create_menu : msg_params[msg_type]
   end
 
   def find_msg_type(msg_params)
     type = MSG_TYPES.each do |type_of_msg|
       break type_of_msg if msg_params.keys.include?(type_of_msg)
     end
-    type = :text unless type.is_a?(Symbol)
-    type
-  end
-
-  def last_message
-    @tg_user.bot_messages.order(created_at: :desc).first
+    type.is_a?(Symbol) ? type : :text
   end
 
   def same_inline_keyboard?(result)
-    return unless last_message
+    return unless result["reply_markup"] && bot_messages.last_sended
 
-    result["reply_markup"]["inline_keyboard"] == last_message.inline_keyboard
+    result["reply_markup"]["inline_keyboard"] == bot_messages.last_sended.reply_markup
   end
 
   def save_message(result)
     return if same_inline_keyboard?(result) && !@tg_user
 
-    @tg_user.bot_messages.create!(fetch_msg_result_data(result))
+    bot_messages.create!(fetch_msg_result_data(result))
   end
 
   def create_menu
@@ -109,11 +121,9 @@ class MessageSender
   def create_message(params)
     case mode
     when :edit_msg
-      return send_msg_by_type(params) unless last_message
+      return send_msg_by_type(params) unless bot_messages.last_sended
 
-      # raise "Can't find last message for editing" unless last_message
-
-      params[:message_id] = last_message.message_id
+      params[:message_id] = bot_messages.last_sended.message_id
       if %i[text menu].include?(msg_type)
         bot.api.edit_message_text(params)
       else
@@ -163,6 +173,6 @@ class MessageSender
       date: result["date"],
       edit_date: result["edit_date"],
       text: result["text"],
-      inline_keyboard: result["reply_markup"]["inline_keyboard"] }
+      reply_markup: result["reply_markup"] }
   end
 end

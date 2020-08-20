@@ -8,7 +8,7 @@ class CreateBotMessages < ActiveRecord::Migration[5.2]
       t.integer :date, null: false
       t.integer :edit_date
       t.string :text, null: false
-      t.jsonb :inline_keyboard, default: '{}'
+      t.jsonb :reply_markup, default: '{}'
       t.references :tg_account, foreign_key: true
 
       t.timestamps

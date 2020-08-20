@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -13,6 +11,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema.define(version: 21) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -25,7 +24,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.bigint "answerable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[answerable_type answerable_id], name: "index_answers_on_answerable_type_and_answerable_id"
+    t.index ["answerable_type", "answerable_id"], name: "index_answers_on_answerable_type_and_answerable_id"
   end
 
   create_table "api_tokens", force: :cascade do |t|
@@ -49,7 +48,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.bigint "imageable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[imageable_type imageable_id], name: "index_attachments_on_imageable_type_and_imageable_id"
+    t.index ["imageable_type", "imageable_id"], name: "index_attachments_on_imageable_type_and_imageable_id"
   end
 
   create_table "auth_sessions", force: :cascade do |t|
@@ -71,7 +70,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.integer "date", null: false
     t.integer "edit_date"
     t.string "text", null: false
-    t.jsonb "inline_keyboard", default: "{}"
+    t.jsonb "reply_markup", default: "{}"
     t.bigint "tg_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -108,7 +107,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.bigint "commentable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[commentable_type commentable_id], name: "index_comments_on_commentable_type_and_commentable_id"
+    t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id"
   end
 
   create_table "course_categories", force: :cascade do |t|

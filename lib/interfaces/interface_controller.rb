@@ -55,11 +55,11 @@ module Teachbase
 
       def answers
         result = []
-        entity.answers.order(created_at: :desc).each do |answer|
-          build_attachments = answer.attachments? ? "#{attachments(answer)}\n" : ""
-          build_comments = answer.comments? ? "\n#{comments(answer)}\n" : ""
-          result << "<b>#{I18n.t('answer').capitalize} №#{answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(answer.status)} #{to_italic(I18n.t(answer.status).capitalize)}</b>
-                     <pre>#{answer.text}</pre>\n\n#{build_attachments}#{build_comments}"
+        entity.answers.order(created_at: :desc).each do |user_answer|
+          build_attachments = user_answer.attachments? ? "#{attachments(user_answer)}\n" : ""
+          build_comments = user_answer.comments? ? "\n#{comments(user_answer)}\n" : ""
+          result << "<b>#{I18n.t('answer').capitalize} №#{user_answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(user_answer.status)} #{to_italic(I18n.t(user_answer.status).capitalize)}</b>
+                     <pre>#{user_answer.text}</pre>\n\n#{build_attachments}#{build_comments}"
         end
         result.join("\n")
       end

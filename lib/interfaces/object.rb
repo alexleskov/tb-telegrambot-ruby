@@ -9,6 +9,11 @@ module Teachbase
           @entity = entity
         end
 
+        def destroy(params)
+          p "params: #{params}"
+          @answer.destroy.create(params)
+        end
+
         def text(params = {})
           self.class::Text.new(params, @answer, @entity)
         end
