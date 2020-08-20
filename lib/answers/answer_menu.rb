@@ -20,6 +20,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
 
     if options[:type] != :hide_kb
       raise "Buttons must be an Array class. Given '#{buttons.class}'" unless buttons.is_a?(Array)
+
       @msg_params[:menu_data] = init_menu_params(buttons, slices_count)
     end
     MessageSender.new(msg_params).send
@@ -70,7 +71,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   def hide(text)
     create(text: text.to_s, type: :hide_kb)
 
-    #MessageSender.new(bot: @respond.msg_responder.bot, chat: destination, text: text.to_s,
+    # MessageSender.new(bot: @respond.msg_responder.bot, chat: destination, text: text.to_s,
     #                  type: :hide_kb).send
   end
 
