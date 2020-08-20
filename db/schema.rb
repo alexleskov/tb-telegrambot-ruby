@@ -71,7 +71,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.integer "date", null: false
     t.integer "edit_date"
     t.string "text", null: false
-    t.jsonb "inline_keyboard", default: "{}"
+    t.jsonb "reply_markup", default: "{}"
     t.bigint "tg_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

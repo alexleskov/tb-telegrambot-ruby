@@ -24,6 +24,7 @@ module Teachbase
           courses_update
           interface.sys.menu.after_auth
         rescue RuntimeError => e
+          @logger.debug "Error: #{e}"
           title = if e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
                     "#{I18n.t('error')} #{e}\n#{I18n.t('try_again')}"
                   end
@@ -84,13 +85,15 @@ module Teachbase
 
         def check_status
           interface.sys.text.update_status(:in_progress)
-          if yield
-            interface.sys.text.update_status(:success)
-            true
-          else
-            interface.sys.text.update_status(:fail)
-            false
-          end
+          result = if yield
+                     interface.sys.text.update_status(:success)
+                     true
+                   else
+                     interface.sys.text.update_status(:fail)
+                     false
+                   end
+          interface.sys.destroy(delete_bot_message: :previous)
+          result
         end
 
         def load_content(content_type, cs_tb_id, sec_id, content_tb_id)
