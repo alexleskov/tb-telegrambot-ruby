@@ -6,7 +6,7 @@ module Teachbase
       class ScormPackage
         class Menu < Teachbase::Bot::InterfaceController
           def show
-            params[:text] = "#{create_title(params)}"
+            params[:text] = create_title(params).to_s
             super
           end
 

@@ -12,15 +12,13 @@ module Teachbase
 
           private
 
-# TODO: Waiting for url in source with jwt link
-=begin
-          def build_approve_button
-            super
-            InlineUrlButton.g(button_sign: I18n.t('open').capitalize,
-                              url: to_default_protocol(entity.source),
-                              emoji: :bar_chart)
-          end
-=end
+          # TODO: Waiting for url in source with jwt link
+          #           def build_approve_button
+          #             super
+          #             InlineUrlButton.g(button_sign: I18n.t('open').capitalize,
+          #                               url: to_default_protocol(entity.source),
+          #                               emoji: :bar_chart)
+          #           end
         end
       end
     end
