@@ -3,6 +3,7 @@
 module Formatter
   NOT_VAILD_URL_REGEXP = %r{^(\/\/|\/)}.freeze
   ONLY_FILE_NAME_REGEXP = %r{(.+?)(\.[^.]*$|$)}.freeze
+  URL_REGEXP = %r{^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-zA-Z0-9]+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,5}(:[0-9]{1,5})?(\/.*)?$}.freeze
   DEFAULT_URL_PROTOCOL = "http://"
   DELIMETER = "\n"
   HOST = "https://go.teachbase.ru"
@@ -78,6 +79,10 @@ module Formatter
 
   def sanitize_html(html)
     Sanitize.fragment(html)
+  end
+
+  def url?(string)
+    !!(string =~ URL_REGEXP)
   end
 
   private

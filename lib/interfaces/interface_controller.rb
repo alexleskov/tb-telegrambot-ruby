@@ -65,7 +65,7 @@ module Teachbase
       end
 
       def description
-        return "" unless entity.description && !entity.description.empty?
+        return "" if entity.description.nil? || sanitize_html(entity.description).strip.size == 0
 
         msg = "#{Emoji.t(:scroll)} #{to_bolder(I18n.t('description'))}:\n#{sanitize_html(entity.description)}\n\n"
         return msg unless entity.respond_to?("attachments?") && entity.attachments?
@@ -73,19 +73,32 @@ module Teachbase
         "#{msg}#{attachments(entity)}"
       end
 
-      def action_buttons
-        params[:back_button] ||= true
-        buttons = [build_show_answers_button, build_approve_button, build_to_section_button]
-        InlineCallbackKeyboard.collect(buttons: buttons).raw
+      def show
+        raise "Must have ':text' param" unless params[:text]
+
+        params.merge!(type: :menu_inline, disable_notification: true,
+                      slices_count: 2, buttons: build_action_buttons)
+        answer.menu.create(params)
       end
 
       protected
 
-      def build_approve_button; end
+      def build_content
+        content_source = entity.build_source
+        if url?(content_source)
+          to_url_link(content_source, "#{Emoji.t(:link)} #{I18n.t('open').capitalize}: #{entity.name}")
+        else
+          content_source
+        end        
+      end
+
+      def build_approve_button
+        return unless params[:approve_button]
+      end
 
       def build_show_answers_button
         return unless entity.respond_to?(:answers)
-        return unless entity.answers && !entity.answers.empty? && @params[:show_answers_button] && entity.course_session.active?
+        return unless entity.answers && !entity.answers.empty? && params[:show_answers_button] && entity.course_session.active?
 
         InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
                                callback_data: "answers_task_by_csid:#{cs_tb_id}_objid:#{entity.tb_id}",
@@ -93,9 +106,15 @@ module Teachbase
       end
 
       def build_to_section_button
-        return unless @params[:back_button]
+        return unless params[:back_button]
 
         entity.section.back_button
+      end
+
+      def build_action_buttons
+        params[:back_button] ||= true
+        buttons = [build_show_answers_button, build_approve_button, build_to_section_button]
+        InlineCallbackKeyboard.collect(buttons: buttons).raw
       end
 
       def cs_tb_id

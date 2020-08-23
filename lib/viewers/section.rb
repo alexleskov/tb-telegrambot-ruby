@@ -36,7 +36,7 @@ module Viewers
     end
 
     def back_button_action
-      "/sec#{id}_cs#{course_session.tb_id}"
+      "/sec#{position}_cs#{course_session.tb_id}"
     end
   end
 end
