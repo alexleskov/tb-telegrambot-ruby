@@ -6,10 +6,8 @@ module Teachbase
       class Task
         class Menu < Teachbase::Bot::InterfaceController
           def show
-            params.merge!(type: :menu_inline, disable_web_page_preview: true, disable_notification: true,
-                          slices_count: 2, text: "#{create_title(params)}#{description}", buttons: action_buttons)
-            params[:mode] ||= :none
-            answer.menu.create(params)
+            params[:text] = "#{create_title(params)}#{description}"
+            super
           end
 
           def user_answers
@@ -20,7 +18,8 @@ module Teachbase
           private
 
           def build_approve_button
-            return unless @params[:approve_button] && entity.can_submit? && entity.course_session.active?
+            super
+            return unless entity.course_session.active? && entity.can_submit?
 
             InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('answer').downcase}",
                                    callback_data: "submit_task_by_csid:#{cs_tb_id}_objid:#{entity.tb_id}",

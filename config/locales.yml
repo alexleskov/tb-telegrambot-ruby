@@ -146,7 +146,7 @@ ru:
   hour: "ч."
   minute: "мин."
   profile_state: "Прогресс твоего профиля"
-  show_profile_state: "Профайл"
+  show_profile_state: "Профиль"
   need_auth: "Требуется авторизация"
   for_profile: "профиля"
   stage_empty: "Пока что здесь пусто"

@@ -70,9 +70,6 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
 
   def hide(text)
     create(text: text.to_s, type: :hide_kb)
-
-    # MessageSender.new(bot: @respond.msg_responder.bot, chat: destination, text: text.to_s,
-    #                  type: :hide_kb).send
   end
 
   private

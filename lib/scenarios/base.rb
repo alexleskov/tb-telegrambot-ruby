@@ -83,15 +83,20 @@ module Teachbase
           interface.sys.menu.starting
         end
 
-        def check_status
+        def check_status(mode = :silence)
           interface.sys.text.update_status(:in_progress)
-          result = if yield
-                     interface.sys.text.update_status(:success)
-                     true
-                   else
-                     interface.sys.text.update_status(:fail)
-                     false
-                   end
+          result = yield ? true : false
+
+          if mode == :silence && result
+            interface.sys.destroy(delete_bot_message: :last)
+            return result
+          end
+
+          if result
+            interface.sys.text.update_status(:success)
+          else
+            interface.sys.text.update_status(:fail)
+          end
           interface.sys.destroy(delete_bot_message: :previous)
           result
         end
@@ -123,7 +128,7 @@ module Teachbase
         end
 
         def courses_update
-          check_status { appshell.data_loader.cs.update_all_states }
+          check_status(:default) { appshell.data_loader.cs.update_all_states }
         end
 
         def track_material(cs_tb_id, sec_id, tb_id, time_spent)
@@ -139,22 +144,20 @@ module Teachbase
           return interface.sys.text.is_empty unless entity
 
           interface_controller = interface.public_send(object_type, entity)
-          title = { stages: %i[contents title] }
+
           case object_type.to_sym
           when :material
-            interface_controller.text(title).show
-            interface_controller.menu(approve_button: true).actions
+            options = { approve_button: { time_spent: 25 } }
           when :task
-            options = { mode: :edit_msg, show_answers_button: true, approve_button: true }.merge!(title)
-            interface_controller.menu(options).show
-          when :quiz
-            interface_controller.menu(title).show
-          when :scorm_package
-            interface_controller.text(title).show
-            interface_controller.menu.actions
+            options = { mode: :edit_msg, show_answers_button: true, approve_button: true,
+                        disable_web_page_preview: true }
+          when :quiz, :scorm_package
+            options = { approve_button: true }
           else
-            interface.sys.text.on_error
+            return interface.sys.text.on_error
           end
+          options[:stages] = %i[contents title]
+          interface_controller.menu(options).show
         end
 
         def show_section_additions(cs_tb_id, sec_id)
@@ -183,7 +186,8 @@ module Teachbase
             result = check_status { submit_answer(cs_tb_id, sec_id, object_tb_id, type) }
             appshell.clear_cached_answers if result
           end
-          interface.sys.menu(callback_data: "/sec#{sec_id}_cs#{cs_tb_id}").custom_back
+          sec_pos = appshell.user.section_by_cs_tbid(cs_tb_id, sec_id).position
+          interface.sys.menu(callback_data: "/sec#{sec_pos}_cs#{cs_tb_id}").custom_back
         end
 
         def submit_answer(cs_tb_id, sec_id, object_tb_id, type)

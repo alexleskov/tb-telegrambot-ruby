@@ -18,6 +18,10 @@ module Teachbase
                   AND materials.tb_id = :id', cs_tb_id: cs_tb_id, user_id: user_id, id: id)
         end
       end
+
+      def can_submit?
+        status == "new"
+      end
     end
   end
 end

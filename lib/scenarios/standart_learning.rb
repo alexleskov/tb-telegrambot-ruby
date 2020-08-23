@@ -39,8 +39,8 @@ module Teachbase
                                      params: { state: option }).show_by_option(sections_by_option, option)
         end
 
-        def show_section_contents(sec_id, cs_tb_id)
-          section_loader = appshell.data_loader.section(option: :id, value: sec_id,
+        def show_section_contents(sec_pos, cs_tb_id)
+          section_loader = appshell.data_loader.section(option: :position, value: sec_pos,
                                                         cs_tb_id: cs_tb_id)
           check_status do
             return interface.sys.text.is_empty unless section_loader.contents

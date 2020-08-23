@@ -11,6 +11,10 @@ module Teachbase
       belongs_to :section
       belongs_to :user
       has_many :attachments, as: :imageable
+
+      def can_submit?
+        %w[new failed passed].include?(status)
+      end
     end
   end
 end

@@ -5,12 +5,18 @@ module Teachbase
     class Interfaces
       class ScormPackage
         class Menu < Teachbase::Bot::InterfaceController
-          def actions
-            params.merge!(type: :menu_inline, disable_web_page_preview: true, disable_notification: true,
-                          slices_count: 2, buttons: action_buttons)
-            params[:text] ||= I18n.t('start_menu_message')
-            params[:mode] ||= :none
-            answer.menu.create(params)
+          def show
+            params[:text] = create_title(params).to_s
+            super
+          end
+
+          private
+
+          def build_approve_button
+            super
+            InlineUrlButton.g(button_sign: I18n.t('open').capitalize,
+                              url: to_default_protocol(entity.source),
+                              emoji: :computer)
           end
         end
       end

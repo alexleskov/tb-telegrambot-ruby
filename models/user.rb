@@ -33,7 +33,7 @@ module Teachbase
       end
 
       def section_by_cs_tbid(cs_tb_id, section_id)
-        Teachbase::Bot::Section.show_by_user_cs_tbid(cs_tb_id, section_id, id).first
+        Teachbase::Bot::Section.show_by_user_cs_tbid(cs_tb_id, section_id, id)
       end
 
       def material_by_cs_tbid(cs_tb_id, material_tb_id)
