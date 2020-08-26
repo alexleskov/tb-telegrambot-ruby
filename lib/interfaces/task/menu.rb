@@ -6,12 +6,12 @@ module Teachbase
       class Task
         class Menu < Teachbase::Bot::InterfaceController
           def show
-            params[:text] = "#{create_title(params)}#{description}"
+            params[:text] = "#{create_title(params)}\n#{description}"
             super
           end
 
           def user_answers
-            params.merge!(mode: :edit_msg, disable_web_page_preview: true, text: "#{create_title(params)}#{answers}")
+            params.merge!(mode: :edit_msg, disable_web_page_preview: true, text: "#{create_title(params)}\n#{answers}")
             answer.menu.back(params)
           end
 

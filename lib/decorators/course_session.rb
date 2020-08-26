@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Viewers
+module Decorators
   module CourseSession
     include Formatter
 
@@ -21,11 +21,17 @@ module Viewers
     end
 
     def statistics
-      "\n #{Emoji.t(:runner)}#{I18n.t('started_at')}: #{time_by(:started_at)}
-       #{Emoji.t(:alarm_clock)}#{I18n.t('deadline')}: #{time_by(:deadline)}
-       #{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{progress}%
-       #{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}
-       #{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}"
+      "\n#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}
+      #{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}
+      #{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{progress}%
+      \n#{Emoji.t(:runner)}#{I18n.t('started_at')}: #{time_by(:started_at)}
+      #{Emoji.t(:alarm_clock)}#{I18n.t('deadline')}: #{time_by(:deadline)}"
+    end
+
+    def categories_name
+      return "" if categories.nil? || categories.empty?
+
+      "#{Emoji.t(:file_folder)}#{I18n.t('categories')}: #{categories.pluck(:name).join(", ")}"
     end
 
     def sign_course_state

@@ -50,7 +50,7 @@ class Breadcrumb
   def build_crumbs
     result = []
     stages.each { |stage| result << public_send(stage) }
-    result << to_bolder(result.pop.dup) + Formatter::DELIMETER
+    result << to_bolder(result.pop.dup)
     to_paragraph(result)
   end
 end

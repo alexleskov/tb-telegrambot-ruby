@@ -34,7 +34,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     create(params)
   end
 
-  def back(params)
+  def back(params = {})
     params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [build_back_button]).raw)
     params[:mode] ||= :none
     params[:text] ||= I18n.t('start_menu_message').to_s

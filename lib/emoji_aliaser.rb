@@ -79,6 +79,7 @@ module EmojiAliaser
 
     alias section_unpublish x
     alias declined x
+    alias failed x
 
     alias materials page_facing_up
     alias material page_facing_up
