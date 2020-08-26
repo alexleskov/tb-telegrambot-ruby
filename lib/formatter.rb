@@ -55,6 +55,14 @@ module Formatter
     array.join(DELIMETER) + DELIMETER
   end
 
+  def to_dash_from_zero(integer)
+    integer.nil? || integer == 0 ? "—" : integer
+  end
+
+  def to_min(integer)
+    integer > 0 ? integer/60 : 0
+  end
+
   def chomp_file_name(url, mode = :with_extension)
     file_name = url.to_s.split('/')[-1]
     return file_name if mode == :with_extension

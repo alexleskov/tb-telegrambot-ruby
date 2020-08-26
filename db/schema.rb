@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -13,6 +11,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema.define(version: 21) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -25,7 +24,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.bigint "answerable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[answerable_type answerable_id], name: "index_answers_on_answerable_type_and_answerable_id"
+    t.index ["answerable_type", "answerable_id"], name: "index_answers_on_answerable_type_and_answerable_id"
   end
 
   create_table "api_tokens", force: :cascade do |t|
@@ -49,7 +48,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.bigint "imageable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[imageable_type imageable_id], name: "index_attachments_on_imageable_type_and_imageable_id"
+    t.index ["imageable_type", "imageable_id"], name: "index_attachments_on_imageable_type_and_imageable_id"
   end
 
   create_table "auth_sessions", force: :cascade do |t|
@@ -108,7 +107,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.bigint "commentable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[commentable_type commentable_id], name: "index_comments_on_commentable_type_and_commentable_id"
+    t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id"
   end
 
   create_table "course_categories", force: :cascade do |t|
@@ -182,8 +181,25 @@ ActiveRecord::Schema.define(version: 21) do
   create_table "quizzes", force: :cascade do |t|
     t.integer "tb_id", null: false
     t.integer "position", null: false
+    t.integer "questions_count"
+    t.integer "passing_grade"
+    t.integer "attempts"
+    t.integer "available_attempts"
+    t.integer "time_limit"
+    t.integer "total_score"
+    t.integer "attempt_score"
+    t.integer "success_answers_count"
+    t.string "grading_method"
+    t.string "navigation"
     t.string "name"
     t.string "status"
+    t.string "source"
+    t.boolean "completed"
+    t.boolean "checked"
+    t.boolean "success"
+    t.boolean "is_incomplete"
+    t.boolean "can_pass"
+    t.boolean "results_available"
     t.bigint "section_id"
     t.bigint "course_session_id"
     t.bigint "user_id"

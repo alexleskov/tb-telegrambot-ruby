@@ -132,10 +132,11 @@ module Teachbase
         end
 
         def track_material(cs_tb_id, sec_id, tb_id, time_spent)
-          check_status do
-            appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content
-                    .material(tb_id: tb_id).track(time_spent)
+          section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
+          check_status(:default) do
+            section_loader.content.material(tb_id: tb_id).track(time_spent)
           end
+          interface.sys.menu.custom_back(callback_data: section_loader.db_entity.back_button_action)
         end
 
         def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
@@ -161,10 +162,11 @@ module Teachbase
         end
 
         def show_section_additions(cs_tb_id, sec_id)
-          links = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).links
-          return interface.sys.text.is_empty if links.empty?
+          section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
+          return interface.sys.text.is_empty if section_loader.links.empty?
 
-          interface.sys.menu(build_back_button_data.merge!(links: links)).links
+          interface.sys(section_loader.db_entity)
+                   .menu(back_button: build_back_button_data, links: section_loader.links, stages: %i[title]).links
         end
 
         def take_answer_task(cs_tb_id, task_tb_id)

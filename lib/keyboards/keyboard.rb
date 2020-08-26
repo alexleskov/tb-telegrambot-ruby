@@ -98,9 +98,9 @@ class Keyboard
 
     case options[:mode]
     when :custom
-      button_class.custom_back(options[:action])
+      InlineCallbackButton.custom_back(options[:action])
     when :basic
-      button_class.back(options[:sent_messages])
+      InlineCallbackButton.back(options[:sent_messages])
     else
       return
     end

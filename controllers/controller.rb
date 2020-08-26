@@ -9,7 +9,7 @@ module Teachbase
   module Bot
     class Controller
       include Formatter
-      include Viewers
+      include Decorators
 
       attr_reader :respond,
                   :appshell,

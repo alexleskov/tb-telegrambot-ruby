@@ -22,13 +22,13 @@ module Teachbase
       end
 
       def create_title(options)
-        params[:object] ||= entity
+        options[:object] ||= entity
         if options.keys.include?(:text)
           options[:text]
         else
-          raise unless params[:object] && !options.empty?
+          return unless options[:object] && !options.empty?
 
-          Breadcrumb.g(params[:object], options[:stages], options[:params])
+          Breadcrumb.g(options[:object], options[:stages], options[:params])
         end
       end
 
@@ -76,6 +76,8 @@ module Teachbase
       def show
         raise "Must have ':text' param" unless params[:text]
 
+        params[:text] = params[:text].dup.insert(0, create_title(object: entity.course_session,
+                                                                 stages: %i[title], params: { cover_url: '' }))
         params.merge!(type: :menu_inline, disable_notification: true,
                       slices_count: 2, buttons: build_action_buttons)
         answer.menu.create(params)

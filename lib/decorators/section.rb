@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Viewers
+module Decorators
   module Section
     include Formatter
 

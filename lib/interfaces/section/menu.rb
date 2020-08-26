@@ -13,7 +13,10 @@ module Teachbase
             answer.menu.create(buttons: main_buttons,
                                mode: :none,
                                type: :menu_inline,
-                               text: "#{create_title(params)}#{entity.statistics}\n\n#{description}\n#{entity.sign_aval_sections_count_from}",
+                               text: "#{create_title(params)}#{entity.statistics}
+                                      #{entity.categories_name}\n
+                                      #{description}
+                                      #{entity.sign_aval_sections_count_from}",
                                slices_count: 3)
           end
 
@@ -21,7 +24,8 @@ module Teachbase
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
 
             params[:mode] ||= option == :find_by_query_num ? :none : :edit_msg
-            answer.menu.custom_back(text: "#{create_title(params)}#{build_list_msg_with_state(sections.sort_by(&:position))}",
+            answer.menu.custom_back(text: "#{create_title(params)}
+                                           #{build_list_msg_with_state(sections.sort_by(&:position))}",
                                     mode: params[:mode],
                                     callback_data: entity.back_button_action)
           end
@@ -32,7 +36,8 @@ module Teachbase
             answer.menu.create(buttons: contents_buttons,
                                mode: :none,
                                type: :menu_inline,
-                               text: create_title(params).to_s)
+                               text: "#{create_title(object: entity.course_session,
+                                                     stages: %i[title], params: { cover_url: '' })}#{create_title(params)}")
           end
 
           private

@@ -5,7 +5,7 @@ require 'active_record'
 module Teachbase
   module Bot
     class User < ActiveRecord::Base
-      include Viewers::User
+      include Decorators::User
 
       has_one :profile, dependent: :destroy
       has_many :auth_sessions, dependent: :destroy

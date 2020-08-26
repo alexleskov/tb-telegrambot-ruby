@@ -28,8 +28,12 @@ module Teachbase
             answer.menu.create(params)
           end
 
-          def custom_back
+          def custom_back(params)
             answer.menu.custom_back(params)
+          end
+
+          def back
+            answer.menu.back
           end
 
           def confirm_answer
@@ -87,14 +91,14 @@ module Teachbase
             raise unless params[:links].is_a?(Array)
 
             params.merge!(slices_count: 1, type: :menu_inline, mode: :edit_msg)
-            params[:text] ||= "<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
+            params[:text] ||= "#{create_title(params)}<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
             buttons = []
             params[:links].each do |link_params|
               raise unless link_params.is_a?(Hash)
 
               buttons << InlineUrlButton.to_open(link_params["source"], link_params["title"])
             end
-            params[:buttons] = InlineUrlKeyboard.collect(buttons: buttons << InlineCallbackButton.back(params[:sent_messages])).raw
+            params[:buttons] = InlineUrlKeyboard.collect(buttons: buttons, back_button: params[:back_button]).raw
             answer.menu.create(params)
           end
 
