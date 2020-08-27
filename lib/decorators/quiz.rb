@@ -15,7 +15,12 @@ module Decorators
       #{Emoji.t(:runner)}#{I18n.t('attempts')}: #{available_attempts} / #{attempts}
       \n#{Emoji.t(:clipboard)}#{I18n.t('questions_count')}: #{questions_count}
       #{Emoji.t(:key)}#{I18n.t('passing_grade')}: #{to_dash_from_zero(passing_grade)}
-      #{Emoji.t(:hourglass_flowing_sand)}#{I18n.t('time_limit')}: #{to_dash_from_zero(Time.at(time_limit).utc.strftime("%H:%M:%S"))}"
+      #{Emoji.t(:hourglass_flowing_sand)}#{I18n.t('time_limit')}: #{to_dash_from_zero(time_limit_sign)}"
     end
+
+    def time_limit_sign
+      time_limit == 0 ? time_limit : Time.at(time_limit).utc.strftime("%H:%M:%S")
+    end
+
   end
 end
