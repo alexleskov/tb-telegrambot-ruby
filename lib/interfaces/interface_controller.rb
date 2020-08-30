@@ -46,9 +46,10 @@ module Teachbase
 
       def comments(object)
         result = ["#{Emoji.t(:lips)} #{to_italic(I18n.t('comments').capitalize)}"]
-        object.comments.each do |comment|
-          result << "#{comment.user_name} #{I18n.t('commented').downcase}:
-                     \"#{comment.text}\""
+        object.comments.order(:id).each do |comment|
+          result << "<a href='#{comment.avatar_url}'>#{comment.user_name}</a> (#{Time.parse(Time.at(comment.tb_created_at).strftime("%d.%m.%Y %H:%M"))
+                                                                                             .strftime("%d.%m.%Y %H:%M")}):
+                     — \"#{to_italic(comment.text)}\"\n"
         end
         result.join("\n")
       end
@@ -115,7 +116,9 @@ module Teachbase
 
       def build_action_buttons
         params[:back_button] ||= true
-        buttons = [build_show_answers_button, build_approve_button, build_to_section_button]
+        buttons = [build_show_answers_button,
+                   build_approve_button,
+                   build_to_section_button]
         InlineCallbackKeyboard.collect(buttons: buttons).raw
       end
 

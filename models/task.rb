@@ -33,6 +33,10 @@ module Teachbase
         %w[new declined].include?(status)
       end
 
+      def can_comment?
+        !!answers.last_sended
+      end
+
       def cs_tb_id
         course_session.tb_id
       end
