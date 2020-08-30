@@ -20,7 +20,7 @@ module Teachbase
           authsession?
           return @user = authsession ? authsession.user : nil
         end
-        auth_checker if !authsession?
+        auth_checker unless authsession?
         @apitoken = Teachbase::Bot::ApiToken.find_by!(auth_session_id: authsession.id) unless apitoken
 
         if apitoken.avaliable? && authsession?
@@ -96,7 +96,7 @@ module Teachbase
       end
 
       def encrypt_key
-         $app_config.load_encrypt_key
+        $app_config.load_encrypt_key
       end
 
       def kind_of_login(user_login)

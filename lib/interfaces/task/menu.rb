@@ -37,7 +37,6 @@ module Teachbase
                                    callback_data: "submit_task_by_csid:#{cs_tb_id}_objid:#{entity.tb_id}_w:comment",
                                    emoji: :envelope)
           end
-
         end
       end
     end

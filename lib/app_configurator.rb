@@ -6,7 +6,7 @@ require './lib/database_connector'
 
 class AppConfigurator
   include Singleton
-  
+
   def initialize
     @load_config_file = IO.read('config/secrets.yml')
   end

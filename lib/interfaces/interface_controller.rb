@@ -47,8 +47,8 @@ module Teachbase
       def comments(object)
         result = ["#{Emoji.t(:lips)} #{to_italic(I18n.t('comments').capitalize)}"]
         object.comments.order(:id).each do |comment|
-          result << "<a href='#{comment.avatar_url}'>#{comment.user_name}</a> (#{Time.parse(Time.at(comment.tb_created_at).strftime("%d.%m.%Y %H:%M"))
-                                                                                             .strftime("%d.%m.%Y %H:%M")}):
+          result << "<a href='#{comment.avatar_url}'>#{comment.user_name}</a> (#{Time.parse(Time.at(comment.tb_created_at).strftime('%d.%m.%Y %H:%M'))
+                                                                                             .strftime('%d.%m.%Y %H:%M')}):
                      — \"#{to_italic(comment.text)}\"\n"
         end
         result.join("\n")
