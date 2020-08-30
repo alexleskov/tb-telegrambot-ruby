@@ -24,7 +24,7 @@ module Teachbase
           courses_update
           interface.sys.menu.after_auth
         rescue RuntimeError => e
-          @logger.debug "Error: #{e}"
+          $logger.debug "Error: #{e}"
           title = if e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
                     "#{I18n.t('error')} #{e}\n#{I18n.t('try_again')}"
                   end

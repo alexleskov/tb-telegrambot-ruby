@@ -22,14 +22,13 @@ class MessageSender
               :menu_type
 
   def initialize(msg_params)
-    @logger = AppConfigurator.new.load_logger
     @bot = msg_params[:bot]
     @chat = msg_params[:chat]
     @tg_user = msg_params[:tg_user]
     @bot_messages = @tg_user.bot_messages
     @text = msg_params[:text]
     @menu_type = msg_params[:menu]
-    @parse_mode = msg_params[:parse_mode] || AppConfigurator.new.load_parse_mode
+    @parse_mode = msg_params[:parse_mode] || $app_config.load_parse_mode
     @disable_notification = msg_params[:disable_notification] || false
     @disable_web_page_preview = msg_params[:disable_web_page_preview] || false
     @reply_to_message_id = msg_params[:reply_to_message_id]

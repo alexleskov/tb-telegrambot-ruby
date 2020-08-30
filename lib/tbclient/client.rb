@@ -18,15 +18,14 @@ module Teachbase
       attr_reader :api_type, :api_version, :lms_host, :response, :token
 
       def initialize(api_type, version_number, client_params = {})
-        config = AppConfigurator.new
         @api_type = api_type
         @api_version = version_number
-        @rest_client = client_params[:rest_client] = Kernel.const_get(config.rest_client)
-        @lms_host = client_params[:lms_host] ||= config.lms_host
-        client_params[:account_id] ||= config.account_id
-        client_params[:client_id] ||= config.client_id
-        client_params[:client_secret] ||= config.client_secret
-        client_params[:token_expiration_time] ||= config.token_expiration_time
+        @rest_client = client_params[:rest_client] = Kernel.const_get($app_config.rest_client)
+        @lms_host = client_params[:lms_host] ||= $app_config.lms_host
+        client_params[:account_id] ||= $app_config.account_id
+        client_params[:client_id] ||= $app_config.client_id
+        client_params[:client_secret] ||= $app_config.client_secret
+        client_params[:token_expiration_time] ||= $app_config.token_expiration_time
 
         raise "No such API type: '#{api_type}'. Use one of: #{API_TYPES}" unless %i[endpoint mobile].include?(api_type.to_sym)
         raise "No such API destination. Type: #{api_type}, version: #{api_version}" unless api_version_and_type_exists?(api_type, api_version)

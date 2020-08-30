@@ -8,27 +8,20 @@ end
 
 require './application'
 
-config = AppConfigurator.new
-token = config.load_token
-logger = config.load_logger
+$logger = $app_config.load_logger
+$logger.debug 'Starting telegram bot'
 
-logger.debug 'Starting telegram bot'
-
-telegram_bot_client = Telegram::Bot::Client.new(token)
-
-telegram_bot_client.run do |bot|
+Telegram::Bot::Client.new($app_config.load_token).run do |bot|
   bot.listen do |message|
     # Async do |task|
-    options = { bot: bot, message: message }
-
     if message.respond_to?(:data)
-      logger.debug "#{message.from.id} - @#{message.from.username}: #{message.data}"
+      $logger.debug "#{message.from.id} - @#{message.from.username}: #{message.data}"
     else
-      logger.debug "#{message.from.id} - @#{message.from.username}: #{message}"
+      $logger.debug "#{message.from.id} - @#{message.from.username}: #{message}"
     end
-    MessageResponder.new(options).detect_type
+    MessageResponder.new(bot: bot, message: message).detect_type
   rescue => e
-    logger.debug "Error: #{e}"
+    $logger.debug "Error: #{e}"
     # end
   end
 end

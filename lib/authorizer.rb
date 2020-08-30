@@ -11,7 +11,6 @@ module Teachbase
       def initialize(appshell)
         raise "'#{appshell}' is not Teachbase::Bot::AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
 
-        @logger = AppConfigurator.new.load_logger
         @appshell = appshell
         @tg_user = appshell.controller.tg_user
       end
@@ -71,7 +70,7 @@ module Teachbase
         @user.update!(password: crypted_password)
         activate_authsession
       rescue RuntimeError => e
-        @logger.debug e.to_s
+        $logger.debug e.to_s
         authsession.update!(active: false)
         apitoken.update!(active: false)
       end
@@ -97,7 +96,7 @@ module Teachbase
       end
 
       def encrypt_key
-        AppConfigurator.new.load_encrypt_key
+         $app_config.load_encrypt_key
       end
 
       def kind_of_login(user_login)

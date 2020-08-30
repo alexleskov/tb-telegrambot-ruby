@@ -26,17 +26,16 @@ module Teachbase
         @tg_user = respond.msg_responder.tg_user
         @message = respond.msg_responder.message
         @message_params = {}
-        @logger = AppConfigurator.new.load_logger
         @interface = Teachbase::Bot::Interfaces.new(respond, dest)
         @filer = Teachbase::Bot::Filer.new(respond)
         @appshell = Teachbase::Bot::AppShell.new(self)
       rescue RuntimeError => e
-        @logger.debug "Initialization Controller error: #{e}"
+        $logger.debug "Initialization Controller error: #{e}"
       end
 
       def take_data
         respond.msg_responder.bot.listen do |taking_message|
-          @logger.debug "taking data: @#{taking_message.from.username}: #{taking_message}"
+          # $logger.debug "taking data: @#{taking_message.from.username}: #{taking_message}"
           options = { bot: respond.msg_responder.bot, message: taking_message }
           break MessageResponder.new(options).detect_type if taking_message
         end
