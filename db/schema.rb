@@ -100,6 +100,7 @@ ActiveRecord::Schema.define(version: 21) do
 
   create_table "comments", force: :cascade do |t|
     t.integer "tb_user_id"
+    t.integer "tb_created_at"
     t.string "text"
     t.string "avatar_url"
     t.string "user_name"
@@ -298,6 +299,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.string "phone"
     t.string "password"
     t.string "avatar_url", default: "https://image.flaticon.com/icons/png/512/149/149071.png"
+    t.string "lang"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

@@ -83,8 +83,8 @@ module Teachbase
           end
 
           on %r{submit_task_by_csid:} do
-            @message_value =~ %r{submit_task_by_csid:(\d*)_objid:(\d*)}
-            take_answer_task($1, $2)
+            @message_value =~ %r{submit_task_by_csid:(\d*)_objid:(\d*)_w:(\w*)}
+            take_answer_task($1, $2, $3)
           end
 
           on %r{answers_task_by_csid:} do
@@ -92,9 +92,9 @@ module Teachbase
             answers_task($1, $2)
           end
 
-          on %r{confirm_csid:} do
-            @message_value =~ %r{^confirm_csid:(\d*)_secid:(\d*)_objid:(\d*)_t:(\w*)_p:(\w*)}
-            confirm_answer($1, $2, $3, $4, $5)
+          on %r{conf_cs:} do
+            @message_value =~ %r{^conf_cs:(\d*)_sec:(\d*)_obj:(\d*)_t:(\w*)_w:(\w*)_p:(\w*)}
+            confirm_answer($1, $2, $3, $4, $5, $6)
           end
         end
 
