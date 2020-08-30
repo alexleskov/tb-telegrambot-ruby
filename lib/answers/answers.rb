@@ -4,6 +4,7 @@ require './lib/answers/answer_controller'
 require './lib/answers/answer_menu'
 require './lib/answers/answer_text'
 require './lib/answers/answer_content'
+require './lib/answers/answer_destroyer'
 
 module Teachbase
   module Bot
@@ -23,6 +24,10 @@ module Teachbase
 
       def content
         Teachbase::Bot::AnswerContent.new(@respond, @dest)
+      end
+
+      def destroy
+        Teachbase::Bot::AnswerDestroyer.new(@respond, @dest)
       end
     end
   end

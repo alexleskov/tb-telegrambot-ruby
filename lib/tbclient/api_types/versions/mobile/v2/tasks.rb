@@ -24,6 +24,11 @@ module Teachbase
             def course_sessions_tasks_task_answers
               "#{course_sessions_tasks}/task_answers"
             end
+
+            def task_answers_comments
+              check!(:ids, %i[id], url_ids)
+              "task_answers/#{url_ids[:id]}/comments"
+            end
           end
         end
       end

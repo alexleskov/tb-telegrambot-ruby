@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # config valid for current version and patch releases of Capistrano
 lock "~> 3.14.1"
 
@@ -12,7 +14,7 @@ append :linked_files, "config/database.yml", "config/secrets.yml"
 append :linked_dirs, "log", "tmp"
 
 # Default value for default_env is {}
-set :default_env, { RAILS_ENV: fetch(:stage) }
+set :default_env, RAILS_ENV: fetch(:stage)
 
 namespace :db do
   task :create do

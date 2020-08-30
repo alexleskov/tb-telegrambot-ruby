@@ -5,7 +5,7 @@ require 'active_record'
 module Teachbase
   module Bot
     class Material < ActiveRecord::Base
-      include Viewers::Material
+      include Decorators::Material
 
       belongs_to :course_session
       belongs_to :section
@@ -17,6 +17,10 @@ module Teachbase
             .where('course_sessions.tb_id = :cs_tb_id AND course_sessions.user_id = :user_id
                   AND materials.tb_id = :id', cs_tb_id: cs_tb_id, user_id: user_id, id: id)
         end
+      end
+
+      def can_submit?
+        status == "new"
       end
     end
   end

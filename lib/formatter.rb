@@ -3,6 +3,7 @@
 module Formatter
   NOT_VAILD_URL_REGEXP = %r{^(\/\/|\/)}.freeze
   ONLY_FILE_NAME_REGEXP = %r{(.+?)(\.[^.]*$|$)}.freeze
+  URL_REGEXP = %r{^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-zA-Z0-9]+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,5}(:[0-9]{1,5})?(\/.*)?$}.freeze
   DEFAULT_URL_PROTOCOL = "http://"
   DELIMETER = "\n"
   HOST = "https://go.teachbase.ru"
@@ -54,6 +55,14 @@ module Formatter
     array.join(DELIMETER) + DELIMETER
   end
 
+  def to_dash_from_zero(integer)
+    integer.nil? || integer == 0 ? "—" : integer
+  end
+
+  def to_min(integer)
+    integer > 0 ? integer/60 : 0
+  end
+
   def chomp_file_name(url, mode = :with_extension)
     file_name = url.to_s.split('/')[-1]
     return file_name if mode == :with_extension
@@ -78,6 +87,10 @@ module Formatter
 
   def sanitize_html(html)
     Sanitize.fragment(html)
+  end
+
+  def url?(string)
+    !!(string =~ URL_REGEXP)
   end
 
   private

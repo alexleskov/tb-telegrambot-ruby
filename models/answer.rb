@@ -9,6 +9,12 @@ module Teachbase
       has_many :attachments, as: :imageable, dependent: :destroy
       has_many :comments, as: :commentable, dependent: :destroy
 
+      class << self
+        def last_sended
+          order(attempt: :desc).first
+        end
+      end
+
       def attachments?
         !attachments.empty?
       end

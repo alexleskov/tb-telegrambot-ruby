@@ -70,7 +70,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.integer "date", null: false
     t.integer "edit_date"
     t.string "text", null: false
-    t.jsonb "inline_keyboard", default: "{}"
+    t.jsonb "reply_markup", default: "{}"
     t.bigint "tg_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -100,6 +100,7 @@ ActiveRecord::Schema.define(version: 21) do
 
   create_table "comments", force: :cascade do |t|
     t.integer "tb_user_id"
+    t.integer "tb_created_at"
     t.string "text"
     t.string "avatar_url"
     t.string "user_name"
@@ -181,8 +182,25 @@ ActiveRecord::Schema.define(version: 21) do
   create_table "quizzes", force: :cascade do |t|
     t.integer "tb_id", null: false
     t.integer "position", null: false
+    t.integer "questions_count"
+    t.integer "passing_grade"
+    t.integer "attempts"
+    t.integer "available_attempts"
+    t.integer "time_limit"
+    t.integer "total_score"
+    t.integer "attempt_score"
+    t.integer "success_answers_count"
+    t.string "grading_method"
+    t.string "navigation"
     t.string "name"
     t.string "status"
+    t.string "source"
+    t.boolean "completed"
+    t.boolean "checked"
+    t.boolean "success"
+    t.boolean "is_incomplete"
+    t.boolean "can_pass"
+    t.boolean "results_available"
     t.bigint "section_id"
     t.bigint "course_session_id"
     t.bigint "user_id"
@@ -281,6 +299,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.string "phone"
     t.string "password"
     t.string "avatar_url", default: "https://image.flaticon.com/icons/png/512/149/149071.png"
+    t.string "lang"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

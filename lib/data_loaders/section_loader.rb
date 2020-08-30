@@ -17,7 +17,8 @@ module Teachbase
       end
 
       def contents
-        return unless db_entity || db_entity.empty?
+        init_cs_loader.sections unless db_entity
+        return unless db_entity
 
         lms_load(data: :info)
         db_entity.update!(links_count: lms_info["links"].size)
@@ -25,7 +26,8 @@ module Teachbase
       end
 
       def progress
-        return unless db_entity || db_entity.empty?
+        init_cs_loader.sections unless db_entity
+        return unless db_entity
 
         lms_load(data: :contents_progress)
         with_content_types(:none) { content_objects(:update) }
@@ -104,7 +106,7 @@ module Teachbase
                          db_entity.public_send(@content_type).find_or_create_by!(entity_params)
                        else
                          db_entity.public_send(@content_type).find_by(entity_params)
-                        end
+                       end
           next unless content_db
 
           attributes = Attribute.create(@content_params, content_lms, model_class::OBJECTS_CUSTOM_PARAMS[@content_type])

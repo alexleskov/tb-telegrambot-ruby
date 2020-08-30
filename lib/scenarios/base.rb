@@ -13,11 +13,6 @@ module Teachbase
           interface.sys.menu.starting
         end
 
-        def closing
-          interface.sys.text(user_name: appshell.user_fullname).farewell
-          interface.sys.menu.starting
-        end
-
         def sign_in
           interface.sys.text(user_name: appshell.user_fullname,
                              account_name: appshell.account_name).on_enter
@@ -29,16 +24,22 @@ module Teachbase
           courses_update
           interface.sys.menu.after_auth
         rescue RuntimeError => e
-          interface.sys.menu.sign_in_again
+          @logger.debug "Error: #{e}"
+          title = if e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
+                    "#{I18n.t('error')} #{e}\n#{I18n.t('try_again')}"
+                  end
+          interface.sys.menu(text: title).sign_in_again
         end
 
         def sign_out
-          interface.sys.text.on_farewell
+          interface.sys.text(user_name: appshell.user_fullname).farewell
           appshell.logout
-          closing
+          interface.sys.menu.starting
         rescue RuntimeError => e
           interface.sys.text.on_error(e)
         end
+
+        alias closing sign_out
 
         def settings
           interface.sys.menu(scenario: appshell.settings.scenario,
@@ -82,15 +83,22 @@ module Teachbase
           interface.sys.menu.starting
         end
 
-        def check_status
+        def check_status(mode = :silence)
           interface.sys.text.update_status(:in_progress)
-          if yield
+          result = yield ? true : false
+
+          if mode == :silence && result
+            interface.sys.destroy(delete_bot_message: :last)
+            return result
+          end
+
+          if result
             interface.sys.text.update_status(:success)
-            true
           else
             interface.sys.text.update_status(:fail)
-            false
           end
+          interface.sys.destroy(delete_bot_message: :previous)
+          result
         end
 
         def load_content(content_type, cs_tb_id, sec_id, content_tb_id)
@@ -120,14 +128,15 @@ module Teachbase
         end
 
         def courses_update
-          check_status { appshell.data_loader.cs.update_all_states }
+          check_status(:default) { appshell.data_loader.cs.update_all_states }
         end
 
         def track_material(cs_tb_id, sec_id, tb_id, time_spent)
-          check_status do
-            appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).content
-                    .material(tb_id: tb_id).track(time_spent)
+          section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
+          check_status(:default) do
+            section_loader.content.material(tb_id: tb_id).track(time_spent)
           end
+          interface.sys.menu.custom_back(callback_data: section_loader.db_entity.back_button_action)
         end
 
         def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
@@ -136,32 +145,31 @@ module Teachbase
           return interface.sys.text.is_empty unless entity
 
           interface_controller = interface.public_send(object_type, entity)
-          title = { stages: %i[contents title] }
+
           case object_type.to_sym
           when :material
-            interface_controller.text(title).show
-            interface_controller.menu(approve_button: true).actions
+            options = { approve_button: { time_spent: 25 } }
           when :task
-            options = { mode: :edit_msg, show_answers_button: true, approve_button: true }.merge!(title)
-            interface_controller.menu(options).show
-          when :quiz
-            interface_controller.menu(title).show
-          when :scorm_package
-            interface_controller.text(title).show
-            interface_controller.menu.actions
+            options = { mode: :edit_msg, show_answers_button: true, approve_button: true,
+                        disable_web_page_preview: true }
+          when :quiz, :scorm_package
+            options = { approve_button: true }
           else
-            interface.sys.text.on_error
+            return interface.sys.text.on_error
           end
+          options[:stages] = %i[contents title]
+          interface_controller.menu(options).show
         end
 
         def show_section_additions(cs_tb_id, sec_id)
-          links = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id).links
-          return interface.sys.text.is_empty if links.empty?
+          section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
+          return interface.sys.text.is_empty if section_loader.links.empty?
 
-          interface.sys.menu(build_back_button_data.merge!(links: links)).links
+          interface.sys(section_loader.db_entity)
+                   .menu(back_button: build_back_button_data, links: section_loader.links, stages: %i[title]).links
         end
 
-        def take_answer_task(cs_tb_id, task_tb_id)
+        def take_answer_task(cs_tb_id, task_tb_id, answer_type)
           task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
           return unless task
 
@@ -169,31 +177,33 @@ module Teachbase
           appshell.ask_answer(mode: :bulk, saving: :cache)
           interface.sys.menu.after_auth
           interface.sys(task).menu(disable_web_page_preview: true, mode: :none,
-                                   user_answer: appshell.user_cached_answer).confirm_answer
+                                   user_answer: appshell.user_cached_answer).confirm_answer(answer_type)
         end
 
-        def confirm_answer(cs_tb_id, sec_id, object_tb_id, type, param)
+        def confirm_answer(cs_tb_id, sec_id, object_tb_id, type, answer_type, param)
           if param.to_sym == :decline
             appshell.clear_cached_answers
             interface.sys.text.declined
           else
-            result = check_status { submit_answer(cs_tb_id, sec_id, object_tb_id, type) }
+            result = check_status(:default) { submit(cs_tb_id, sec_id, object_tb_id, answer_type, type) }
             appshell.clear_cached_answers if result
           end
-          interface.sys.menu(callback_data: "/sec#{sec_id}_cs#{cs_tb_id}").custom_back
+          section = appshell.user.section_by_cs_tbid(cs_tb_id, sec_id)
+          interface.sys.menu(callback_data: "#{section.back_button_action}").custom_back
         end
 
-        def submit_answer(cs_tb_id, sec_id, object_tb_id, type)
+        def submit(cs_tb_id, sec_id, object_tb_id, answer_type, type)
           raise "Can't submit answer" unless type.to_sym == :task
 
-          load_content(type, cs_tb_id, sec_id, object_tb_id).submit(build_answer_data)
+          load_content(type, cs_tb_id, sec_id, object_tb_id).submit(answer_type.to_sym => build_answer_data)
         end
 
         def answers_task(cs_tb_id, task_tb_id)
           task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
           return unless task
 
-          interface.task(task).menu(stages: %i[contents title answers]).user_answers
+          interface.task(task).menu(back_button: build_back_button_data,
+                                    stages: %i[contents title answers]).user_answers
         end
 
         def match_data
@@ -220,8 +230,7 @@ module Teachbase
 
           on %r{^scenario_param:} do
             @message_value =~ %r{^scenario_param:(\w*)}
-            mode = $1
-            change_scenario(mode)
+            change_scenario($1)
           end
 
           on %r{courses_list} do

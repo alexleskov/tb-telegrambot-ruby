@@ -5,7 +5,7 @@ require 'active_record'
 module Teachbase
   module Bot
     class Section < ActiveRecord::Base
-      include Viewers::Section
+      include Decorators::Section
 
       OBJECTS_CUSTOM_PARAMS = { materials: { "type" => :content_type },
                                 scorm_packages: { "title" => :name } }.freeze

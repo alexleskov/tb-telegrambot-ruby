@@ -32,9 +32,13 @@ module Teachbase
             answer.menu.custom_back(params)
           end
 
-          def confirm_answer
-            params[:command_prefix] = "confirm_csid:#{cs_tb_id}_secid:#{entity.section.id}_objid:#{entity.tb_id}_t:#{entity.class.type_like_sym}_p:"
-            params[:text] ||= "<b>#{I18n.t('send').capitalize} #{I18n.t('answer').downcase}</b>\n<pre>#{params[:user_answer]}</pre>"
+          def back
+            answer.menu.back
+          end
+
+          def confirm_answer(answer_type)
+            params[:command_prefix] = "conf_cs:#{cs_tb_id}_sec:#{entity.section.id}_obj:#{entity.tb_id}_t:#{entity.class.type_like_sym}_w:#{answer_type}_p:"
+            params[:text] ||= "<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n<pre>#{params[:user_answer]}</pre>"
             answer.menu.confirmation(params)
           end
 
@@ -87,14 +91,14 @@ module Teachbase
             raise unless params[:links].is_a?(Array)
 
             params.merge!(slices_count: 1, type: :menu_inline, mode: :edit_msg)
-            params[:text] ||= "<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
+            params[:text] ||= "#{create_title(params)}<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
             buttons = []
             params[:links].each do |link_params|
               raise unless link_params.is_a?(Hash)
 
               buttons << InlineUrlButton.to_open(link_params["source"], link_params["title"])
             end
-            params[:buttons] = InlineUrlKeyboard.collect(buttons: buttons << InlineCallbackButton.back(params[:sent_messages])).raw
+            params[:buttons] = InlineUrlKeyboard.collect(buttons: buttons, back_button: params[:back_button]).raw
             answer.menu.create(params)
           end
 

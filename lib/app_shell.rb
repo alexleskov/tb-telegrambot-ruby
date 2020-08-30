@@ -32,10 +32,11 @@ module Teachbase
         @authorizer = Teachbase::Bot::Authorizer.new(self)
         @data_loader = Teachbase::Bot::DataLoaders.new(self)
         set_scenario
+        #set_localization
       end
 
       def user(mode = access_mode)
-        @authsession = authorizer.call_authsession(mode)
+        @authsession = authorizer.call_authsession(mode)       
         authorizer.user
       end
 
@@ -164,6 +165,14 @@ module Teachbase
       def set_scenario
         change_scenario(settings.scenario)
       end
+
+=begin
+      def set_localization
+        user_db = user(:without_api)
+        lang = user_db && user_db.lang ? user_db.lang : settings.localization
+        change_localization(lang)
+      end
+=end
     end
   end
 end

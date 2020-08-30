@@ -16,10 +16,10 @@ module Teachbase
         Teachbase::Bot::Task
       end
 
-      def submit(answer)
-        raise unless db_entity
+      def submit(params)
+        raise unless db_entity || !params.is_a?(Hash)
 
-        update_data(lms_upload(data: :submit_answer, answer: answer), :no_create)
+        update_data(lms_upload(params.merge!(data: :submit)), :no_create)
       end
 
       private
@@ -27,8 +27,14 @@ module Teachbase
       def lms_upload(options)
         @lms_info = call_data do
           case options[:data].to_sym
-          when :submit_answer
-            appshell.authsession.send_task_answer(cs_tb_id, tb_id, options[:answer])
+          when :submit
+            if options[:answer]
+              appshell.authsession.send_task_answer(cs_tb_id, tb_id, options[:answer])
+            elsif options[:comment]
+              appshell.authsession.send_task_comment(db_entity.answers.last_sended.tb_id, options[:comment])
+            else
+              raise "Must have comment or answer"
+            end
           end
         end
       end

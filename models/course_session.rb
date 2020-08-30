@@ -5,7 +5,7 @@ require 'active_record'
 module Teachbase
   module Bot
     class CourseSession < ActiveRecord::Base
-      include Viewers::CourseSession
+      include Decorators::CourseSession
 
       belongs_to :user
       has_many :sections, dependent: :destroy

@@ -55,6 +55,7 @@ module Teachbase
           data_type_class = to_constantize(to_camelize(addit_data_sign(addition_object)), "Teachbase::Bot::")
           attributes = Attribute.create(data_type_class.attribute_names, data_lms)
           attributes[:tb_id] = data_lms["id"] if data_lms["id"]
+          attributes[:tb_created_at] = data_lms["created_at"] if data_lms["created_at"]
           addition_data_bd = content.public_send(addition_object).find_or_create_by!(attributes)
           next unless data_lms.keys.any? { |key| ADDTION_OBJECTS.include?(key.to_sym) }
 

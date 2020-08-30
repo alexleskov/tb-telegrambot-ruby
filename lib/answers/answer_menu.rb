@@ -5,7 +5,7 @@ require './lib/keyboards/inline_callback_keyboard'
 require './lib/keyboards/inline_url_keyboard'
 
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
-  MENU_TYPES = %i[menu menu_inline].freeze
+  MENU_TYPES = %i[menu menu_inline hide_kb].freeze
   CONFIRMATION = %i[accept decline].freeze
 
   def create(options)
@@ -13,12 +13,16 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     buttons = options[:buttons]
 
     raise "No such menu type: #{options[:type]}" unless MENU_TYPES.include?(options[:type])
-    raise "Buttons must be an Array class. Given '#{buttons.class}'" unless buttons.is_a?(Array)
 
     @msg_params[:menu] = options[:type]
     @msg_params[:mode] = options[:mode]
     slices_count = options[:slices_count] || nil
-    @msg_params[:menu_data] = init_menu_params(buttons, slices_count)
+
+    if options[:type] != :hide_kb
+      raise "Buttons must be an Array class. Given '#{buttons.class}'" unless buttons.is_a?(Array)
+
+      @msg_params[:menu_data] = init_menu_params(buttons, slices_count)
+    end
     MessageSender.new(msg_params).send
   end
 
@@ -30,7 +34,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     create(params)
   end
 
-  def back(params)
+  def back(params = {})
     params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [build_back_button]).raw)
     params[:mode] ||= :none
     params[:text] ||= I18n.t('start_menu_message').to_s
@@ -65,10 +69,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   end
 
   def hide(text)
-    raise "Can't find menu destination for message #{@respond.msg_responder}" if destination.nil?
-
-    MessageSender.new(bot: @respond.msg_responder.bot, chat: destination, text: text.to_s,
-                      type: :hide_kb).send
+    create(text: text.to_s, type: :hide_kb)
   end
 
   private
@@ -80,7 +81,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   end
 
   def build_back_button
-    InlineCallbackButton.back(@tg_user.tg_account_messages)
+    InlineCallbackButton.back(@msg_params[:tg_user].tg_account_messages)
   end
 
   def build_custom_back_button(params)

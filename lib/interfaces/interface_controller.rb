@@ -22,13 +22,13 @@ module Teachbase
       end
 
       def create_title(options)
-        params[:object] ||= entity
+        options[:object] ||= entity
         if options.keys.include?(:text)
           options[:text]
         else
-          raise unless params[:object] && !options.empty?
+          return unless options[:object] && !options.empty?
 
-          Breadcrumb.g(params[:object], options[:stages], options[:params])
+          Breadcrumb.g(options[:object], options[:stages], options[:params])
         end
       end
 
@@ -46,26 +46,27 @@ module Teachbase
 
       def comments(object)
         result = ["#{Emoji.t(:lips)} #{to_italic(I18n.t('comments').capitalize)}"]
-        object.comments.each do |comment|
-          result << "#{comment.user_name} #{I18n.t('commented').downcase}:
-                     \"#{comment.text}\""
+        object.comments.order(:id).each do |comment|
+          result << "<a href='#{comment.avatar_url}'>#{comment.user_name}</a> (#{Time.parse(Time.at(comment.tb_created_at).strftime("%d.%m.%Y %H:%M"))
+                                                                                             .strftime("%d.%m.%Y %H:%M")}):
+                     — \"#{to_italic(comment.text)}\"\n"
         end
         result.join("\n")
       end
 
       def answers
         result = []
-        entity.answers.order(created_at: :desc).each do |answer|
-          build_attachments = answer.attachments? ? "#{attachments(answer)}\n" : ""
-          build_comments = answer.comments? ? "\n#{comments(answer)}\n" : ""
-          result << "<b>#{I18n.t('answer').capitalize} №#{answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(answer.status)} #{to_italic(I18n.t(answer.status).capitalize)}</b>
-                     <pre>#{answer.text}</pre>\n\n#{build_attachments}#{build_comments}"
+        entity.answers.order(created_at: :desc).each do |user_answer|
+          build_attachments = user_answer.attachments? ? "#{attachments(user_answer)}\n" : ""
+          build_comments = user_answer.comments? ? "\n#{comments(user_answer)}\n" : ""
+          result << "<b>#{I18n.t('answer').capitalize} №#{user_answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(user_answer.status)} #{to_italic(I18n.t(user_answer.status).capitalize)}</b>
+                     <pre>#{user_answer.text}</pre>\n\n#{build_attachments}#{build_comments}"
         end
         result.join("\n")
       end
 
       def description
-        return "" unless entity.description && !entity.description.empty?
+        return "" if entity.description.nil? || sanitize_html(entity.description).strip.empty?
 
         msg = "#{Emoji.t(:scroll)} #{to_bolder(I18n.t('description'))}:\n#{sanitize_html(entity.description)}\n\n"
         return msg unless entity.respond_to?("attachments?") && entity.attachments?
@@ -73,19 +74,34 @@ module Teachbase
         "#{msg}#{attachments(entity)}"
       end
 
-      def action_buttons
-        params[:back_button] ||= true
-        buttons = [build_show_answers_button, build_approve_button, build_to_section_button]
-        InlineCallbackKeyboard.collect(buttons: buttons).raw
+      def show
+        raise "Must have ':text' param" unless params[:text]
+
+        params[:text] = params[:text].dup.insert(0, create_title(object: entity.course_session,
+                                                                 stages: %i[title], params: { cover_url: '' }))
+        params.merge!(type: :menu_inline, disable_notification: true,
+                      slices_count: 2, buttons: build_action_buttons)
+        answer.menu.create(params)
       end
 
       protected
 
-      def build_approve_button; end
+      def build_content
+        content_source = entity.build_source
+        if url?(content_source)
+          to_url_link(content_source, "#{Emoji.t(:link)} #{I18n.t('open').capitalize}: #{entity.name}")
+        else
+          content_source
+        end
+      end
+
+      def build_approve_button
+        return unless params[:approve_button]
+      end
 
       def build_show_answers_button
         return unless entity.respond_to?(:answers)
-        return unless entity.answers && !entity.answers.empty? && @params[:show_answers_button] && entity.course_session.active?
+        return unless entity.answers && !entity.answers.empty? && params[:show_answers_button] && entity.course_session.active?
 
         InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
                                callback_data: "answers_task_by_csid:#{cs_tb_id}_objid:#{entity.tb_id}",
@@ -93,9 +109,17 @@ module Teachbase
       end
 
       def build_to_section_button
-        return unless @params[:back_button]
+        return unless params[:back_button]
 
         entity.section.back_button
+      end
+
+      def build_action_buttons
+        params[:back_button] ||= true
+        buttons = [build_show_answers_button,
+                   build_approve_button,
+                   build_to_section_button]
+        InlineCallbackKeyboard.collect(buttons: buttons).raw
       end
 
       def cs_tb_id

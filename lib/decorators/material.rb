@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Viewers
+module Decorators
   module Material
     include Formatter
 
@@ -14,23 +14,15 @@ module Viewers
         else
           sanitize_html(source)
         end
-      when :image, :video, :audio, :pdf
-        source
+      when :image, :video, :audio, :pdf, :iframe, :vimeo
+        to_default_protocol(source)
       when :youtube
-        build_material_link_params("#{YOUTUBE_HOST}#{source}", name)
-      when :iframe, :vimeo
-        build_material_link_params(source, name)
+        "#{YOUTUBE_HOST}#{source}"
       end
     end
 
     def title
       "#{attach_emoji(content_type.to_sym)} #{I18n.t('content').capitalize}: #{name}"
-    end
-
-    private
-
-    def build_material_link_params(link, link_name)
-      { link: link, link_name: link_name }
     end
   end
 end

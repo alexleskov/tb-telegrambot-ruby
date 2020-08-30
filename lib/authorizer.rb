@@ -17,14 +17,18 @@ module Teachbase
       end
 
       def call_authsession(access_mode)
-        auth_checker if !authsession? && access_mode == :with_api
+        if access_mode == :without_api
+          authsession?
+          return @user = authsession ? authsession.user : nil
+        end
+        auth_checker if !authsession?
         @apitoken = Teachbase::Bot::ApiToken.find_by!(auth_session_id: authsession.id) unless apitoken
 
         if apitoken.avaliable? && authsession?
           authsession.api_auth(:mobile, 2, access_token: apitoken.value)
         else
           authsession.update!(active: false)
-          auth_checker if access_mode == :with_api
+          auth_checker
         end
 
         @user = authsession.user

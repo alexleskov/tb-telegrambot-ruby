@@ -5,7 +5,7 @@ require 'active_record'
 module Teachbase
   module Bot
     class Task < ActiveRecord::Base
-      include Viewers::Task
+      include Decorators::Task
 
       belongs_to :course_session
       belongs_to :section
@@ -31,6 +31,10 @@ module Teachbase
 
       def can_submit?
         %w[new declined].include?(status)
+      end
+
+      def can_comment?
+        !!answers.last_sended
       end
 
       def cs_tb_id
