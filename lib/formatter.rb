@@ -60,7 +60,7 @@ module Formatter
   end
 
   def to_min(integer)
-    integer > 0 ? integer/60 : 0
+    integer > 0 ? integer / 60 : 0
   end
 
   def chomp_file_name(url, mode = :with_extension)

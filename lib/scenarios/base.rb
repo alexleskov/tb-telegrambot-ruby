@@ -24,7 +24,7 @@ module Teachbase
           courses_update
           interface.sys.menu.after_auth
         rescue RuntimeError => e
-          @logger.debug "Error: #{e}"
+          $logger.debug "Error: #{e}"
           title = if e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
                     "#{I18n.t('error')} #{e}\n#{I18n.t('try_again')}"
                   end
@@ -189,7 +189,7 @@ module Teachbase
             appshell.clear_cached_answers if result
           end
           section = appshell.user.section_by_cs_tbid(cs_tb_id, sec_id)
-          interface.sys.menu(callback_data: "#{section.back_button_action}").custom_back
+          interface.sys.menu(callback_data: section.back_button_action.to_s).custom_back
         end
 
         def submit(cs_tb_id, sec_id, object_tb_id, answer_type, type)

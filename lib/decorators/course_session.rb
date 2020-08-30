@@ -31,7 +31,7 @@ module Decorators
     def categories_name
       return "" if categories.nil? || categories.empty?
 
-      "#{Emoji.t(:file_folder)}#{I18n.t('categories')}: #{categories.pluck(:name).join(", ")}"
+      "#{Emoji.t(:file_folder)}#{I18n.t('categories')}: #{categories.pluck(:name).join(', ')}"
     end
 
     def sign_course_state

@@ -9,7 +9,6 @@ module Teachbase
       include Formatter
 
       def initialize(respond)
-        @logger = AppConfigurator.new.load_logger
         @tg_user = respond.msg_responder.tg_user
         @bot = respond.msg_responder.bot
       end
@@ -41,7 +40,7 @@ module Teachbase
       end
 
       def load_bot_token
-        AppConfigurator.new.load_token
+        $app_config.load_token
       end
     end
   end

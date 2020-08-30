@@ -22,7 +22,6 @@ module Teachbase
       attr_accessor :access_mode
 
       def initialize(controller, access_mode = :with_api)
-        @logger = AppConfigurator.new.load_logger
         @access_mode = access_mode
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
 
@@ -32,11 +31,11 @@ module Teachbase
         @authorizer = Teachbase::Bot::Authorizer.new(self)
         @data_loader = Teachbase::Bot::DataLoaders.new(self)
         set_scenario
-        #set_localization
+        # set_localization
       end
 
       def user(mode = access_mode)
-        @authsession = authorizer.call_authsession(mode)       
+        @authsession = authorizer.call_authsession(mode)
         authorizer.user
       end
 
@@ -144,7 +143,7 @@ module Teachbase
       def request_answer_bulk(params)
         loop do
           user_answer = request_data(params[:answer_type])
-          @logger.debug "user_answer: #{user_answer}"
+          $logger.debug "user_answer: #{user_answer}"
           break if user_answer.nil? || (user_answer.respond_to?(:text) && break_taking_data?(user_answer.text))
 
           user_answer.save_message(params[:saving])
@@ -166,13 +165,11 @@ module Teachbase
         change_scenario(settings.scenario)
       end
 
-=begin
-      def set_localization
-        user_db = user(:without_api)
-        lang = user_db && user_db.lang ? user_db.lang : settings.localization
-        change_localization(lang)
-      end
-=end
+      #       def set_localization
+      #         user_db = user(:without_api)
+      #         lang = user_db && user_db.lang ? user_db.lang : settings.localization
+      #         change_localization(lang)
+      #       end
     end
   end
 end

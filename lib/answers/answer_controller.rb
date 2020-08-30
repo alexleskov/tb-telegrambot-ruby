@@ -10,7 +10,6 @@ module Teachbase
       attr_reader :msg_params, :command_list
 
       def initialize(respond, dest)
-        @logger = AppConfigurator.new.load_logger
         raise "No such dest '#{dest}' for send answer" unless MSG_DESTS.include?(dest)
 
         @dest = dest
