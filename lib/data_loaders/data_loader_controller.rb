@@ -53,7 +53,6 @@ module Teachbase
         yield
       rescue RuntimeError => e
         if e.http_code == 401 || e.http_code == 403
-          appshell.logout
           raise e
         elsif (@retries += 1) <= MAX_RETRIES
           $logger.debug "#{e}\n#{I18n.t('retry')} №#{@retries}.."
@@ -62,6 +61,7 @@ module Teachbase
         else
           appshell.logout
           $logger.debug "Unexpected error after retries: #{e}. code: #{e.http_code}"
+          raise e
         end
       end
     end

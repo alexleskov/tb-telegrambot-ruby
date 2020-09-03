@@ -50,6 +50,10 @@ module Teachbase
             answer.text.send_out("#{Emoji.t(:crying_cat_face)}#{sign_on_error}: #{error}")
           end
 
+          def on_forbidden
+            answer.text.send_out("#{Emoji.t(:x)} #{I18n.t('forbidden')}")
+          end
+
           def declined
             answer.text.send_out("#{Emoji.t(:leftwards_arrow_with_hook)} <i>#{I18n.t('declined')}</i>")
           end

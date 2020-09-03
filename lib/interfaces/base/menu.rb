@@ -33,7 +33,7 @@ module Teachbase
           end
 
           def back
-            answer.menu.back
+            answer.menu.back(params)
           end
 
           def confirm_answer(answer_type)

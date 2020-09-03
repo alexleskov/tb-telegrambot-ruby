@@ -11,7 +11,7 @@ module Teachbase
       include Validator
 
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
-      DAFAULT_ACCOUNT_NAME = "teachbase"
+      DEFAULT_ACCOUNT_NAME = "teachbase"
 
       attr_reader :controller,
                   :data_loader,
@@ -25,7 +25,7 @@ module Teachbase
         @access_mode = access_mode
         raise "'#{controller}' is not Teachbase::Bot::Controller" unless controller.is_a?(Teachbase::Bot::Controller)
 
-        @account_name ||= DAFAULT_ACCOUNT_NAME
+        @account_name ||= DEFAULT_ACCOUNT_NAME
         @controller = controller
         @settings = controller.respond.msg_responder.settings
         @authorizer = Teachbase::Bot::Authorizer.new(self)
