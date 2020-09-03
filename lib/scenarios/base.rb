@@ -26,7 +26,7 @@ module Teachbase
         rescue RuntimeError => e
           $logger.debug "Error: #{e}"
           title = if e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
-                    "#{I18n.t('error')} #{e}\n#{I18n.t('try_again')}"
+                    "#{I18n.t('forbidden')}\n#{I18n.t('try_again')}"
                   end
           interface.sys.menu(text: title).sign_in_again
         end
@@ -136,16 +136,16 @@ module Teachbase
           check_status(:default) do
             section_loader.content.material(tb_id: tb_id).track(time_spent)
           end
-          interface.sys.menu.custom_back(callback_data: section_loader.db_entity.back_button_action)
+          interface.sys.menu(callback_data: section_loader.db_entity.back_button_action).custom_back
         end
 
         def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
           object_type = Teachbase::Bot::Section::OBJECTS_TYPES[type.to_sym]
-          entity = load_content(object_type, cs_tb_id, sec_id, content_tb_id).me
+          content_loader = load_content(object_type, cs_tb_id, sec_id, content_tb_id)
+          entity = content_loader.me
           return interface.sys.text.is_empty unless entity
 
           interface_controller = interface.public_send(object_type, entity)
-
           case object_type.to_sym
           when :material
             options = { approve_button: { time_spent: 25 } }
@@ -159,6 +159,8 @@ module Teachbase
           end
           options[:stages] = %i[contents title]
           interface_controller.menu(options).show
+        rescue RuntimeError => e
+          return interface.sys.text.on_forbidden if e.http_code == 401 || e.http_code == 403
         end
 
         def show_section_additions(cs_tb_id, sec_id)
