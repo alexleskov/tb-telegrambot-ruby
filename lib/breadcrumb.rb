@@ -5,7 +5,7 @@ class Breadcrumb
 
   class << self
     def g(object, stages, params = {})
-      new(object, stages, params).build_crumbs
+      new(object, stages, params).send(:build_crumbs)
     end
   end
 
@@ -30,11 +30,11 @@ class Breadcrumb
   end
 
   def info
-    "#{Emoji.t(:information_source)} #{I18n.t('information')}"
+    I18n.t('information').to_s
   end
 
   def sections
-    "#{Emoji.t(:arrow_down)} #{I18n.t('course_sections')}"
+    I18n.t('course_sections').to_s
   end
 
   def answers
@@ -46,6 +46,8 @@ class Breadcrumb
   def menu
     "#{attach_emoji(params[:state])} #{I18n.t(params[:state])}"
   end
+
+  private
 
   def build_crumbs
     result = []

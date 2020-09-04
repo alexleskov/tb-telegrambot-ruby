@@ -30,7 +30,7 @@ module Teachbase
       end
 
       def update_data(data, mode = :with_create)
-        raise "Nothing to update. Data given is '#{data}'" unless data
+        return unless data
 
         call_data do
           db_entity(mode).update!(attrs_with_lms_data(data))
@@ -53,6 +53,8 @@ module Teachbase
         yield
       rescue RuntimeError => e
         if e.http_code == 401 || e.http_code == 403
+          raise e
+        elsif e.http_code == 400
           raise e
         elsif (@retries += 1) <= MAX_RETRIES
           $logger.debug "#{e}\n#{I18n.t('retry')} №#{@retries}.."

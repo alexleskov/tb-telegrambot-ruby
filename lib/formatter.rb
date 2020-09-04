@@ -82,7 +82,7 @@ module Formatter
   end
 
   def attach_emoji(sign)
-    EmojiAliaser.respond_to?(sign) ? EmojiAliaser.public_send(sign) : ""
+    EmojiAliaser.respond_to?(sign) ? EmojiAliaser.public_send(sign) : "\u2022"
   end
 
   def sanitize_html(html)
@@ -91,6 +91,11 @@ module Formatter
 
   def url?(string)
     !!(string =~ URL_REGEXP)
+  end
+
+  def button_sign_by_content_type(cont_type, object)
+    type = object.respond_to?(:content_type) ? object.content_type : cont_type
+    "#{attach_emoji(type)} #{attach_emoji(object.status)} #{object.name}"
   end
 
   private

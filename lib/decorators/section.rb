@@ -7,11 +7,11 @@ module Decorators
     def title(params)
       section_state = params ? params[:state] : :open
       emoji = attach_emoji(section_state) || Emoji.t(:open_file_folder)
-      " #{emoji} #{I18n.t('section')} #{position}: #{to_bolder(name)}"
+      " #{emoji} #{to_bolder(name)}"
     end
 
     def title_with_state(state)
-      section_state_msg = public_send(state) if respond_to?(state)
+      section_state_msg = respond_to?(state) ? public_send(state) : ""
       "#{title(state: state)}\n#{section_state_msg}"
     end
 

@@ -66,13 +66,25 @@ module EmojiAliaser
       Emoji.t(:clock4)
     end
 
+    def notebook
+      Emoji.t(:notebook)
+    end
+
+    def globe_with_meridians
+      Emoji.t(:globe_with_meridians)
+    end
+
+    def open_file_folder
+      Emoji.t(:open_file_folder)
+    end
+
     alias completed white_check_mark
     alias accepted white_check_mark
     alias passed white_check_mark
 
     alias checking clock4
 
-    alias open arrow_forward
+    alias open open_file_folder
 
     alias section_unable no_entry_sign
     alias section_delayed no_entry_sign
@@ -84,13 +96,16 @@ module EmojiAliaser
     alias materials page_facing_up
     alias material page_facing_up
     alias text page_facing_up
-    alias pdf page_facing_up
-    alias iframe page_facing_up
     alias table page_facing_up
+
+    alias pdf notebook
+
+    alias iframe globe_with_meridians
 
     alias video clapper
     alias youtube clapper
     alias vimeo clapper
+    alias netology clapper
 
     alias audio sound
 

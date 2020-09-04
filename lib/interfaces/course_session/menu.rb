@@ -10,7 +10,7 @@ module Teachbase
 
           def main(course_sessions)
             params[:mode] ||= :none
-            answer.menu.custom_back(text: "#{create_title(params)}\n\n#{build_list_courses_by_state(course_sessions)}",
+            answer.menu.custom_back(text: "#{create_title(params)}\n\n#{build_list(course_sessions)}",
                                     mode: params[:mode],
                                     callback_data: "courses_list")
           end
@@ -24,16 +24,12 @@ module Teachbase
                                type: :menu_inline)
           end
 
-          def stats_info
-            answer.menu.back(text: "#{create_title(params)}#{entity.statistics}\n\n#{description}\n")
-          end
-
           private
 
-          def build_list_courses_by_state(course_sessions)
+          def build_list(course_sessions)
             result = []
             course_sessions.each do |course_session|
-              result << "#{course_session.title(cover_url: '')}\n<i>#{I18n.t('open')}</i>: #{course_session.back_button_action}"
+              result << course_session.sign_open(cover_url: '').to_s
             end
             return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
@@ -43,12 +39,7 @@ module Teachbase
           def state_buttons(command_prefix)
             InlineCallbackKeyboard.g(buttons_signs: to_i18n(STATE_BUTTONS, command_prefix),
                                      buttons_actions: STATE_BUTTONS,
-                                     command_prefix: command_prefix,
-                                     emojis: STATE_EMOJI).raw
-          end
-
-          def default_params
-            { mode: :none, type: :menu_inline }
+                                     command_prefix: command_prefix).raw
           end
         end
       end

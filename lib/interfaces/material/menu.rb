@@ -20,8 +20,7 @@ module Teachbase
 
             time_spent = params[:approve_button][:time_spent] || DEFAULT_TIME_SPENT
             InlineCallbackButton.g(button_sign: I18n.t('viewed').to_s,
-                                   callback_data: "approve_material_by_csid:#{cs_tb_id}_secid:#{entity.section.id}_objid:#{entity.tb_id}_time:#{time_spent}",
-                                   emoji: :white_check_mark)
+                                   callback_data: "approve_material_by_csid:#{cs_tb_id}_secid:#{entity.section.id}_objid:#{entity.tb_id}_time:#{time_spent}")
           end
         end
       end

@@ -5,7 +5,7 @@ module Decorators
     include Formatter
 
     def title
-      "#{attach_emoji(:scorm_package)} #{I18n.t('content').capitalize}: #{name}"
+      "#{attach_emoji(:scorm_package)} #{name}"
     end
   end
 end
