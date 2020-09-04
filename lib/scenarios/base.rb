@@ -117,9 +117,8 @@ module Teachbase
           course_sessions = appshell.data_loader.cs.list(state: state, category: appshell.settings.scenario)
           return interface.sys.text.is_empty if course_sessions.empty?
 
-          cs_count = course_sessions.size
-          sign_by_state = course_sessions.first.sign_course_state
-          interface.cs.menu(text: sign_by_state).main(course_sessions.limit(limit).offset(offset))
+          interface.cs.menu(text: course_sessions.first.sign_course_state)
+                      .main(course_sessions.limit(limit).offset(offset))
           offset += limit
           return if offset >= course_sessions.size
 
@@ -157,7 +156,7 @@ module Teachbase
           else
             return interface.sys.text.on_error
           end
-          options[:stages] = %i[contents title]
+          options[:stages] = %i[title]
           interface_controller.menu(options).show
         rescue RuntimeError => e
           return interface.sys.text.on_forbidden if e.http_code == 401 || e.http_code == 403
@@ -205,7 +204,7 @@ module Teachbase
           return unless task
 
           interface.task(task).menu(back_button: build_back_button_data,
-                                    stages: %i[contents title answers]).user_answers
+                                    stages: %i[title answers]).user_answers
         end
 
         def match_data

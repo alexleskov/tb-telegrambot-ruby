@@ -32,14 +32,10 @@ module Teachbase
         end
       end
 
-      def button_sign(cont_type, object)
-        "#{attach_emoji(cont_type)} #{attach_emoji(object.status)} #{object.name}"
-      end
-
       def attachments(object)
         result = ["#{Emoji.t(:bookmark_tabs)} #{to_italic(I18n.t('attachments').capitalize)}"]
         object.attachments.each_with_index do |attach, ind|
-          result << "#{ind + 1}. #{attach_emoji(attach.category)}#{to_url_link(attach.url, attach.name)}"
+          result << "#{ind + 1}. #{to_url_link(attach.url, attach.name)}"
         end
         result.join("\n")
       end
@@ -57,8 +53,8 @@ module Teachbase
       def answers
         result = []
         entity.answers.order(created_at: :desc).each do |user_answer|
-          build_attachments = user_answer.attachments? ? "#{attachments(user_answer)}\n" : ""
-          build_comments = user_answer.comments? ? "\n#{comments(user_answer)}\n" : ""
+          build_attachments = user_answer.attachments? ? "#{attachments(user_answer)}\n" : nil
+          build_comments = user_answer.comments? ? "\n#{comments(user_answer)}\n" : nil
           result << "<b>#{I18n.t('answer').capitalize} №#{user_answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(user_answer.status)} #{to_italic(I18n.t(user_answer.status).capitalize)}</b>
                      <pre>#{user_answer.text}</pre>\n\n#{build_attachments}#{build_comments}"
         end
@@ -66,12 +62,12 @@ module Teachbase
       end
 
       def description
-        return "" if entity.description.nil? || sanitize_html(entity.description).strip.empty?
+        return if entity.description.nil? || sanitize_html(entity.description).strip.empty?
 
-        msg = "#{Emoji.t(:scroll)} #{to_bolder(I18n.t('description'))}:\n#{sanitize_html(entity.description)}\n\n"
-        return msg unless entity.respond_to?("attachments?") && entity.attachments?
+        result = "\n#{sanitize_html(entity.description)}"
+        return result unless entity.respond_to?("attachments?") && entity.attachments?
 
-        "#{msg}#{attachments(entity)}"
+        "#{result}\n\n#{attachments(entity)}"
       end
 
       def show
@@ -104,8 +100,7 @@ module Teachbase
         return unless entity.answers && !entity.answers.empty? && params[:show_answers_button] && entity.course_session.active?
 
         InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
-                               callback_data: "answers_task_by_csid:#{cs_tb_id}_objid:#{entity.tb_id}",
-                               emoji: :speech_balloon)
+                               callback_data: "answers_task_by_csid:#{cs_tb_id}_objid:#{entity.tb_id}")
       end
 
       def build_to_section_button

@@ -5,7 +5,7 @@ module Decorators
     include Formatter
 
     def title
-      "#{attach_emoji(:task)} #{I18n.t('task').capitalize}: #{name}"
+      "#{attach_emoji(:task)} #{name}"
     end
   end
 end

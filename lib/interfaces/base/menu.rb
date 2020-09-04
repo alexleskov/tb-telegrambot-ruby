@@ -45,8 +45,8 @@ module Teachbase
           def settings
             params.merge!(slices_count: 1, type: :menu_inline)
             params[:text] ||= "<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
-                              \n #{Emoji.t(:video_game)} #{I18n.t('scenario')}: #{I18n.t(to_snakecase(params[:scenario]))}
-                              \n #{Emoji.t(:ab)} #{I18n.t('localization')}: #{I18n.t(params[:localization])}"
+                              \n #{I18n.t('scenario')}: #{I18n.t(to_snakecase(params[:scenario]))}
+                              #{I18n.t('localization')}: #{I18n.t(params[:localization])}"
             params[:mode] ||= :none
             params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
                                                         command_prefix: "edit_", buttons_actions: %i[settings]).raw

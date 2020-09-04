@@ -55,12 +55,16 @@ module Teachbase
 
       def send_task_answer(cs_id, task_id, answer)
         raise "Answer must be a Hash" unless answer.is_a?(Hash)
+        return if answer[:text].empty? && answer[:attachments].empty?
 
         tb_api.request(:tasks, :course_sessions_tasks_task_answers, session_id: cs_id, id: task_id,
                                                                     payload: answer, content_type: "multipart/form-data").post
       end
 
       def send_task_comment(task_stat_id, comment)
+        raise "Comment must be a Hash" unless comment.is_a?(Hash)
+        return if comment[:text].empty? && comment[:attachments].empty?
+
         tb_api.request(:tasks, :task_answers_comments, id: task_stat_id, payload: comment).post
       end
 

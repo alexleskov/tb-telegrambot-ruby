@@ -15,8 +15,7 @@ module Teachbase
           def build_approve_button
             super
             InlineUrlButton.g(button_sign: I18n.t('open').capitalize,
-                              url: to_default_protocol(entity.source),
-                              emoji: :computer)
+                              url: to_default_protocol(entity.source))
           end
         end
       end

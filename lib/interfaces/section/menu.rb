@@ -5,7 +5,7 @@ module Teachbase
     class Interfaces
       class Section
         class Menu < Teachbase::Bot::InterfaceController
-          CHOOSING_BUTTONS = %i[find_by_query_num show_avaliable show_unvaliable show_all].freeze
+          CHOOSING_BUTTONS = %i[show_avaliable show_all find_by_query_num].freeze
 
           def main
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
@@ -13,10 +13,11 @@ module Teachbase
             answer.menu.create(buttons: main_buttons,
                                mode: :none,
                                type: :menu_inline,
-                               text: "#{create_title(params)}#{entity.statistics}
-                                      #{entity.categories_name}\n
-                                      #{description}
-                                      #{entity.sign_aval_sections_count_from}",
+                               text: [ create_title(params),
+                                       entity.statistics,
+                                       entity.categories_name,
+                                       description,
+                                       entity.sign_aval_sections_count_from ].compact.join("\n"),
                                slices_count: 3)
           end
 
@@ -25,7 +26,7 @@ module Teachbase
 
             params[:mode] ||= option == :find_by_query_num ? :none : :edit_msg
             answer.menu.custom_back(text: "#{create_title(params)}
-                                           #{build_list_msg_with_state(sections.sort_by(&:position))}",
+                                           #{build_list_with_state(sections.sort_by(&:position))}",
                                     mode: params[:mode],
                                     callback_data: entity.back_button_action)
           end
@@ -42,14 +43,14 @@ module Teachbase
 
           private
 
-          def build_list_msg_with_state(sections)
-            mess = []
+          def build_list_with_state(sections)
+            result = []
             sections.each do |section|
-              mess << section.title_with_state(section.find_state)
+              result << section.title_with_state(section.find_state)
             end
-            return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if mess.empty?
+            return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
-            mess.join("\n")
+            result.join("\n")
           end
 
           def main_buttons
@@ -72,7 +73,7 @@ module Teachbase
           end
 
           def build_content_button(content, content_type)
-            InlineCallbackButton.g(button_sign: button_sign(content_type.to_s, content),
+            InlineCallbackButton.g(button_sign: button_sign_by_content_type(content_type.to_s, content),
                                    callback_data: "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}",
                                    position: content.position)
           end

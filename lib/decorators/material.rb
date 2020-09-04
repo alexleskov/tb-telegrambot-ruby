@@ -14,7 +14,7 @@ module Decorators
         else
           sanitize_html(source)
         end
-      when :image, :video, :audio, :pdf, :iframe, :vimeo
+      when :image, :video, :audio, :pdf, :iframe, :vimeo, :netology
         to_default_protocol(source)
       when :youtube
         "#{YOUTUBE_HOST}#{source}"
@@ -22,7 +22,7 @@ module Decorators
     end
 
     def title
-      "#{attach_emoji(content_type.to_sym)} #{I18n.t('content').capitalize}: #{name}"
+      "#{attach_emoji(content_type.to_sym)} #{name}"
     end
   end
 end

@@ -14,17 +14,12 @@ module Teachbase
           interface.user(user).text.profile
         end
 
-        def show_course_session_info(cs_tb_id)
-          cs = appshell.data_loader.cs(tb_id: cs_tb_id).info
-          interface.cs(cs).menu(stages: %i[title info]).stats_info
-        end
-
         def sections_choosing_menu(cs_tb_id)
           sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
           return interface.sys.text.is_empty if sections.empty?
 
           cs = sections.first.course_session
-          interface.section(cs).menu(stages: %i[title sections],
+          interface.section(cs).menu(stages: %i[title],
                                      command_prefix: "show_sections_by_csid:#{cs.tb_id}_param:",
                                      back_button: { mode: :custom, action: "courses_list" }).main
         end
@@ -35,8 +30,8 @@ module Teachbase
           return interface.sys.text.is_empty if all_sections.empty? || sections_by_option.empty?
 
           cs = sections_by_option.first.course_session
-          interface.section(cs).menu(stages: %i[title sections menu],
-                                     params: { state: option }).show_by_option(sections_by_option, option)
+          interface.section(cs).menu(stages: %i[title menu],
+                                     params: { state: "#{option}_sections" }).show_by_option(sections_by_option, option)
         end
 
         def show_section_contents(sec_pos, cs_tb_id)
@@ -49,21 +44,16 @@ module Teachbase
           end
           section = section_loader.db_entity
           interface.section(section)
-                   .menu(stages: %i[title contents], back_button: { mode: :custom,
-                                                                    action: section.course_session.back_button_action })
+                   .menu(stages: %i[title], back_button: { mode: :custom,
+                                                           action: section.course_session.back_button_action })
                    .contents
         end
 
         def match_data
           super
 
-          on %r{^cs_info_id:} do
-            @message_value =~ %r{^cs_info_id:(\d*)}
-            show_course_session_info($1)
-          end
-
-          on %r{^/cs_sec_id} do
-            @message_value =~ %r{^/cs_sec_id(\d*)}
+          on %r{^/cs} do
+            @message_value =~ %r{^/cs(\d*)}
             sections_choosing_menu($1)
           end
 
@@ -101,8 +91,8 @@ module Teachbase
         def match_text_action
           super
 
-          on %r{^/cs_sec_id} do
-            @message_value =~ %r{^/cs_sec_id(\d*)}
+          on %r{^/cs} do
+            @message_value =~ %r{^/cs(\d*)}
             sections_choosing_menu($1)
           end
 
