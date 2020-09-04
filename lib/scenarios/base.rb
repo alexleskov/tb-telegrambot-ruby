@@ -118,7 +118,7 @@ module Teachbase
           return interface.sys.text.is_empty if course_sessions.empty?
 
           interface.cs.menu(text: course_sessions.first.sign_course_state)
-                      .main(course_sessions.limit(limit).offset(offset))
+                   .main(course_sessions.limit(limit).offset(offset))
           offset += limit
           return if offset >= course_sessions.size
 

@@ -30,11 +30,11 @@ class Breadcrumb
   end
 
   def info
-    "#{I18n.t('information')}"
+    I18n.t('information').to_s
   end
 
   def sections
-    "#{I18n.t('course_sections')}"
+    I18n.t('course_sections').to_s
   end
 
   def answers

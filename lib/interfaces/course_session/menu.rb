@@ -29,7 +29,7 @@ module Teachbase
           def build_list(course_sessions)
             result = []
             course_sessions.each do |course_session|
-              result << "#{course_session.sign_open(cover_url: '')}"
+              result << course_session.sign_open(cover_url: '').to_s
             end
             return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
