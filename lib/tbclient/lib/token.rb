@@ -56,7 +56,7 @@ module Teachbase
         when 301, 302, 307
           e.response.follow_redirection
         else
-          raise "Unexpected error with token requesting."
+          raise "Unexpected error with token requesting: Code: #{e.http_code}. Response: #{e.response}"
         end
       end
 

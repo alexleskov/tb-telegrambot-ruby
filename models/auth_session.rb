@@ -13,6 +13,13 @@ module Teachbase
 
       attr_reader :tb_api
 
+      def activate_by(user_id, apitoken_id)
+        update!(auth_at: Time.now.utc,
+                active: true,
+                api_token_id: apitoken_id,
+                user_id: user_id)
+      end
+
       def api_auth(api_type, version, oauth_params = {})
         @tb_api = Teachbase::API::Client.new(api_type, version, oauth_params)
       end
