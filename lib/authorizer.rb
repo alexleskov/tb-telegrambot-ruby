@@ -23,7 +23,7 @@ module Teachbase
         auth_checker unless authsession?
         @apitoken = authsession.api_token unless apitoken
 
-        if apitoken && apitoken.avaliable? && authsession?
+        if apitoken&.avaliable? && authsession?
           authsession.api_auth(:mobile, 2, access_token: apitoken.value)
         else
           auth_checker
@@ -49,7 +49,7 @@ module Teachbase
       def auth_checker
         @authsession = @tg_user.auth_sessions.find_or_create_by!(active: true)
         @apitoken = authsession.api_token
-        login_by_user_data unless apitoken && apitoken.avaliable?
+        login_by_user_data unless apitoken&.avaliable?
         raise unless authsession.active?
 
         authsession
@@ -74,7 +74,7 @@ module Teachbase
       end
 
       def user_auth_data
-        data = db_user_auth_data ? db_user_auth_data : @appshell.request_user_data
+        data = db_user_auth_data || @appshell.request_user_data
         raise if data.any?(nil)
 
         @login = data.first
