@@ -93,7 +93,7 @@ module Teachbase
         user_password = request_data(:password)
         raise unless user_password
 
-        [user_login.text, user_password.text]
+        [user_login.text, encrypt_password(user_password.text)]
       end
 
       def ask_answer(params = {})
@@ -135,10 +135,14 @@ module Teachbase
       def call_tbapi(type, version)
         login = user.email? ? user.email : user.phone
         authsession.api_auth(type.to_sym, version.to_i, user_login: login,
-                                                        password: user.password.decrypt(:symmetric, password: authorizer.send(:encrypt_key)))
+                                                        password: user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key))
       end
 
       private
+
+      def encrypt_password(password)
+        password.encrypt(:symmetric, password: $app_config.load_encrypt_key)
+      end
 
       def request_answer_bulk(params)
         loop do
