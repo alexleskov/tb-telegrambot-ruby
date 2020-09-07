@@ -56,8 +56,11 @@ module Formatter
   end
 
   def to_dash_from_zero(number)
+    return "—" unless number
+
     return number unless number.is_a?(Integer)
-    number.nil? || number.zero? ? "—" : number
+    
+    number.zero? ? "—" : number
   end
 
   def to_min(integer)
