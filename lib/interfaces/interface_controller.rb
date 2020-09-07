@@ -74,8 +74,7 @@ module Teachbase
       def show
         raise "Must have ':text' param" unless params[:text]
 
-        params[:text] = params[:text].dup.insert(0, create_title(object: entity.course_session,
-                                                                 stages: %i[title], params: { cover_url: '' }))
+        params[:text] = params[:text].dup.insert(0, create_title(object: entity.course_session, stages: %i[title], params: { cover_url: '' }))
         params.merge!(type: :menu_inline, disable_notification: true,
                       slices_count: 2, buttons: build_action_buttons)
         answer.menu.create(params)
@@ -142,6 +141,10 @@ module Teachbase
         else
           raise "No such sign for object type: '#{type}'"
         end
+      end
+
+      def sign_entity_status
+        "<b>#{I18n.t('state').capitalize}: #{attach_emoji(entity.status)} #{to_italic(I18n.t(entity.status).capitalize)}</b>"
       end
 
       def sign_by_status(status)

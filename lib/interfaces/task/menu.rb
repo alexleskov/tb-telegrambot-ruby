@@ -6,7 +6,7 @@ module Teachbase
       class Task
         class Menu < Teachbase::Bot::InterfaceController
           def show
-            params[:text] = "#{create_title(params)}#{description}"
+            params[:text] = "#{create_title(params)}\n#{sign_entity_status}\n#{description}"
             super
           end
 

@@ -8,7 +8,7 @@ module Teachbase
           DEFAULT_TIME_SPENT = 25
 
           def show
-            params[:text] = "#{create_title(params)}\n#{build_content}"
+            params[:text] = "#{create_title(params)}\n#{sign_entity_status}\n\n#{build_content}"
             super
           end
 

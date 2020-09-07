@@ -137,6 +137,8 @@ en:
   status_inprogress: "In progress"
   latest: "Latest"
   forbidden: "Forbidden"
+  completed: "Completed"
+  new: "New"
 ru: 
   greeting_message: "Привет,"
   farewell_message: "Пока"
@@ -193,7 +195,7 @@ ru:
   course_sections: "Содержание"
   update_data: "Обновить данные"
   updating_data: "Обновление данных. Подождите"
-  updating_success: "Данные обновлены успешно"
+  updating_success: "Данные обновлены успешно. Что делаем дальше?"
   section_unable: "Станет доступна после прохождения предыдущих разделов"
   section_delayed: "Доступ откроется:"
   section_unpublish: "Не опубликована"
@@ -276,3 +278,5 @@ ru:
   status_inprogress: "В прохождении"
   latest: "Последний"
   forbidden: "Доступ закрыт"
+  completed: "Пройдено"
+  new: "Новый"

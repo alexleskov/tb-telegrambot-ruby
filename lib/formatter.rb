@@ -55,8 +55,9 @@ module Formatter
     array.join(DELIMETER) + DELIMETER
   end
 
-  def to_dash_from_zero(integer)
-    integer.nil? || integer.zero? ? "—" : integer
+  def to_dash_from_zero(number)
+    return number unless number.is_a?(Integer)
+    number.nil? || number.zero? ? "—" : number
   end
 
   def to_min(integer)
