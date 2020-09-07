@@ -21,7 +21,6 @@ module Teachbase
         def confirm_answer
           entity + ["c_answer"]
         end
-
       end
     end
   end

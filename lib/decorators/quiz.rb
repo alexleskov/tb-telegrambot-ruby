@@ -19,7 +19,7 @@ module Decorators
     end
 
     def time_limit_sign
-      time_limit == 0 ? time_limit : Time.at(time_limit).utc.strftime("%H:%M:%S")
+      time_limit.zero? ? time_limit : Time.at(time_limit).utc.strftime("%H:%M:%S")
     end
   end
 end

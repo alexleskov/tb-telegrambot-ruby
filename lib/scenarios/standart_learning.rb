@@ -9,29 +9,29 @@ module Teachbase
         def show_profile_state
           appshell.data_loader.user.profile.me
           user = appshell.user
-          return interface.sys.text.is_empty unless user.profile && user
+          return interface.sys.text.on_empty unless user.profile && user
 
           interface.user(user).text.profile
         end
 
         def sections_choosing_menu(cs_tb_id)
           sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
-          return interface.sys.text.is_empty if sections.empty?
+          return interface.sys.text.on_empty if sections.empty?
 
           cs = sections.first.course_session
           interface.section(cs).menu(stages: %i[title],
                                      back_button: { mode: :custom,
                                                     action: router.cs(path: :list, p: [type: :states]).link })
-                                .main
+                   .main
         rescue RuntimeError => e
-          return interface.sys.text.is_empty if e.http_code == 404
+          return interface.sys.text.on_empty if e.http_code == 404
         end
 
         def show_sections(option, cs_tb_id)
           option = option.to_sym
           all_sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
           sections_by_option = find_sections_by(option, all_sections)
-          return interface.sys.text.is_empty if all_sections.empty? || sections_by_option.empty?
+          return interface.sys.text.on_empty if all_sections.empty? || sections_by_option.empty?
 
           cs = sections_by_option.first.course_session
           interface.section(cs).menu(stages: %i[title menu],
@@ -42,7 +42,7 @@ module Teachbase
           section_loader = appshell.data_loader.section(option: :position, value: sec_pos,
                                                         cs_tb_id: cs_tb_id)
           check_status do
-            return interface.sys.text.is_empty unless section_loader.contents
+            return interface.sys.text.on_empty unless section_loader.contents
 
             section_loader.progress
           end
@@ -54,7 +54,7 @@ module Teachbase
 
         def match_data
           super
-          
+
           on router.cs(path: :entity).regexp do
             @message_value =~ router.cs(path: :entity).regexp
             sections_choosing_menu($1)

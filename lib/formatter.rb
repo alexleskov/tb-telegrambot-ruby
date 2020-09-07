@@ -56,11 +56,11 @@ module Formatter
   end
 
   def to_dash_from_zero(integer)
-    integer.nil? || integer == 0 ? "—" : integer
+    integer.nil? || integer.zero? ? "—" : integer
   end
 
   def to_min(integer)
-    integer > 0 ? integer / 60 : 0
+    integer.positive? ? integer / 60 : 0
   end
 
   def chomp_file_name(url, mode = :with_extension)

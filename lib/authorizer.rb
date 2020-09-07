@@ -69,8 +69,8 @@ module Teachbase
         authsession.activate_by(@user.id, apitoken.id)
       rescue RuntimeError => e
         $logger.debug e.to_s
-        authsession.update!(active: false) if authsession
-        apitoken.update!(active: false) if apitoken
+        authsession&.update!(active: false)
+        apitoken&.update!(active: false)
         raise e
       end
 

@@ -37,7 +37,7 @@ module Teachbase
             answer.text.send_out("#{Emoji.t(:pencil2)} <b>#{I18n.t('enter_the_number')} #{sign_by_object_type(object_type)}:</b>")
           end
 
-          def is_empty(title_options = { text: "" })
+          def on_empty(title_options = { text: "" })
             params[:text] ||= "#{create_title(title_options)}\n"
             answer.text.send_out("\n#{params[:text]}\n#{sing_on_empty}")
           end

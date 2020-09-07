@@ -45,17 +45,17 @@ module Teachbase
         end
 
         def entity
-          value = id ? id : Teachbase::Bot::Routers::DIGIT_REGEXP
+          value = id || Teachbase::Bot::Routers::DIGIT_REGEXP
           ["#{self.class::SOURCE}#{value}"]
         end
 
         def build_path
           result = public_send(path)
           result = parameters ? add_parameters(result) : result
-          "#{result.join(root_class::DELIMETER)}"
+          result.join(root_class::DELIMETER).to_s
         end
-      
-      protected
+
+        protected
 
         def root_class
           Teachbase::Bot::Routers

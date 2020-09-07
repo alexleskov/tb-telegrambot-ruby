@@ -48,7 +48,7 @@ module Teachbase
 
         def more_actions
           links = appshell.data_loader.user.profile.links
-          return interface.sys.text.is_empty if links.empty?
+          return interface.sys.text.on_empty if links.empty?
 
           links.each do |link_param|
             interface.sys.text.link(link_param["url"], link_param["label"])
@@ -116,7 +116,7 @@ module Teachbase
           offset = offset.to_i
           limit = limit.to_i
           course_sessions = appshell.data_loader.cs.list(state: state, category: appshell.settings.scenario)
-          return interface.sys.text.is_empty if course_sessions.empty?
+          return interface.sys.text.on_empty if course_sessions.empty?
 
           interface.cs.menu(text: course_sessions.first.sign_course_state)
                    .main(course_sessions.limit(limit).offset(offset))
@@ -140,7 +140,7 @@ module Teachbase
 
         def open_section_content(type, sec_id, cs_tb_id, content_tb_id)
           entity = load_content(type, cs_tb_id, sec_id, content_tb_id).me
-          return interface.sys.text.is_empty unless entity
+          return interface.sys.text.on_empty unless entity
 
           options = default_open_content_options(type.to_sym)
           return interface.sys.text.on_error unless options
@@ -153,7 +153,7 @@ module Teachbase
 
         def show_section_additions(cs_tb_id, sec_id)
           section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
-          return interface.sys.text.is_empty if section_loader.links.empty?
+          return interface.sys.text.on_empty if section_loader.links.empty?
 
           interface.sys(section_loader.db_entity)
                    .menu(back_button: build_back_button_data, links: section_loader.links, stages: %i[title]).links
@@ -196,7 +196,7 @@ module Teachbase
                                     stages: %i[title answers]).user_answers
         end
 
-        def match_data          
+        def match_data
           on router.main(path: :login).regexp do
             sign_in
           end
@@ -229,13 +229,13 @@ module Teachbase
             show_cs_list($1)
           end
 
-          on router.cs(path: :list, p: [:offset, :lim, :param]).regexp do
-            @message_value =~ router.cs(path: :list, p: [:offset, :lim, :param]).regexp
+          on router.cs(path: :list, p: %i[offset lim param]).regexp do
+            @message_value =~ router.cs(path: :list, p: %i[offset lim param]).regexp
             show_cs_list($1, $2, $3)
           end
 
-          on router.content(path: :entity, p: [:cs_id, :sec_id, :type]).regexp do
-            @message_value =~ router.content(path: :entity, p: [:cs_id, :sec_id, :type]).regexp
+          on router.content(path: :entity, p: %i[cs_id sec_id type]).regexp do
+            @message_value =~ router.content(path: :entity, p: %i[cs_id sec_id type]).regexp
             open_section_content($1, $2, $3, $4)
           end
 
@@ -244,13 +244,13 @@ module Teachbase
             show_section_additions($1, $2)
           end
 
-          on router.content(path: :track_time, p: [:time, :sec_id, :cs_id]).regexp do
-            @message_value =~ router.content(path: :track_time, p: [:time, :sec_id, :cs_id]).regexp
+          on router.content(path: :track_time, p: %i[time sec_id cs_id]).regexp do
+            @message_value =~ router.content(path: :track_time, p: %i[time sec_id cs_id]).regexp
             track_time($1, $2, $3, $4)
           end
 
-          on router.content(path: :take_answer, p: [:answer_type, :cs_id]).regexp do
-            @message_value =~ router.content(path: :take_answer, p: [:answer_type, :cs_id]).regexp
+          on router.content(path: :take_answer, p: %i[answer_type cs_id]).regexp do
+            @message_value =~ router.content(path: :take_answer, p: %i[answer_type cs_id]).regexp
             take_answer($1, $2, $3)
           end
 
@@ -259,8 +259,8 @@ module Teachbase
             show_task_answers($1, $2)
           end
 
-          on router.content(path: :confirm_answer, p: [:param, :answer_type, :type, :sec_id, :cs_id]).regexp do
-            @message_value =~ router.content(path: :confirm_answer, p: [:param, :answer_type, :type, :sec_id, :cs_id]).regexp
+          on router.content(path: :confirm_answer, p: %i[param answer_type type sec_id cs_id]).regexp do
+            @message_value =~ router.content(path: :confirm_answer, p: %i[param answer_type type sec_id cs_id]).regexp
             confirm_answer($1, $2, $3, $4, $5, $6)
           end
         end
@@ -289,7 +289,7 @@ module Teachbase
             { mode: :edit_msg, show_answers_button: true, approve_button: true,
               disable_web_page_preview: true }
           when :quiz, :scorm_package
-            { mode: :edit_msg, approve_button: true }            
+            { mode: :edit_msg, approve_button: true }
           end
         end
 

@@ -5,7 +5,6 @@ module Teachbase
     class Interfaces
       class CourseSession
         class Menu < Teachbase::Bot::InterfaceController
-
           def main(course_sessions)
             params[:mode] ||= :none
             answer.menu.custom_back(text: "#{create_title(params)}\n\n#{build_list(course_sessions)}",
@@ -36,7 +35,7 @@ module Teachbase
 
           def state_buttons
             buttons_actions = []
-            Teachbase::Bot::CourseSession::STATES.each { |state| buttons_actions << router.cs(path: :list, p: [:param => state.to_s]).link }
+            Teachbase::Bot::CourseSession::STATES.each { |state| buttons_actions << router.cs(path: :list, p: [param: state.to_s]).link }
             InlineCallbackKeyboard.g(buttons_signs: to_i18n(Teachbase::Bot::CourseSession::STATES.dup << "update", "cs_"),
                                      buttons_actions: buttons_actions << router.cs(path: :list, p: [param: :update]).link).raw
           end

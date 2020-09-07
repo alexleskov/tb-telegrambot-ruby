@@ -20,7 +20,7 @@ module Teachbase
             answer.menu.create(params)
           end
 
-          def is_empty
+          def on_empty
             params.merge!(type: :menu_inline)
             params[:text] ||= "#{params[:text]}\n#{sing_on_empty}"
             params[:mode] ||= :none
@@ -37,7 +37,7 @@ module Teachbase
             answer.menu.back(params)
           end
 
-          def confirm_answer(answer_type)            
+          def confirm_answer(answer_type)
             buttons_signs = %i[accept decline]
             buttons_actions = []
             buttons_signs.each do |buttons_sign|
@@ -69,7 +69,7 @@ module Teachbase
             buttons_actions = []
             buttons_signs = settings_class::PARAMS
             buttons_signs.each do |buttons_sign|
-              buttons_actions << router.setting(path: :edit, p: [:param => buttons_sign]).link
+              buttons_actions << router.setting(path: :edit, p: [param: buttons_sign]).link
             end
             params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
                                                         buttons_actions: buttons_actions,
@@ -83,7 +83,7 @@ module Teachbase
             buttons_signs = to_constantize("#{option_name.upcase}_PARAMS", "Teachbase::Bot::#{type.capitalize}::")
             emojis = to_constantize("#{option_name.upcase}_EMOJI", "Teachbase::Bot::#{type.capitalize}::")
             buttons_signs.each do |buttons_sign|
-              buttons_actions << router.setting(:path => "#{option_name.downcase}", p: [:param => buttons_sign]).link
+              buttons_actions << router.setting(path: option_name.downcase.to_s, p: [param: buttons_sign]).link
             end
             params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
                                                         buttons_actions: buttons_actions,
@@ -102,7 +102,7 @@ module Teachbase
 
           def show_more
             path_params = [offset: params[:offset_num], lim: params[:limit_count]]
-            path_params = params[:param] ? path_params << {:param => params[:param]} : path_params
+            path_params = params[:param] ? path_params << { param: params[:param] } : path_params
             params[:callback_data] = router.public_send(params[:object_type], path: params[:path],
                                                                               p: path_params).link
             answer.menu.show_more(params)

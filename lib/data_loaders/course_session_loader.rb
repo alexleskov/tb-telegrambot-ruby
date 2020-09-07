@@ -15,11 +15,10 @@ module Teachbase
       def list(params)
         state = params[:state].to_s
         raise "No such option for update course sessions list" unless Teachbase::Bot::CourseSession::STATES.include?(state)
-        
+
         mode = params[:mode] || :normal
         delete_all_by_state(state) if mode == :with_reload
         lms_load(data: :listing, state: state)
-        courses_list = lms_info
         lms_info.each do |course_lms|
           @tb_id = course_lms["id"]
           next if course_lms["updated_at"] == db_entity.edited_at

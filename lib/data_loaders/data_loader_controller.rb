@@ -52,9 +52,9 @@ module Teachbase
         appshell.user
         yield
       rescue RuntimeError => e
-        if [400,401,402,403,404].include?(e.http_code)
-          raise e
-        elsif (@retries += 1) <= MAX_RETRIES
+        raise e if [400, 401, 402, 403, 404].include?(e.http_code)
+          
+        if (@retries += 1) <= MAX_RETRIES
           $logger.debug "#{e}\n#{I18n.t('retry')} №#{@retries}.."
           sleep(@retries)
           retry

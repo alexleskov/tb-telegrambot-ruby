@@ -120,7 +120,7 @@ module Teachbase
       end
 
       def cs_tb_id
-        entity.is_a?(Teachbase::Bot::CourseSession) ? entity.tb_id : entity.course_session.tb_id        
+        entity.is_a?(Teachbase::Bot::CourseSession) ? entity.tb_id : entity.course_session.tb_id
       end
 
       def sec_position

@@ -57,8 +57,10 @@ module Teachbase
 
           def main_buttons
             buttons_actions = []
-            CHOOSING_BUTTONS.each { |choose_button| buttons_actions << router.cs(path: :sections, id: entity.tb_id,
-                                                                                 p: [:param => choose_button]).link }
+            CHOOSING_BUTTONS.each do |choose_button|
+              buttons_actions << router.cs(path: :sections, id: entity.tb_id,
+                                           p: [param: choose_button]).link
+            end
             InlineCallbackKeyboard.g(buttons_signs: to_i18n(CHOOSING_BUTTONS),
                                      buttons_actions: buttons_actions,
                                      back_button: params[:back_button]).raw
@@ -72,7 +74,7 @@ module Teachbase
               contents_by_types[content_type].each { |content| buttons << build_content_button(content, type_by_section) }
             end
             buttons = buttons.sort_by(&:position)
-            buttons.unshift(build_addition_links_button) if entity.links_count > 0
+            buttons.unshift(build_addition_links_button) if entity.links_count.positive?
             InlineCallbackKeyboard.collect(buttons: buttons,
                                            back_button: params[:back_button]).raw
           end

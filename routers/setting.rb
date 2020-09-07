@@ -17,7 +17,6 @@ module Teachbase
         def scenario
           [SOURCE, "scenario"]
         end
-
       end
     end
   end

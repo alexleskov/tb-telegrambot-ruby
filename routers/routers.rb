@@ -19,7 +19,6 @@ module Teachbase
       LOGOUT = "close"
       LOGIN = "sign_in"
 
-
       class << self
         def param(value = STRING_REGEXP)
           "p:#{value}"
@@ -54,7 +53,7 @@ module Teachbase
         end
       end
 
-      def initialize ; end
+      def initialize; end
 
       def main(options)
         Teachbase::Bot::Routers::Controller.new(options, self)
@@ -75,7 +74,6 @@ module Teachbase
       def setting(options)
         Teachbase::Bot::Routers::Setting.new(options, self)
       end
-
     end
   end
 end

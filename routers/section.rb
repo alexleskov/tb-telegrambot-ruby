@@ -13,7 +13,6 @@ module Teachbase
         def additions
           entity + ["additions"]
         end
-
       end
     end
   end
