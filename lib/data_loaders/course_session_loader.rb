@@ -3,7 +3,6 @@
 module Teachbase
   module Bot
     class CourseSessionLoader < Teachbase::Bot::DataLoaderController
-      CS_STATES = %i[active archived].freeze
       CUSTOM_ATTRS = { "updated_at" => :edited_at }.freeze
 
       attr_reader :tb_id, :lms_info
@@ -14,10 +13,10 @@ module Teachbase
       end
 
       def list(params)
-        raise "No such option for update course sessions list" unless CS_STATES.include?(params[:state].to_sym)
-
-        mode = params[:mode] || :normal
         state = params[:state].to_s
+        raise "No such option for update course sessions list" unless Teachbase::Bot::CourseSession::STATES.include?(state)
+        
+        mode = params[:mode] || :normal
         delete_all_by_state(state) if mode == :with_reload
         lms_load(data: :listing, state: state)
         courses_list = lms_info
@@ -34,7 +33,7 @@ module Teachbase
 
       def update_all_states
         courses = {}
-        CS_STATES.each do |state|
+        Teachbase::Bot::CourseSession::STATES.each do |state|
           courses[state] = appshell.data_loader.cs.list(state: state, mode: :with_reload)
         end
         courses

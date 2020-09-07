@@ -6,7 +6,8 @@ module Teachbase
       class Base
         class Menu < Teachbase::Bot::InterfaceController
           def sign_in_again
-            params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in]).raw)
+            params.merge!(type: :menu_inline,
+                          buttons: InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.main(path: :login).link)]).raw)
             params[:mode] ||= :none
             params[:text] ||= "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
             answer.menu.create(params)
@@ -36,8 +37,17 @@ module Teachbase
             answer.menu.back(params)
           end
 
-          def confirm_answer(answer_type)
-            params[:command_prefix] = "conf_cs:#{cs_tb_id}_sec:#{entity.section.id}_obj:#{entity.tb_id}_t:#{entity.class.type_like_sym}_w:#{answer_type}_p:"
+          def confirm_answer(answer_type)            
+            buttons_signs = %i[accept decline]
+            buttons_actions = []
+            buttons_signs.each do |buttons_sign|
+              buttons_actions << router.content(path: :confirm_answer, id: entity.tb_id,
+                                                p: [param: buttons_sign, answer_type: answer_type, type: entity.class.type_like_sym,
+                                                    sec_id: entity.section.id, cs_id: cs_tb_id]).link
+            end
+            params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
+                                                        buttons_actions: buttons_actions,
+                                                        emojis: %i[ok leftwards_arrow_with_hook]).raw
             params[:text] ||= "<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n<pre>#{params[:user_answer]}</pre>"
             answer.menu.confirmation(params)
           end
@@ -49,27 +59,34 @@ module Teachbase
                               #{I18n.t('localization')}: #{I18n.t(params[:localization])}"
             params[:mode] ||= :none
             params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
-                                                        command_prefix: "edit_", buttons_actions: %i[settings]).raw
+                                                        buttons_actions: [router.setting(path: :edit).link]).raw
             answer.menu.create(params)
           end
 
           def edit_settings
             params.merge!(slices_count: 2, type: :menu_inline)
             params[:text] ||= "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>"
-            params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(settings_class::PARAMS),
-                                                        command_prefix: "settings:",
-                                                        buttons_actions: settings_class::PARAMS,
+            buttons_actions = []
+            buttons_signs = settings_class::PARAMS
+            buttons_signs.each do |buttons_sign|
+              buttons_actions << router.setting(path: :edit, p: [:param => buttons_sign]).link
+            end
+            params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
+                                                        buttons_actions: buttons_actions,
                                                         back_button: params[:back_button]).raw
             answer.menu.create(params)
           end
 
           def choosing(type, option_name)
             params[:text] ||= "<b>#{Emoji.t(:wrench)} #{I18n.t("choose_#{option_name.downcase}")}</b>"
+            buttons_actions = []
             buttons_signs = to_constantize("#{option_name.upcase}_PARAMS", "Teachbase::Bot::#{type.capitalize}::")
             emojis = to_constantize("#{option_name.upcase}_EMOJI", "Teachbase::Bot::#{type.capitalize}::")
+            buttons_signs.each do |buttons_sign|
+              buttons_actions << router.setting(:path => "#{option_name.downcase}", p: [:param => buttons_sign]).link
+            end
             params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
-                                                        command_prefix: "#{option_name.downcase}_param:",
-                                                        buttons_actions: buttons_signs,
+                                                        buttons_actions: buttons_actions,
                                                         emojis: emojis,
                                                         back_button: params[:back_button]).raw
             params.merge!(type: :menu_inline, slices_count: buttons_signs.size)
@@ -84,6 +101,10 @@ module Teachbase
           end
 
           def show_more
+            path_params = [offset: params[:offset_num], lim: params[:limit_count]]
+            path_params = params[:param] ? path_params << {:param => params[:param]} : path_params
+            params[:callback_data] = router.public_send(params[:object_type], path: params[:path],
+                                                                              p: path_params).link
             answer.menu.show_more(params)
           end
 

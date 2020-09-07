@@ -35,22 +35,16 @@ module Decorators
     end
 
     def sign_course_state
-      to_bolder(I18n.t("courses_#{status}").capitalize).to_s
+      to_bolder(I18n.t("cs_#{status}").capitalize).to_s
     end
 
     def sign_aval_sections_count_from
       "#{Formatter::DELIMETER}#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}"
     end
 
-    def sign_open(_params)
-      "#{title(cover_url: '')}\n#{to_italic(I18n.t('open'))}: #{open_action}"
+    def sign_open(params)
+      "#{title(params)}\n#{to_italic(I18n.t('open'))}: #{params[:route]}"
     end
-
-    def back_button_action
-      "/cs#{tb_id}"
-    end
-
-    alias open_action back_button_action
 
     private
 

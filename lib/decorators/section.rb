@@ -10,13 +10,14 @@ module Decorators
       " #{emoji} #{to_bolder(name)}"
     end
 
-    def title_with_state(state)
-      section_state_msg = respond_to?(state) ? public_send(state) : ""
-      "#{title(state: state)}\n#{section_state_msg}"
+    def title_with_state(params)
+      @route = params[:route]
+      section_state_msg = respond_to?(params[:state]) ? public_send(params[:state]) : ""
+      "#{title(params)}\n#{section_state_msg}"
     end
 
     def open
-      "<i>#{I18n.t('open')}</i>: #{back_button_action}"
+      "<i>#{I18n.t('open')}</i>: #{@route}"
     end
 
     def section_unable
@@ -29,14 +30,6 @@ module Decorators
 
     def section_unpublish
       "<i>#{I18n.t('section_unpublish')}</i>."
-    end
-
-    def back_button
-      InlineCallbackButton.custom_back(back_button_action)
-    end
-
-    def back_button_action
-      "/sec#{position}_cs#{course_session.tb_id}"
     end
   end
 end

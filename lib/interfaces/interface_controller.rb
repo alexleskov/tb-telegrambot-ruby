@@ -5,12 +5,13 @@ module Teachbase
     class InterfaceController
       include Formatter
 
-      attr_reader :params, :answer, :entity
+      attr_reader :params, :answer, :entity, :router
 
       def initialize(params, answer, entity)
         @params = params
         @answer = answer
         @entity = entity
+        @router = Teachbase::Bot::Routers.new
       end
 
       def sing_on_empty
@@ -100,13 +101,14 @@ module Teachbase
         return unless entity.answers && !entity.answers.empty? && params[:show_answers_button] && entity.course_session.active?
 
         InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
-                               callback_data: "answers_task_by_csid:#{cs_tb_id}_objid:#{entity.tb_id}")
+                               callback_data: router.content(path: :answers, id: entity.tb_id,
+                                                             p: [cs_id: cs_tb_id]).link)
       end
 
       def build_to_section_button
         return unless params[:back_button]
 
-        entity.section.back_button
+        InlineCallbackButton.custom_back(route_to_section)
       end
 
       def build_action_buttons
@@ -118,7 +120,19 @@ module Teachbase
       end
 
       def cs_tb_id
-        entity.course_session.tb_id
+        entity.is_a?(Teachbase::Bot::CourseSession) ? entity.tb_id : entity.course_session.tb_id        
+      end
+
+      def sec_position
+        entity.is_a?(Teachbase::Bot::Section) ? entity.position : entity.section.position
+      end
+
+      def route_to_section
+        router.section(path: :entity, position: sec_position, p: [cs_id: cs_tb_id]).link
+      end
+
+      def route_to_cs
+        router.cs(path: :entity, id: cs_tb_id).link
       end
 
       def sign_by_object_type(type)

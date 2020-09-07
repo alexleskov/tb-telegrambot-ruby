@@ -28,7 +28,7 @@ module Teachbase
             answer.menu.custom_back(text: "#{create_title(params)}
                                            #{build_list_with_state(sections.sort_by(&:position))}",
                                     mode: params[:mode],
-                                    callback_data: entity.back_button_action)
+                                    callback_data: route_to_cs)
           end
 
           def contents
@@ -46,7 +46,9 @@ module Teachbase
           def build_list_with_state(sections)
             result = []
             sections.each do |section|
-              result << section.title_with_state(section.find_state)
+              result << section.title_with_state(state: section.find_state,
+                                                 route: router.section(path: :entity, position: section.position,
+                                                                       p: [cs_id: entity.tb_id]).link)
             end
             return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
@@ -54,9 +56,11 @@ module Teachbase
           end
 
           def main_buttons
+            buttons_actions = []
+            CHOOSING_BUTTONS.each { |choose_button| buttons_actions << router.cs(path: :sections, id: entity.tb_id,
+                                                                                 p: [:param => choose_button]).link }
             InlineCallbackKeyboard.g(buttons_signs: to_i18n(CHOOSING_BUTTONS),
-                                     buttons_actions: CHOOSING_BUTTONS,
-                                     command_prefix: params[:command_prefix],
+                                     buttons_actions: buttons_actions,
                                      back_button: params[:back_button]).raw
           end
 
@@ -64,7 +68,8 @@ module Teachbase
             buttons = []
             contents_by_types = entity.contents_by_types
             contents_by_types.keys.each do |content_type|
-              contents_by_types[content_type].each { |content| buttons << build_content_button(content, content_type) }
+              type_by_section = Teachbase::Bot::Section::OBJECTS_TYPES[content_type.to_sym]
+              contents_by_types[content_type].each { |content| buttons << build_content_button(content, type_by_section) }
             end
             buttons = buttons.sort_by(&:position)
             buttons.unshift(build_addition_links_button) if entity.links_count > 0
@@ -72,14 +77,15 @@ module Teachbase
                                            back_button: params[:back_button]).raw
           end
 
-          def build_content_button(content, content_type)
-            InlineCallbackButton.g(button_sign: button_sign_by_content_type(content_type.to_s, content),
-                                   callback_data: "open_content:#{content_type}_by_csid:#{cs_tb_id}_secid:#{content.section_id}_objid:#{content.tb_id}",
+          def build_content_button(content, type_by_section)
+            InlineCallbackButton.g(button_sign: button_sign_by_content_type(type_by_section.to_s, content),
+                                   callback_data: router.content(path: :entity, id: content.tb_id,
+                                                                 p: [cs_id: cs_tb_id, sec_id: content.section_id, type: type_by_section]).link,
                                    position: content.position)
           end
 
           def build_addition_links_button
-            InlineCallbackButton.g(callback_data: "show_section_additions_by_csid:#{cs_tb_id}_secid:#{entity.id}",
+            InlineCallbackButton.g(callback_data: router.section(path: :additions, id: entity.id, p: [cs_id: cs_tb_id]).link,
                                    button_sign: I18n.t('attachments').to_s, emoji: :link)
           end
         end

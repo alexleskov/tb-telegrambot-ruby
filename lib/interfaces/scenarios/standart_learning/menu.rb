@@ -9,7 +9,7 @@ module Teachbase
             params.merge!(type: :menu, slices_count: 2)
             params[:text] ||= I18n.t('start_menu_message').to_s
             params[:buttons] = TextCommandKeyboard.g(commands: init_commands,
-                                                     buttons_signs: %i[courses_list show_profile_state settings more_actions sign_out]).raw
+                                                     buttons_signs: %i[cs_list show_profile_state settings more_actions sign_out]).raw
             answer.menu.create(params)
           end
         end

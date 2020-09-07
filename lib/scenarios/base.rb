@@ -61,15 +61,13 @@ module Teachbase
           interface.sys.menu(back_button: build_back_button_data).edit_settings
         end
 
-        def choose_localization
-          interface.sys.menu(back_button: build_back_button_data).choosing("Setting", :localization)
-        end
-
-        def choose_scenario
-          interface.sys.menu(back_button: build_back_button_data).choosing("Setting", :scenario)
+        def choose_setting(setting)
+          interface.sys.menu(back_button: build_back_button_data).choosing("Setting", setting.to_sym)
         end
 
         def change_language(lang)
+          raise "Lang param is empty" if lang.empty?
+
           appshell.change_localization(lang.to_s)
           I18n.with_locale appshell.settings.localization.to_sym do
             interface.sys.text.on_save("localization", lang)
@@ -78,6 +76,8 @@ module Teachbase
         end
 
         def change_scenario(mode)
+          raise "Mode param is empty" if mode.empty?
+
           appshell.change_scenario(mode)
           interface.sys.text.on_save("scenario", mode)
           interface.sys.menu.starting
@@ -106,12 +106,13 @@ module Teachbase
                   .content.load_by(type: content_type, tb_id: content_tb_id)
         end
 
-        def courses_list
-          interface.cs.menu(text: "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>",
-                            command_prefix: "courses_").states
+        def cs_list
+          interface.cs.menu(text: "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>").states
         end
 
         def show_cs_list(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0)
+          return courses_update if state.to_sym == :update
+
           offset = offset.to_i
           limit = limit.to_i
           course_sessions = appshell.data_loader.cs.list(state: state, category: appshell.settings.scenario)
@@ -122,7 +123,7 @@ module Teachbase
           offset += limit
           return if offset >= course_sessions.size
 
-          interface.sys.menu(object_type: :course_sessions, all_count: course_sessions.size, state: state,
+          interface.sys.menu(object_type: :cs, path: :list, all_count: course_sessions.size, param: state,
                              limit_count: limit, offset_num: offset).show_more
         end
 
@@ -130,34 +131,22 @@ module Teachbase
           check_status(:default) { appshell.data_loader.cs.update_all_states }
         end
 
-        def track_material(cs_tb_id, sec_id, tb_id, time_spent)
+        def track_time(cs_tb_id, sec_id, time_spent, content_tb_id)
           section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
           check_status(:default) do
-            section_loader.content.material(tb_id: tb_id).track(time_spent)
+            section_loader.content.material(tb_id: content_tb_id).track(time_spent)
           end
-          interface.sys.menu(callback_data: section_loader.db_entity.back_button_action).custom_back
         end
 
-        def open_section_content(type, cs_tb_id, sec_id, content_tb_id)
-          object_type = Teachbase::Bot::Section::OBJECTS_TYPES[type.to_sym]
-          content_loader = load_content(object_type, cs_tb_id, sec_id, content_tb_id)
-          entity = content_loader.me
+        def open_section_content(type, sec_id, cs_tb_id, content_tb_id)
+          entity = load_content(type, cs_tb_id, sec_id, content_tb_id).me
           return interface.sys.text.is_empty unless entity
 
-          interface_controller = interface.public_send(object_type, entity)
-          case object_type.to_sym
-          when :material
-            options = { approve_button: { time_spent: 25 } }
-          when :task
-            options = { mode: :edit_msg, show_answers_button: true, approve_button: true,
-                        disable_web_page_preview: true }
-          when :quiz, :scorm_package
-            options = { approve_button: true }
-          else
-            return interface.sys.text.on_error
-          end
+          options = default_open_content_options(type.to_sym)
+          return interface.sys.text.on_error unless options
+
           options[:stages] = %i[title]
-          interface_controller.menu(options).show
+          interface.public_send(type, entity).menu(options).show
         rescue RuntimeError => e
           return interface.sys.text.on_forbidden if e.http_code == 401 || e.http_code == 403
         end
@@ -170,18 +159,19 @@ module Teachbase
                    .menu(back_button: build_back_button_data, links: section_loader.links, stages: %i[title]).links
         end
 
-        def take_answer_task(cs_tb_id, task_tb_id, answer_type)
-          task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
-          return unless task
+        def take_answer(cs_tb_id, answer_type, content_tb_id)
+          content = appshell.user.task_by_cs_tbid(cs_tb_id, content_tb_id)
+          return unless content
 
           interface.sys.text.ask_answer
           appshell.ask_answer(mode: :bulk, saving: :cache)
           interface.sys.menu.after_auth
-          interface.sys(task).menu(disable_web_page_preview: true, mode: :none,
-                                   user_answer: appshell.user_cached_answer).confirm_answer(answer_type)
+          interface.sys(content).menu(disable_web_page_preview: true, mode: :none,
+                                      user_answer: appshell.user_cached_answer).confirm_answer(answer_type)
         end
 
-        def confirm_answer(cs_tb_id, sec_id, object_tb_id, type, answer_type, param)
+        def confirm_answer(cs_tb_id, sec_id, type, answer_type, param, object_tb_id)
+          interface.sys.destroy(delete_bot_message: :last)
           if param.to_sym == :decline
             appshell.clear_cached_answers
             interface.sys.text.declined
@@ -189,8 +179,7 @@ module Teachbase
             result = check_status(:default) { submit(cs_tb_id, sec_id, object_tb_id, answer_type, type) }
             appshell.clear_cached_answers if result
           end
-          section = appshell.user.section_by_cs_tbid(cs_tb_id, sec_id)
-          interface.sys.menu(callback_data: section.back_button_action.to_s).custom_back
+          open_section_content(type, sec_id, cs_tb_id, object_tb_id)
         end
 
         def submit(cs_tb_id, sec_id, object_tb_id, answer_type, type)
@@ -199,7 +188,7 @@ module Teachbase
           load_content(type, cs_tb_id, sec_id, object_tb_id).submit(answer_type.to_sym => build_answer_data)
         end
 
-        def answers_task(cs_tb_id, task_tb_id)
+        def show_task_answers(cs_tb_id, task_tb_id)
           task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
           return unless task
 
@@ -207,80 +196,102 @@ module Teachbase
                                     stages: %i[title answers]).user_answers
         end
 
-        def match_data
-          on %r{sign_in} do
+        def match_data          
+          on router.main(path: :login).regexp do
             sign_in
           end
 
-          on %r{edit_settings} do
+          on router.setting(path: :edit).regexp do
             edit_settings
           end
 
-          on %r{^settings:localization} do
-            choose_localization
+          on router.setting(path: :edit, p: [:param]).regexp do
+            @message_value =~ router.setting(path: :edit, p: [:param]).regexp
+            choose_setting($1)
           end
 
-          on %r{^localization_param:} do
-            @message_value =~ %r{^localization_param:(\w*)}
+          on router.setting(path: :localization, p: [:param]).regexp do
+            @message_value =~ router.setting(path: :localization, p: [:param]).regexp
             change_language($1)
           end
 
-          on %r{settings:scenario} do
-            choose_scenario
-          end
-
-          on %r{^scenario_param:} do
-            @message_value =~ %r{^scenario_param:(\w*)}
+          on router.setting(path: :scenario, p: [:param]).regexp do
+            @message_value =~ router.setting(path: :scenario, p: [:param]).regexp
             change_scenario($1)
           end
 
-          on %r{courses_list} do
-            courses_list
+          on router.cs(path: :list, p: [:type]).regexp do
+            cs_list
           end
 
-          on %r{courses_archived} do
-            show_cs_list(:archived)
+          on router.cs(path: :list, p: [:param]).regexp do
+            @message_value =~ router.cs(path: :list, p: [:param]).regexp
+            show_cs_list($1)
           end
 
-          on %r{courses_active} do
-            show_cs_list(:active)
-          end
-
-          on %r{show_course_sessions_list} do
-            @message_value =~ %r{^show_course_sessions_list:(\w*)_lim:(\d*)_offset:(\d*)}
+          on router.cs(path: :list, p: [:offset, :lim, :param]).regexp do
+            @message_value =~ router.cs(path: :list, p: [:offset, :lim, :param]).regexp
             show_cs_list($1, $2, $3)
           end
 
-          on %r{^open_content:} do
-            @message_value =~ %r{^open_content:(\w*)_by_csid:(\d*)_secid:(\d*)_objid:(\d*)}
+          on router.content(path: :entity, p: [:cs_id, :sec_id, :type]).regexp do
+            @message_value =~ router.content(path: :entity, p: [:cs_id, :sec_id, :type]).regexp
             open_section_content($1, $2, $3, $4)
           end
 
-          on %r{^show_section_additions_by_csid:} do
-            @message_value =~ %r{^show_section_additions_by_csid:(\d*)_secid:(\d*)}
+          on router.section(path: :additions, p: [:cs_id]).regexp do
+            @message_value =~ router.section(path: :additions, p: [:cs_id]).regexp
             show_section_additions($1, $2)
           end
 
-          on %r{courses_update} do
-            courses_update
+          on router.content(path: :track_time, p: [:time, :sec_id, :cs_id]).regexp do
+            @message_value =~ router.content(path: :track_time, p: [:time, :sec_id, :cs_id]).regexp
+            track_time($1, $2, $3, $4)
+          end
+
+          on router.content(path: :take_answer, p: [:answer_type, :cs_id]).regexp do
+            @message_value =~ router.content(path: :take_answer, p: [:answer_type, :cs_id]).regexp
+            take_answer($1, $2, $3)
+          end
+
+          on router.content(path: :answers, p: [:cs_id]).regexp do
+            @message_value =~ router.content(path: :answers, p: [:cs_id]).regexp
+            show_task_answers($1, $2)
+          end
+
+          on router.content(path: :confirm_answer, p: [:param, :answer_type, :type, :sec_id, :cs_id]).regexp do
+            @message_value =~ router.content(path: :confirm_answer, p: [:param, :answer_type, :type, :sec_id, :cs_id]).regexp
+            confirm_answer($1, $2, $3, $4, $5, $6)
           end
         end
 
         def match_text_action
-          on %r{^/start} do
+          on router.main(path: :start).regexp do
             starting
           end
 
-          on %r{^/settings} do
-            settings
+          on router.main(path: :logout).regexp do
+            closing
           end
 
-          on %r{^/close} do
-            closing
+          on router.setting(path: :root).regexp do
+            settings
           end
         end
 
         private
+
+        def default_open_content_options(object_type)
+          case object_type.to_sym
+          when :material
+            { mode: :edit_msg, approve_button: { time_spent: 25 } }
+          when :task
+            { mode: :edit_msg, show_answers_button: true, approve_button: true,
+              disable_web_page_preview: true }
+          when :quiz, :scorm_package
+            { mode: :edit_msg, approve_button: true }            
+          end
+        end
 
         def build_back_button_data
           { mode: :basic, sent_messages: appshell.controller.tg_user.tg_account_messages }

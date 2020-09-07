@@ -5,6 +5,7 @@ require 'active_record'
 module Teachbase
   module Bot
     class CourseSession < ActiveRecord::Base
+      STATES = %w[active archived].freeze
       include Decorators::CourseSession
 
       belongs_to :user
