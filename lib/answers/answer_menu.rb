@@ -6,7 +6,6 @@ require './lib/keyboards/inline_url_keyboard'
 
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   MENU_TYPES = %i[menu menu_inline hide_kb].freeze
-  CONFIRMATION = %i[accept decline].freeze
 
   def create(options)
     super(options)
@@ -30,7 +29,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     params.merge!(type: :menu_inline)
     params[:mode] ||= :none
     params[:text] ||= "#{I18n.t('show_more')} (#{params[:all_count] - params[:offset_num]})?"
-    params[:buttons] = InlineCallbackKeyboard.collect(buttons: [build_show_more_button(params)]).raw
+    params[:buttons] = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.more(params)]).raw
     create(params)
   end
 
@@ -42,7 +41,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   end
 
   def custom_back(params)
-    params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [build_custom_back_button(params)]).raw)
+    params.merge!(type: :menu_inline, buttons: InlineCallbackKeyboard.collect(buttons: [build_custom_back_button(params[:callback_data])]).raw)
     params[:mode] ||= :none
     params[:text] ||= I18n.t('start_menu_message').to_s
     params[:disable_notification] ||= true
@@ -57,14 +56,10 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     create(params)
   end
 
-  def confirmation(params = {})
+  def confirmation(params)
     params.merge!(type: :menu_inline, slices_count: 2)
     default_title = "<i>#{I18n.t('confirm_action')}</i> #{Emoji.t(:point_down)}"
     params[:text] = params[:text] ? "#{default_title}\n#{params[:text]}" : default_title
-    params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(CONFIRMATION),
-                                                command_prefix: params[:command_prefix],
-                                                buttons_actions: CONFIRMATION,
-                                                emojis: %i[ok leftwards_arrow_with_hook]).raw
     create(params)
   end
 
@@ -74,18 +69,12 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
 
   private
 
-  def build_show_more_button(params)
-    InlineCallbackButton.more(command_prefix: "show_#{params[:object_type]}_list:#{params[:state]}",
-                              limit: params[:limit_count],
-                              offset: params[:offset_num])
-  end
-
   def build_back_button
     InlineCallbackButton.back(@msg_params[:tg_user].tg_account_messages)
   end
 
-  def build_custom_back_button(params)
-    InlineCallbackButton.custom_back(params[:callback_data])
+  def build_custom_back_button(callback_data)
+    InlineCallbackButton.custom_back(callback_data)
   end
 
   def build_open_url_button(params)

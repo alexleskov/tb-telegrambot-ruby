@@ -4,6 +4,7 @@ require './lib/app_shell'
 require './lib/filer'
 require './lib/breadcrumb'
 require './lib/interfaces/interfaces'
+require './routers/routers/'
 
 module Teachbase
   module Bot
@@ -17,7 +18,8 @@ module Teachbase
                   :message,
                   :message_params,
                   :filer,
-                  :interface
+                  :interface,
+                  :router
 
       def initialize(params, dest)
         @respond = params[:respond]
@@ -28,6 +30,7 @@ module Teachbase
         @message_params = {}
         @interface = Teachbase::Bot::Interfaces.new(respond, dest)
         @filer = Teachbase::Bot::Filer.new(respond)
+        @router = Teachbase::Bot::Routers.new
         @appshell = Teachbase::Bot::AppShell.new(self)
       rescue RuntimeError => e
         $logger.debug "Initialization Controller error: #{e}"

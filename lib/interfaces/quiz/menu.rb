@@ -6,7 +6,7 @@ module Teachbase
       class Quiz
         class Menu < Teachbase::Bot::InterfaceController
           def show
-            params[:text] = "#{create_title(params)}#{entity.statistics}"
+            params[:text] = "#{create_title(params)}\n#{sign_entity_status}\n#{entity.statistics}"
             super
           end
 

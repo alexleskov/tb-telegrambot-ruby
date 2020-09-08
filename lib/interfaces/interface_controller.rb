@@ -5,12 +5,13 @@ module Teachbase
     class InterfaceController
       include Formatter
 
-      attr_reader :params, :answer, :entity
+      attr_reader :params, :answer, :entity, :router
 
       def initialize(params, answer, entity)
         @params = params
         @answer = answer
         @entity = entity
+        @router = Teachbase::Bot::Routers.new
       end
 
       def sing_on_empty
@@ -73,8 +74,7 @@ module Teachbase
       def show
         raise "Must have ':text' param" unless params[:text]
 
-        params[:text] = params[:text].dup.insert(0, create_title(object: entity.course_session,
-                                                                 stages: %i[title], params: { cover_url: '' }))
+        params[:text] = params[:text].dup.insert(0, create_title(object: entity.course_session, stages: %i[title], params: { cover_url: '' }))
         params.merge!(type: :menu_inline, disable_notification: true,
                       slices_count: 2, buttons: build_action_buttons)
         answer.menu.create(params)
@@ -100,13 +100,14 @@ module Teachbase
         return unless entity.answers && !entity.answers.empty? && params[:show_answers_button] && entity.course_session.active?
 
         InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
-                               callback_data: "answers_task_by_csid:#{cs_tb_id}_objid:#{entity.tb_id}")
+                               callback_data: router.content(path: :answers, id: entity.tb_id,
+                                                             p: [cs_id: cs_tb_id]).link)
       end
 
       def build_to_section_button
         return unless params[:back_button]
 
-        entity.section.back_button
+        InlineCallbackButton.custom_back(route_to_section)
       end
 
       def build_action_buttons
@@ -118,7 +119,19 @@ module Teachbase
       end
 
       def cs_tb_id
-        entity.course_session.tb_id
+        entity.is_a?(Teachbase::Bot::CourseSession) ? entity.tb_id : entity.course_session.tb_id
+      end
+
+      def sec_position
+        entity.is_a?(Teachbase::Bot::Section) ? entity.position : entity.section.position
+      end
+
+      def route_to_section
+        router.section(path: :entity, position: sec_position, p: [cs_id: cs_tb_id]).link
+      end
+
+      def route_to_cs
+        router.cs(path: :entity, id: cs_tb_id).link
       end
 
       def sign_by_object_type(type)
@@ -128,6 +141,10 @@ module Teachbase
         else
           raise "No such sign for object type: '#{type}'"
         end
+      end
+
+      def sign_entity_status
+        "<b>#{I18n.t('state').capitalize}: #{attach_emoji(entity.status)} #{to_italic(I18n.t(entity.status).capitalize)}</b>"
       end
 
       def sign_by_status(status)

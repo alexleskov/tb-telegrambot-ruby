@@ -23,7 +23,7 @@ module Teachbase
         @lms_info = call_data do
           case options[:data].to_sym
           when :track
-            appshell.authsession.track_material(cs_tb_id, tb_id, options[:time_spent])
+            appshell.authsession.track_time(cs_tb_id, tb_id, options[:time_spent])
           end
         end
       end

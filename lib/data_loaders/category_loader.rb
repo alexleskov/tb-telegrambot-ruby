@@ -43,8 +43,6 @@ module Teachbase
         Teachbase::Bot::Category
       end
 
-      private
-
       # Endpoint deleted in Teachbase
       #
       #       def lms_load

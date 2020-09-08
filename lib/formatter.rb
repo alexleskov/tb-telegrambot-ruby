@@ -55,12 +55,16 @@ module Formatter
     array.join(DELIMETER) + DELIMETER
   end
 
-  def to_dash_from_zero(integer)
-    integer.nil? || integer == 0 ? "—" : integer
+  def to_dash_from_zero(number)
+    return "—" unless number
+
+    return number unless number.is_a?(Integer)
+    
+    number.zero? ? "—" : number
   end
 
   def to_min(integer)
-    integer > 0 ? integer / 60 : 0
+    integer.positive? ? integer / 60 : 0
   end
 
   def chomp_file_name(url, mode = :with_extension)

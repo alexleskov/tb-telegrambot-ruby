@@ -21,14 +21,14 @@ class InlineCallbackButton < Button
     end
 
     def more(options)
-      raise unless options[:limit] || options[:offset]
+      raise unless options[:callback_data]
 
-      g(callback_data: "#{options[:command_prefix]}_lim:#{options[:limit]}_offset:#{options[:offset]}",
-        button_sign: I18n.t('show_more').to_s, emoji: :arrow_down)
+      g(callback_data: (options[:callback_data]).to_s, button_sign: I18n.t('show_more').to_s,
+        emoji: :arrow_down)
     end
 
-    def sign_in
-      g(callback_data: "sign_in", button_sign: I18n.t('sign_in').to_s, emoji: :rocket)
+    def sign_in(callback_data)
+      g(callback_data: callback_data, button_sign: I18n.t('sign_in').to_s, emoji: :rocket)
     end
 
     private

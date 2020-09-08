@@ -8,7 +8,7 @@ module Teachbase
           DEFAULT_TIME_SPENT = 25
 
           def show
-            params[:text] = "#{create_title(params)}\n#{build_content}"
+            params[:text] = "#{create_title(params)}\n#{sign_entity_status}\n\n#{build_content}"
             super
           end
 
@@ -20,7 +20,8 @@ module Teachbase
 
             time_spent = params[:approve_button][:time_spent] || DEFAULT_TIME_SPENT
             InlineCallbackButton.g(button_sign: I18n.t('viewed').to_s,
-                                   callback_data: "approve_material_by_csid:#{cs_tb_id}_secid:#{entity.section.id}_objid:#{entity.tb_id}_time:#{time_spent}")
+                                   callback_data: router.content(path: :track_time, id: entity.tb_id,
+                                                                 p: [time: time_spent, sec_id: entity.section.id, cs_id: cs_tb_id]).link)
           end
         end
       end

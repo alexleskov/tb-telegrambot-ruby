@@ -9,95 +9,78 @@ module Teachbase
         def show_profile_state
           appshell.data_loader.user.profile.me
           user = appshell.user
-          return interface.sys.text.is_empty unless user.profile && user
+          return interface.sys.text.on_empty unless user.profile && user
 
           interface.user(user).text.profile
         end
 
         def sections_choosing_menu(cs_tb_id)
           sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
-          return interface.sys.text.is_empty if sections.empty?
+          return interface.sys.text.on_empty if sections.empty?
 
           cs = sections.first.course_session
           interface.section(cs).menu(stages: %i[title],
-                                     command_prefix: "show_sections_by_csid:#{cs.tb_id}_param:",
-                                     back_button: { mode: :custom, action: "courses_list" }).main
+                                     back_button: { mode: :custom,
+                                                    action: router.cs(path: :list, p: [type: :states]).link })
+                   .main
+        rescue RuntimeError => e
+          return interface.sys.text.on_empty if e.http_code == 404
         end
 
-        def show_sections(cs_tb_id, option)
+        def show_sections(option, cs_tb_id)
+          option = option.to_sym
           all_sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
           sections_by_option = find_sections_by(option, all_sections)
-          return interface.sys.text.is_empty if all_sections.empty? || sections_by_option.empty?
+          return interface.sys.text.on_empty if all_sections.empty? || sections_by_option.empty?
 
           cs = sections_by_option.first.course_session
           interface.section(cs).menu(stages: %i[title menu],
                                      params: { state: "#{option}_sections" }).show_by_option(sections_by_option, option)
         end
 
-        def show_section_contents(sec_pos, cs_tb_id)
+        def show_section_contents(cs_tb_id, sec_pos)
           section_loader = appshell.data_loader.section(option: :position, value: sec_pos,
                                                         cs_tb_id: cs_tb_id)
           check_status do
-            return interface.sys.text.is_empty unless section_loader.contents
+            return interface.sys.text.on_empty unless section_loader.contents
 
             section_loader.progress
           end
-          section = section_loader.db_entity
-          interface.section(section)
+          interface.section(section_loader.db_entity)
                    .menu(stages: %i[title], back_button: { mode: :custom,
-                                                           action: section.course_session.back_button_action })
+                                                           action: router.cs(path: :entity, id: cs_tb_id).link })
                    .contents
         end
 
         def match_data
           super
 
-          on %r{^/cs} do
-            @message_value =~ %r{^/cs(\d*)}
+          on router.cs(path: :entity).regexp do
+            @message_value =~ router.cs(path: :entity).regexp
             sections_choosing_menu($1)
           end
 
-          on %r{^show_sections_by_csid:} do
-            @message_value =~ %r{^show_sections_by_csid:(\d*)_param:(\w*)}
-            show_sections($1, $2.to_sym)
+          on router.cs(path: :sections, p: [:param]).regexp do
+            @message_value =~ router.cs(path: :sections, p: [:param]).regexp
+            show_sections($1, $2)
           end
 
-          on %r{^/sec(\d*)_cs(\d*)} do
-            @message_value =~ %r{^/sec(\d*)_cs(\d*)}
+          on router.section(path: :entity, p: [:cs_id]).regexp do
+            @message_value =~ router.section(path: :entity, p: [:cs_id]).regexp
             show_section_contents($1, $2)
-          end
-
-          on %r{^approve_material_by_csid:} do
-            @message_value =~ %r{^approve_material_by_csid:(\d*)_secid:(\d*)_objid:(\d*)_time:(\d*)}
-            track_material($1, $2, $3, $4)
-          end
-
-          on %r{submit_task_by_csid:} do
-            @message_value =~ %r{submit_task_by_csid:(\d*)_objid:(\d*)_w:(\w*)}
-            take_answer_task($1, $2, $3)
-          end
-
-          on %r{answers_task_by_csid:} do
-            @message_value =~ %r{answers_task_by_csid:(\d*)_objid:(\d*)}
-            answers_task($1, $2)
-          end
-
-          on %r{conf_cs:} do
-            @message_value =~ %r{^conf_cs:(\d*)_sec:(\d*)_obj:(\d*)_t:(\w*)_w:(\w*)_p:(\w*)}
-            confirm_answer($1, $2, $3, $4, $5, $6)
           end
         end
 
         def match_text_action
           super
 
-          on %r{^/cs} do
-            @message_value =~ %r{^/cs(\d*)}
+          on router.cs(path: :entity).regexp do
+            @message_value =~ router.cs(path: :entity).regexp
             sections_choosing_menu($1)
           end
 
-          on %r{^/sec(\d*)_cs(\d*)} do
-            @message_value =~ %r{^/sec(\d*)_cs(\d*)}
+          on router.section(path: :entity, p: [:cs_id]).regexp do
+            @message_value =~ router.section(path: :entity, p: [:cs_id]).regexp
             show_section_contents($1, $2)
           end
         end

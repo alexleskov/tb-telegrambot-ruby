@@ -22,7 +22,7 @@ module Teachbase
                                         LEFT JOIN categories ON categories.id = course_categories.category_id')
                                 .where('course_sessions.status = :status AND categories.name ILIKE :category', status: params[:state].to_s,
                                                                                                                category: find_category_cname_by(params[:scenario]))
-                  end
+                 end
         return result unless params[:limit] && params[:offset]
 
         result.limit(params[:limit]).offset(params[:offset])
