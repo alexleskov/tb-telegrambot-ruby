@@ -137,7 +137,6 @@ module Teachbase
             section_loader.content.material(tb_id: content_tb_id).track(time_spent)
           end
           interface.sys.text.ask_next_action
-          open_section_content(:material, sec_id, cs_tb_id, content_tb_id)
         end
 
         def open_section_content(type, sec_id, cs_tb_id, content_tb_id)
