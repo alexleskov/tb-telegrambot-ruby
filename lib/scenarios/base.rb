@@ -9,7 +9,7 @@ module Teachbase
         DEFAULT_COUNT_PAGINAION = 10
 
         def starting
-          interface.sys.text(user_name: appshell.user_fullname, account_name: appshell.account_name).greetings
+          interface.sys.text.about_bot
           interface.sys.menu.starting
         end
 
@@ -136,6 +136,8 @@ module Teachbase
           check_status(:default) do
             section_loader.content.material(tb_id: content_tb_id).track(time_spent)
           end
+          interface.sys.text.ask_next_action
+          open_section_content(:material, sec_id, cs_tb_id, content_tb_id)
         end
 
         def open_section_content(type, sec_id, cs_tb_id, content_tb_id)

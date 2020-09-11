@@ -9,6 +9,10 @@ module Teachbase
             answer.text.send_out("#{Emoji.t(:rocket)}<b>#{I18n.t('enter')} #{I18n.t('in')} #{I18n.t(params[:account_name])}</b>")
           end
 
+          def about_bot
+            answer.menu.hide("#{I18n.t('about_bot')}")
+          end
+
           def greetings
             answer.menu.hide("<b>#{params[:user_name]}!</b> #{I18n.t('greetings')} #{I18n.t('in')} #{I18n.t(params[:account_name])}!")
           end

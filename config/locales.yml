@@ -1,4 +1,4 @@
-en:
+чтen:
   greeting_message: "Hello"
   farewell_message: "Bye"
   start_menu_message: "<i>Choose that you want</i>"
@@ -139,7 +139,8 @@ en:
   forbidden: "Forbidden"
   completed: "Completed"
   new: "New"
-ru: 
+  about_bot: "Hi! I am a chatbot - personal assistant in the world of distance learning. With me, training becomes more accessible and interesting. Where do we start?"
+ru:
   greeting_message: "Привет,"
   farewell_message: "Пока"
   start_menu_message: "<i>Что делаем дальше?</i>"
@@ -195,7 +196,7 @@ ru:
   course_sections: "Содержание"
   update_data: "Обновить данные"
   updating_data: "Обновление данных. Подождите"
-  updating_success: "Данные обновлены успешно. Что делаем дальше?"
+  updating_success: "Данные обновлены успешно"
   section_unable: "Станет доступна после прохождения предыдущих разделов"
   section_delayed: "Доступ откроется:"
   section_unpublish: "Не опубликована"
@@ -280,3 +281,4 @@ ru:
   forbidden: "Доступ закрыт"
   completed: "Пройдено"
   new: "Новый"
+  about_bot: "Привет! Я чат-бот — личный помощник в мире дистанционного обучения. Со мной обучение становится доступнее и интереснее. С чего начнем?"
