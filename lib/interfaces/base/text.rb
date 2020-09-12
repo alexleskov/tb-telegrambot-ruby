@@ -10,7 +10,7 @@ module Teachbase
           end
 
           def about_bot
-            answer.menu.hide("#{I18n.t('about_bot')}")
+            answer.menu.hide(I18n.t('about_bot').to_s)
           end
 
           def greetings

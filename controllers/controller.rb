@@ -67,6 +67,9 @@ module Teachbase
 
       def on(command, msg_type, &block)
         command =~ @message_value = find_msg_value(msg_type)
+
+        p "command: #{command}"
+        p "@message_value": {@message_value}
         return unless $LAST_MATCH_INFO
 
         case block.arity

@@ -8,7 +8,7 @@ module Teachbase
       @sign_and_emoji = [:sign_in, Emoji.t(:rocket)],
                         [:sign_out, Emoji.t(:door)],
                         [:settings, Emoji.t(:wrench)],
-                        [:show_profile_state, Emoji.t(:mortar_board)],
+                        [:user_profile, Emoji.t(:mortar_board)],
                         [:cs_list, Emoji.t(:books)],
                         [:update_profile_data, Emoji.t(:arrows_counterclockwise)],
                         [:ready, Emoji.t(:hand)],
