@@ -65,18 +65,12 @@ module Teachbase
         message.public_send(msg_type) if message.respond_to?(msg_type)
       end
 
-      def on(command, msg_type, &block)
-        command =~ @message_value = find_msg_value(msg_type)
+      def on(command, msg_type)
+        command =~ find_msg_value(msg_type)
         return unless $LAST_MATCH_INFO
 
-        case block.arity
-        when 0
-          yield
-        when 1
-          yield $1
-        when 2
-          yield $1, $2
-        end
+        @c_data = $LAST_MATCH_INFO
+        yield
       end
 
       def message_id

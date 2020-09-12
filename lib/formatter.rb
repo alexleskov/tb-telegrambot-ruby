@@ -59,7 +59,7 @@ module Formatter
     return "—" unless number
 
     return number unless number.is_a?(Integer)
-    
+
     number.zero? ? "—" : number
   end
 
