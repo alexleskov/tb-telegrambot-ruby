@@ -252,18 +252,15 @@ module Teachbase
           end
 
           on router.setting(path: :edit, p: %i[param]).regexp do
-            @message_value =~ router.setting(path: :edit, p: %i[param]).regexp
-            setting_choose($1)
+            setting_choose(@c_data[1])
           end
 
           on router.setting(path: :localization, p: %i[param]).regexp do
-            @message_value =~ router.setting(path: :localization, p: %i[param]).regexp
-            langugage_change($1)
+            langugage_change(@c_data[1])
           end
 
           on router.setting(path: :scenario, p: %i[param]).regexp do
-            @message_value =~ router.setting(path: :scenario, p: %i[param]).regexp
-            scenario_change($1)
+            scenario_change(@c_data[1])
           end
 
           on router.cs(path: :list, p: %i[type]).regexp do
@@ -271,58 +268,47 @@ module Teachbase
           end
 
           on router.cs(path: :list, p: %i[param]).regexp do
-            @message_value =~ router.cs(path: :list, p: %i[param]).regexp
-            courses_list_by($1)
+            courses_list_by(@c_data[1])
           end
 
           on router.cs(path: :list, p: %i[offset lim param]).regexp do
-            @message_value =~ router.cs(path: :list, p: %i[offset lim param]).regexp
-            courses_list_by($1, $2, $3)
+            courses_list_by(@c_data[1], @c_data[2], @c_data[3])
           end
 
           on router.cs(path: :entity).regexp do
-            @message_value =~ router.cs(path: :entity).regexp
-            sections_choose($1)
+            sections_choose(@c_data[1])
           end
 
           on router.cs(path: :sections, p: %i[param]).regexp do
-            @message_value =~ router.cs(path: :sections, p: %i[param]).regexp
-            sections_by($1, $2)
+            sections_by(@c_data[1], @c_data[2])
           end
 
           on router.section(path: :entity, p: %i[cs_id]).regexp do
-            @message_value =~ router.section(path: :entity, p: %i[cs_id]).regexp
-            section_contents($1, $2)
+            section_contents(@c_data[1], @c_data[2])
           end
 
           on router.section(path: :additions, p: %i[cs_id]).regexp do
-            @message_value =~ router.section(path: :additions, p: %i[cs_id]).regexp
-            section_additions($1, $2)
+            section_additions(@c_data[1], @c_data[2])
           end
 
           on router.content(path: :entity, p: %i[cs_id sec_id type]).regexp do
-            @message_value =~ router.content(path: :entity, p: %i[cs_id sec_id type]).regexp
-            content_by($1, $2, $3, $4)
+            content_by(@c_data[1], @c_data[2], @c_data[3], @c_data[4])
           end
 
           on router.content(path: :track_time, p: %i[time sec_id cs_id]).regexp do
-            @message_value =~ router.content(path: :track_time, p: %i[time sec_id cs_id]).regexp
-            content_track_time($1, $2, $3, $4)
+            content_track_time(@c_data[1], @c_data[2], @c_data[3], @c_data[4])
           end
 
           on router.content(path: :take_answer, p: %i[answer_type cs_id]).regexp do
-            @message_value =~ router.content(path: :take_answer, p: %i[answer_type cs_id]).regexp
-            content_take_answer($1, $2, $3)
+            content_take_answer(@c_data[1], @c_data[2], @c_data[3])
           end
 
           on router.content(path: :confirm_answer, p: %i[param answer_type type sec_id cs_id]).regexp do
-            @message_value =~ router.content(path: :confirm_answer, p: %i[param answer_type type sec_id cs_id]).regexp
-            answer_confirm($1, $2, $3, $4, $5, $6)
+            answer_confirm(@c_data[1], @c_data[2], @c_data[3], @c_data[4], @c_data[5], @c_data[6])
           end
 
           on router.content(path: :answers, p: %i[cs_id]).regexp do
-            @message_value =~ router.content(path: :answers, p: %i[cs_id]).regexp
-            task_answers($1, $2)
+            task_answers(@c_data[1], @c_data[2])
           end
         end
 
@@ -340,13 +326,11 @@ module Teachbase
           end
 
           on router.cs(path: :entity).regexp do
-            @message_value =~ router.cs(path: :entity).regexp
-            sections_choose($1)
+            sections_choose(@c_data[1])
           end
 
           on router.section(path: :entity, p: %i[cs_id]).regexp do
-            @message_value =~ router.section(path: :entity, p: %i[cs_id]).regexp
-            section_contents($1, $2)
+            section_contents(@c_data[1], @c_data[2])
           end
         end
 

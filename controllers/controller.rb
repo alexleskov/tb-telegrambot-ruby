@@ -66,20 +66,11 @@ module Teachbase
       end
 
       def on(command, msg_type, &block)
-        command =~ @message_value = find_msg_value(msg_type)
-
-        p "command: #{command}"
-        p "@message_value": {@message_value}
+        command =~ find_msg_value(msg_type)
         return unless $LAST_MATCH_INFO
 
-        case block.arity
-        when 0
-          yield
-        when 1
-          yield $1
-        when 2
-          yield $1, $2
-        end
+        yo = @c_data = $LAST_MATCH_INFO
+        yield (yo)
       end
 
       def message_id
