@@ -340,6 +340,8 @@ module Teachbase
               courses_list_by(:active)
             elsif entities_slugs.any?("archived")
               courses_list_by(:archived)
+            elsif entities_slugs.any?("on")
+              courses_states
             else
               interface.sys.text.on_undefined_action
             end
