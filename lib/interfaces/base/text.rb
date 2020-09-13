@@ -55,7 +55,7 @@ module Teachbase
           end
 
           def on_undefined_action
-            answer.text.send_out("#{I18n.t('undefined_action')}")
+            answer.text.send_out(I18n.t('undefined_action').to_s)
           end
 
           def on_forbidden
