@@ -334,6 +334,18 @@ module Teachbase
           end
         end
 
+        def match_ai_skill
+          on %r{courses} do
+            if entities_slugs.any?("active")
+              courses_list_by(:active)
+            elsif entities_slugs.any?("archived")
+              courses_list_by(:archived)
+            else
+              interface.sys.text.on_undefined_action
+            end
+          end
+        end
+
         protected
 
         def content_loader(content_type, cs_tb_id, sec_id, content_tb_id)

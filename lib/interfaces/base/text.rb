@@ -54,6 +54,10 @@ module Teachbase
             answer.text.send_out("#{Emoji.t(:crying_cat_face)}#{sign_on_error}: #{error}")
           end
 
+          def on_undefined_action
+            answer.text.send_out("#{I18n.t('undefined_action')}")
+          end
+
           def on_forbidden
             answer.text.send_out("#{Emoji.t(:x)} #{I18n.t('forbidden')}")
           end

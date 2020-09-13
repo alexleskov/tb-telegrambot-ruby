@@ -3,6 +3,7 @@
 require './lib/app_shell'
 require './lib/filer'
 require './lib/breadcrumb'
+require './lib/ai'
 require './lib/interfaces/interfaces'
 require './routers/routers/'
 
@@ -38,9 +39,8 @@ module Teachbase
 
       def take_data
         respond.msg_responder.bot.listen do |taking_message|
-          # $logger.debug "taking data: @#{taking_message.from.username}: #{taking_message}"
           options = { bot: respond.msg_responder.bot, message: taking_message }
-          break MessageResponder.new(options).detect_type if taking_message
+          break MessageResponder.new(options).detect_type(:ai_off) if taking_message
         end
       end
 
