@@ -3,6 +3,8 @@
 module Teachbase
   module Bot
     class AI
+      SMALL_TALK_INTENTS_SLUG = %w[greetings creator]
+
       attr_reader :client
 
       def initialize
@@ -11,7 +13,7 @@ module Teachbase
 
       def find_reaction(text)
         nlp_result = analyse(text)
-        nlp_result.intents.any? { |intent| intent.slug == "greetings" } ? message_by_small_talk(text) : nlp_result
+        nlp_result.intents.any? { |intent| SMALL_TALK_INTENTS_SLUG.include?(intent.slug) } ? message_by_small_talk(text) : nlp_result
       end
 
       def analyse(text)
