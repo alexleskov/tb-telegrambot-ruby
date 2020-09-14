@@ -3,6 +3,7 @@
 require './lib/app_shell'
 require './lib/filer'
 require './lib/breadcrumb'
+require './lib/ai'
 require './lib/interfaces/interfaces'
 require './routers/routers/'
 
@@ -38,9 +39,8 @@ module Teachbase
 
       def take_data
         respond.msg_responder.bot.listen do |taking_message|
-          # $logger.debug "taking data: @#{taking_message.from.username}: #{taking_message}"
           options = { bot: respond.msg_responder.bot, message: taking_message }
-          break MessageResponder.new(options).detect_type if taking_message
+          break MessageResponder.new(options).detect_type(:ai_off) if taking_message
         end
       end
 
@@ -65,18 +65,12 @@ module Teachbase
         message.public_send(msg_type) if message.respond_to?(msg_type)
       end
 
-      def on(command, msg_type, &block)
-        command =~ @message_value = find_msg_value(msg_type)
+      def on(command, msg_type)
+        command =~ find_msg_value(msg_type)
         return unless $LAST_MATCH_INFO
 
-        case block.arity
-        when 0
-          yield
-        when 1
-          yield $1
-        when 2
-          yield $1, $2
-        end
+        @c_data = $LAST_MATCH_INFO
+        yield
       end
 
       def message_id

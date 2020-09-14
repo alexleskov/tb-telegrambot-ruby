@@ -6,6 +6,11 @@ require './controllers/callback_controller'
 require './controllers/command_controller'
 require './controllers/file_controller/document'
 require './controllers/file_controller/photo'
+require './controllers/file_controller/video'
+require './controllers/file_controller/audio'
+require './controllers/file_controller/video_note'
+require './controllers/file_controller/voice'
+require './controllers/ai_controller/'
 
 module Teachbase
   module Bot
@@ -20,7 +25,8 @@ module Teachbase
         @commands = Teachbase::Bot::CommandList.new
       end
 
-      def detect_type
+      def detect_type(mode)
+        @mode = mode
         @params = { respond: self }
 
         case @message
@@ -36,7 +42,9 @@ module Teachbase
       end
 
       def text
-        Teachbase::Bot::TextController.new(@params).match_text_action
+        action = Teachbase::Bot::TextController.new(@params).match_text_action
+
+        @mode == :ai_on ? ai_controller.match_ai_skill : action
       end
 
       def audio
@@ -68,6 +76,10 @@ module Teachbase
       end
 
       private
+
+      def ai_controller
+        Teachbase::Bot::AIController.new(@params)
+      end
 
       def command?
         commands.command_by?(:value, @message)

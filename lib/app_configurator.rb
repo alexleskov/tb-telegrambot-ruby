@@ -16,6 +16,10 @@ class AppConfigurator
     setup_database
   end
 
+  def load_ai_token
+    YAML.safe_load(@load_config_file)['sap_conversation_ai_token']
+  end
+
   def load_token
     YAML.safe_load(@load_config_file)['telegram_bot_token']
   end

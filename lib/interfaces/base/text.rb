@@ -10,7 +10,7 @@ module Teachbase
           end
 
           def about_bot
-            answer.menu.hide("#{I18n.t('about_bot')}")
+            answer.menu.hide(I18n.t('about_bot').to_s)
           end
 
           def greetings
@@ -52,6 +52,10 @@ module Teachbase
 
           def on_error(error = "Undefined error")
             answer.text.send_out("#{Emoji.t(:crying_cat_face)}#{sign_on_error}: #{error}")
+          end
+
+          def on_undefined_action
+            answer.text.send_out(I18n.t('undefined_action').to_s)
           end
 
           def on_forbidden
