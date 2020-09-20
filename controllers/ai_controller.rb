@@ -26,7 +26,6 @@ module Teachbase
       def entities_slugs
         return if !skill? && reaction.entities.empty?
 
-        # p "reaction.entities: #{reaction.entities}"
         result = []
         reaction.entities.each { |entity| result << entity.name }
         result
@@ -50,6 +49,7 @@ module Teachbase
       end
 
       def skill?
+        #p "reaction: #{reaction}"
         return if reaction.nil? || reaction.is_a?(Sapcai::DialogMessage) || reaction.intents.empty?
 
         true

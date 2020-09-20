@@ -43,7 +43,6 @@ module Teachbase
 
       def text
         action = Teachbase::Bot::TextController.new(@params).match_text_action
-
         @mode == :ai_on ? ai_controller.match_ai_skill : action
       end
 
