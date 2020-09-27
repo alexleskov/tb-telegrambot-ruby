@@ -20,7 +20,8 @@ module Teachbase
                   :message_params,
                   :filer,
                   :interface,
-                  :router
+                  :router,
+                  :c_data
 
       def initialize(params, dest)
         @respond = params[:respond]
@@ -40,7 +41,7 @@ module Teachbase
       def take_data
         respond.msg_responder.bot.listen do |taking_message|
           options = { bot: respond.msg_responder.bot, message: taking_message }
-          break MessageResponder.new(options).detect_type(:ai_off) if taking_message
+          break MessageResponder.new(options).detect_type(ai_mode: :off) if taking_message
         end
       end
 

@@ -102,6 +102,17 @@ module Formatter
     "#{attach_emoji(type)} #{attach_emoji(object.status)} #{object.name}"
   end
 
+  def to_text_by_exceiption_code(error)
+    return unless error.respond_to?(:http_code)
+
+    result = if error.http_code == 401 || error.http_code == 403
+               "#{I18n.t('forbidden')}\n#{I18n.t('try_again')}"
+             elsif error.http_code == 404
+               I18n.t('not_found').to_s
+             end
+    "#{I18n.t('error')}. #{result}"
+  end
+
   private
 
   def build_text_block_by_data_type(block)

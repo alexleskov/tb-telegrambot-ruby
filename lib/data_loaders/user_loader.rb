@@ -8,7 +8,7 @@ module Teachbase
       attr_reader :lms_info
 
       def me
-        lms_load
+        lms_load(data: :profile)
         update_data(lms_info.merge!("tb_id" => lms_info["id"]))
         profile.me
         db_entity
@@ -16,6 +16,10 @@ module Teachbase
 
       def profile
         Teachbase::Bot::ProfileLoader.new(self)
+      end
+
+      def accounts
+        Teachbase::Bot::AccountLoader.new(self)
       end
 
       def db_entity(_mode = :none)
@@ -28,8 +32,17 @@ module Teachbase
 
       private
 
-      def lms_load
-        @lms_info = call_data { appshell.authsession.load_profile }
+      def lms_load(options)
+        @lms_info = call_data do
+          case options[:data].to_sym
+          when :profile
+            appshell.authsession.load_profile
+          when :accounts
+            appshell.authsession.load_user_accounts
+          else
+            raise "Can't call such data: '#{options[:data]}'"
+          end
+        end
       end
     end
   end

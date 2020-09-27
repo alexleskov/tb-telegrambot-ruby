@@ -25,13 +25,17 @@ module Teachbase
         @commands = Teachbase::Bot::CommandList.new
       end
 
-      def detect_type(mode)
-        @mode = mode
+      def detect_type(options)
+        @options = options
         @params = { respond: self }
 
         case @message
         when Telegram::Bot::Types::CallbackQuery
-          Teachbase::Bot::CallbackController.new(@params).match_data
+          cb_controller = Teachbase::Bot::CallbackController.new(@params)
+          cb_controller.match_data
+          return cb_controller if cb_controller.c_data
+
+          cb_controller.message.data
         when Telegram::Bot::Types::Message
           if command?
             Teachbase::Bot::CommandController.new(@params).push_command
@@ -42,8 +46,10 @@ module Teachbase
       end
 
       def text
-        action = Teachbase::Bot::TextController.new(@params).match_text_action
-        @mode == :ai_on ? ai_controller.match_ai_skill : action
+        text_controller = Teachbase::Bot::TextController.new(@params)
+        text_controller.match_text_action
+
+        @options[:ai_mode] == :on && !text_controller.c_data ? ai_controller.match_ai_skill : text_controller
       end
 
       def audio
@@ -86,7 +92,7 @@ module Teachbase
 
       def define_msg_type
         msg_type = MSG_TYPES.each do |type|
-          break type if @message.public_send(type)
+          break type if @message.respond_to?(type)
         end
         raise "Don't know such Telegram::Bot::Types::Message: '#{@message.class}'. Only: #{MSG_TYPES}" unless msg_type
 

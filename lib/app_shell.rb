@@ -11,14 +11,13 @@ module Teachbase
       include Validator
 
       ABORT_ACTION_COMMAND = %r{^/stop}.freeze
-      DEFAULT_ACCOUNT_NAME = "teachbase"
+      DEFAULT_ACCOUNT_NAME = "Teachbase"
 
       attr_reader :controller,
                   :data_loader,
                   :settings,
-                  :authorizer,
-                  :authsession,
-                  :account_name
+                  :authorizer
+
       attr_accessor :access_mode
 
       def initialize(controller, access_mode = :with_api)
@@ -35,8 +34,12 @@ module Teachbase
       end
 
       def user(mode = access_mode)
-        @authsession = authorizer.call_authsession(mode)
+        authsession(mode)
         authorizer.user
+      end
+
+      def authsession(mode = access_mode)
+        authorizer.call_authsession(mode)
       end
 
       def user_fullname(option = :string)
@@ -49,10 +52,17 @@ module Teachbase
         option == :string ? user_name.join(" ") : user_name
       end
 
+      def account_name
+        return DEFAULT_ACCOUNT_NAME unless authorizer.authsession?
+
+        authsession.account && !authsession.account.name.empty? ? authsession.account.name : DEFAULT_ACCOUNT_NAME
+      end
+
       def authorization(mode = access_mode)
         user(mode)
         return unless authsession.is_a?(Teachbase::Bot::AuthSession)
 
+        authorizer.send(:db_user_account_auth_data) unless authsession.account
         data_loader.user.me
         authsession
       end
@@ -76,6 +86,11 @@ module Teachbase
         end
       end
 
+      def logout_account
+        authorizer.reset_account
+        authorizer.send(:take_user_account_auth_data)
+      end
+
       def request_data(validate_type)
         data = controller.take_data
         return if break_taking_data?(data)
@@ -94,6 +109,31 @@ module Teachbase
         raise unless user_password
 
         [user_login.text, encrypt_password(user_password.text)]
+      end
+
+      def request_user_account_data
+        find_avaliable_accounts
+        raise TeachbaseBotException::Account.new("Access denied", 403) unless @avaliable_accounts
+
+        controller.interface.sys.menu(accounts: @avaliable_accounts).accounts
+        user_answer = controller.take_data
+        controller.interface.sys.destroy(delete_bot_message: :last)
+        raise TeachbaseBotException::Account.new("Access denied", 403) unless user_answer.is_a?(String)
+
+        @avaliable_accounts.select { |account| account["id"] == user_answer.to_i }.first
+      end
+
+      def find_avaliable_accounts
+        accounts_by_lms = data_loader.user.accounts.lms_info
+        account_ids_by_lms = accounts_by_lms.map { |account| account["id"] }
+        avaliable_accounts_ids = Teachbase::Bot::Account.find_all_matches_by_tbid(account_ids_by_lms).pluck(:tb_id)
+        return if avaliable_accounts_ids.empty?
+
+        accounts = []
+        avaliable_accounts_ids.each do |account_id|
+          accounts << accounts_by_lms.select { |account_by_lms| account_by_lms["id"] == account_id && account_by_lms["status"] == "enabled" }.first
+        end
+        @avaliable_accounts = accounts.sort_by! { |account| account["name"] }
       end
 
       def ask_answer(params = {})
@@ -162,7 +202,7 @@ module Teachbase
         elsif msg.nil?
           !msg
         end
-        # Will be add something for files on else
+        # TO DO: Will be add something for files on else
       end
 
       def set_scenario

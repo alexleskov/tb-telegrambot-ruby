@@ -56,6 +56,10 @@ class AppConfigurator
     YAML.safe_load(@load_config_file)['api_account_id']
   end
 
+  def ai_mode
+    YAML.safe_load(@load_config_file)['ai_mode']
+  end
+
   def token_expiration_time
     YAML.safe_load(@load_config_file)['token_expiration_time']
   end

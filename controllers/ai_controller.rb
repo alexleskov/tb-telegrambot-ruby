@@ -15,12 +15,12 @@ module Teachbase
       def find_reaction_by_ai
         @reaction = ai.find_reaction(text)
         if reaction.is_a?(Sapcai::DialogMessage)
-          send_message(reaction.content) 
+          send_message(reaction.content)
         elsif skill?
           reaction
         else
           send_message(I18n.t('undefined_text').to_s)
-        end        
+        end
       end
 
       def entities_slugs
@@ -49,7 +49,7 @@ module Teachbase
       end
 
       def skill?
-        #p "reaction: #{reaction}"
+        # p "reaction: #{reaction}"
         return if reaction.nil? || reaction.is_a?(Sapcai::DialogMessage) || reaction.intents.empty?
 
         true

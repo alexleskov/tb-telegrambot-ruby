@@ -18,6 +18,8 @@ require './lib/validator'
 require './lib/decorators/decorators'
 require './lib/message_responder'
 require './lib/message_sender'
+require './lib/exceptions/teachbase_bot_exception'
+require './lib/exceptions/account'
 
 $app_config = AppConfigurator.instance
 $app_config.configure

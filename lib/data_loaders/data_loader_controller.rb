@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require './models/auth_session'
 require './models/profile'
 require './models/course_session'
 require './models/section'

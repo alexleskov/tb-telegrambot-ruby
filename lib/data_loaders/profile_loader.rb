@@ -37,7 +37,7 @@ module Teachbase
       private
 
       def lms_load
-        @lms_info = call_data { user_loader.send(:lms_load) }
+        @lms_info = call_data { user_loader.send(:lms_load, data: :profile) }
       end
 
       def model_class

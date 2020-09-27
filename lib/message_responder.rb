@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
-require './models/tg_account'
-require './models/setting'
 require './models/bot_message'
 require './models/tg_account_message'
-require './models/auth_session'
+require './models/tg_account'
+require './models/setting'
 require './lib/respond'
 
 class MessageResponder
@@ -18,9 +17,16 @@ class MessageResponder
     tg_user.update!(first_name: message.from.first_name, last_name: message.from.last_name)
   end
 
-  def detect_type(mode = :ai_on)
+  def detect_type(options = {})
+    options[:ai_mode] ||= ai_default_mode
     I18n.with_locale settings.localization.to_sym do
-      Teachbase::Bot::Respond.new(self).detect_type(mode)
+      Teachbase::Bot::Respond.new(self).detect_type(options)
     end
+  end
+
+  private
+
+  def ai_default_mode
+    $app_config.ai_mode.to_sym
   end
 end

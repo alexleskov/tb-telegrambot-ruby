@@ -12,9 +12,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 21) do
+ActiveRecord::Schema.define(version: 22) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "accounts", force: :cascade do |t|
+    t.integer "tb_id", null: false
+    t.string "client_id", null: false
+    t.string "client_secret", null: false
+    t.string "name"
+    t.string "status"
+    t.string "logo_url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "answers", force: :cascade do |t|
     t.integer "tb_id"
@@ -60,6 +71,8 @@ ActiveRecord::Schema.define(version: 21) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "api_token_id"
+    t.bigint "account_id"
+    t.index ["account_id"], name: "index_auth_sessions_on_account_id"
     t.index ["api_token_id"], name: "index_auth_sessions_on_api_token_id"
     t.index ["tg_account_id"], name: "index_auth_sessions_on_tg_account_id"
     t.index ["user_id"], name: "index_auth_sessions_on_user_id"
@@ -306,6 +319,7 @@ ActiveRecord::Schema.define(version: 21) do
   end
 
   add_foreign_key "api_tokens", "auth_sessions"
+  add_foreign_key "auth_sessions", "accounts"
   add_foreign_key "auth_sessions", "api_tokens"
   add_foreign_key "auth_sessions", "tg_accounts"
   add_foreign_key "auth_sessions", "users"

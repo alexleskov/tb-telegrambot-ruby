@@ -23,11 +23,11 @@ module Teachbase
                              account_name: appshell.account_name).greetings
           courses_update
           interface.sys.menu.after_auth
-        rescue RuntimeError => e
-          $logger.debug "Error: #{e}"
-          title = if e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
-                    "#{I18n.t('forbidden')}\n#{I18n.t('try_again')}"
-                  end
+        rescue RuntimeError, TeachbaseBotException => e
+          $logger.debug "Error: #{e.class}. #{e.inspect}"
+          title = to_text_by_exceiption_code(e)
+          title = "#{I18n.t('accounts')}: #{title}" if e.is_a?(TeachbaseBotException::Account)
+          appshell.logout if access_denied?(e)
           interface.sys.menu(text: title).sign_in_again
         end
 
@@ -64,6 +64,13 @@ module Teachbase
         end
 
         alias more_actions profile_links
+
+        def change_account
+          appshell.logout_account
+          sign_in
+        end
+
+        alias accounts change_account
 
         def settings_edit
           interface.sys.menu(back_button: build_back_button_data).edit_settings
@@ -252,15 +259,15 @@ module Teachbase
           end
 
           on router.setting(path: :edit, p: %i[param]).regexp do
-            setting_choose(@c_data[1])
+            setting_choose(c_data[1])
           end
 
           on router.setting(path: :localization, p: %i[param]).regexp do
-            langugage_change(@c_data[1])
+            langugage_change(c_data[1])
           end
 
           on router.setting(path: :scenario, p: %i[param]).regexp do
-            scenario_change(@c_data[1])
+            scenario_change(c_data[1])
           end
 
           on router.cs(path: :list, p: %i[type]).regexp do
@@ -268,47 +275,47 @@ module Teachbase
           end
 
           on router.cs(path: :list, p: %i[param]).regexp do
-            courses_list_by(@c_data[1])
+            courses_list_by(c_data[1])
           end
 
           on router.cs(path: :list, p: %i[offset lim param]).regexp do
-            courses_list_by(@c_data[1], @c_data[2], @c_data[3])
+            courses_list_by(c_data[1], c_data[2], c_data[3])
           end
 
           on router.cs(path: :entity).regexp do
-            sections_choose(@c_data[1])
+            sections_choose(c_data[1])
           end
 
           on router.cs(path: :sections, p: %i[param]).regexp do
-            sections_by(@c_data[1], @c_data[2])
+            sections_by(c_data[1], c_data[2])
           end
 
           on router.section(path: :entity, p: %i[cs_id]).regexp do
-            section_contents(@c_data[1], @c_data[2])
+            section_contents(c_data[1], c_data[2])
           end
 
           on router.section(path: :additions, p: %i[cs_id]).regexp do
-            section_additions(@c_data[1], @c_data[2])
+            section_additions(c_data[1], c_data[2])
           end
 
           on router.content(path: :entity, p: %i[cs_id sec_id type]).regexp do
-            content_by(@c_data[1], @c_data[2], @c_data[3], @c_data[4])
+            content_by(c_data[1], c_data[2], c_data[3], c_data[4])
           end
 
           on router.content(path: :track_time, p: %i[time sec_id cs_id]).regexp do
-            content_track_time(@c_data[1], @c_data[2], @c_data[3], @c_data[4])
+            content_track_time(c_data[1], c_data[2], c_data[3], c_data[4])
           end
 
           on router.content(path: :take_answer, p: %i[answer_type cs_id]).regexp do
-            content_take_answer(@c_data[1], @c_data[2], @c_data[3])
+            content_take_answer(c_data[1], c_data[2], c_data[3])
           end
 
           on router.content(path: :confirm_answer, p: %i[param answer_type type sec_id cs_id]).regexp do
-            answer_confirm(@c_data[1], @c_data[2], @c_data[3], @c_data[4], @c_data[5], @c_data[6])
+            answer_confirm(c_data[1], c_data[2], c_data[3], c_data[4], c_data[5], c_data[6])
           end
 
           on router.content(path: :answers, p: %i[cs_id]).regexp do
-            task_answers(@c_data[1], @c_data[2])
+            task_answers(c_data[1], c_data[2])
           end
         end
 
@@ -326,11 +333,11 @@ module Teachbase
           end
 
           on router.cs(path: :entity).regexp do
-            sections_choose(@c_data[1])
+            sections_choose(c_data[1])
           end
 
           on router.section(path: :entity, p: %i[cs_id]).regexp do
-            section_contents(@c_data[1], @c_data[2])
+            section_contents(c_data[1], c_data[2])
           end
         end
 
@@ -350,12 +357,14 @@ module Teachbase
 
         protected
 
+        def access_denied?(e)
+          e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
+        end
+
         def content_loader(content_type, cs_tb_id, sec_id, content_tb_id)
           appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
                   .content.load_by(type: content_type, tb_id: content_tb_id)
         end
-
-        private
 
         def default_open_content_options(object_type)
           case object_type.to_sym

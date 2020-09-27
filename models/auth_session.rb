@@ -10,6 +10,7 @@ module Teachbase
       belongs_to :user
       belongs_to :tg_account
       belongs_to :api_token
+      belongs_to :account
 
       attr_reader :tb_api
 
@@ -26,6 +27,10 @@ module Teachbase
 
       def load_profile
         tb_api.request(:user, :profile).get
+      end
+
+      def load_user_accounts
+        tb_api.request(:user, :accounts).get
       end
 
       def load_course_sessions(state, options = {})
