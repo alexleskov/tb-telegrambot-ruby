@@ -9,7 +9,7 @@ module Teachbase
             params.merge!(type: :menu_inline,
                           buttons: InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.main(path: :login).link)]).raw)
             params[:mode] ||= :none
-            params[:text] ||= "#{I18n.t('error')} #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+            params[:text] ||= "#{I18n.t('error')}. #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
             answer.menu.create(params)
           end
 
@@ -120,6 +120,25 @@ module Teachbase
               buttons << InlineUrlButton.to_open(link_params["source"], link_params["title"])
             end
             params[:buttons] = InlineUrlKeyboard.collect(buttons: buttons, back_button: params[:back_button]).raw
+            answer.menu.create(params)
+          end
+
+          def accounts
+            raise unless params[:accounts].is_a?(Array)
+
+            acc_ids = []
+            acc_names = []
+            params[:accounts].each do |account|
+              next if account["status"] == "disabled"
+
+              acc_ids << account["id"]
+              acc_names << account["name"]
+            end
+            params[:text] ||= "Choose account"
+            params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: acc_names,
+                                                        buttons_actions: acc_ids,
+                                                        back_button: params[:back_button]).raw
+            params.merge!(type: :menu_inline, slices_count: 2, mode: :none)
             answer.menu.create(params)
           end
 

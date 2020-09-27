@@ -20,17 +20,14 @@ module Teachbase
       def initialize(api_type, version_number, client_params = {})
         @api_type = api_type
         @api_version = version_number
-        @rest_client = client_params[:rest_client] = Kernel.const_get($app_config.rest_client)
+        @rest_client = client_params[:rest_client] ||= Kernel.const_get($app_config.rest_client)
         @lms_host = client_params[:lms_host] ||= $app_config.lms_host
-        client_params[:account_id] ||= $app_config.account_id
-        client_params[:client_id] ||= $app_config.client_id
-        client_params[:client_secret] ||= $app_config.client_secret
-        client_params[:token_expiration_time] ||= $app_config.token_expiration_time
+        @client_params = client_params
 
         raise "No such API type: '#{api_type}'. Use one of: #{API_TYPES}" unless %i[endpoint mobile].include?(api_type.to_sym)
         raise "No such API destination. Type: #{api_type}, version: #{api_version}" unless api_version_and_type_exists?(api_type, api_version)
-        raise "Set up: 'client_id' and 'client_secret'. Your params: #{client_params}" unless client_param?(client_params)
-        raise "Set up: 'user_login', 'password', 'account_id'. Your params: #{client_params}" if api_mobile_type? && !mobile_param?(client_params)
+        raise "Set up: 'client_id' and 'client_secret'. Your params: #{client_params}" if !api_mobile_type? && !auth_param?
+        raise "Set up: 'user_login', 'password', 'account_id'. Your params: #{client_params}" if api_mobile_type? && !auth_param?
 
         @token = Teachbase::API::Token.new(api_type, api_version, client_params)
       end
@@ -48,12 +45,17 @@ module Teachbase
         api_type == :mobile
       end
 
-      def client_param?(params)
-        params[:access_token] || !([params[:client_id], params[:client_secret]].any? { |key| key.nil? || key.empty? })
+      def auth_param?
+        auth_params_list = api_mobile_type? ? mobile_params_list : client_params_list
+        @client_params[:access_token] || auth_params_list.none?(nil)
       end
 
-      def mobile_param?(params)
-        params[:access_token] || !([params[:user_login], params[:password], params[:account_id]].any? { |key| key.nil? || key.empty? })
+      def client_params_list
+        [@client_params[:client_id], @client_params[:client_secret], @client_params[:account_id]]
+      end
+
+      def mobile_params_list
+        client_params_list + [@client_params[:user_login], @client_params[:password]]
       end
 
       def api_version_and_type_exists?(api_type, api_version)

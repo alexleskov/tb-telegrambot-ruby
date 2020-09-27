@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -12,9 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 21) do
+ActiveRecord::Schema.define(version: 22) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "accounts", force: :cascade do |t|
+    t.integer "tb_id", null: false
+    t.string "client_id", null: false
+    t.string "client_secret", null: false
+    t.string "name"
+    t.string "status"
+    t.string "logo_url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "answers", force: :cascade do |t|
     t.integer "tb_id"
@@ -25,7 +35,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.bigint "answerable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[answerable_type answerable_id], name: "index_answers_on_answerable_type_and_answerable_id"
+    t.index ["answerable_type", "answerable_id"], name: "index_answers_on_answerable_type_and_answerable_id"
   end
 
   create_table "api_tokens", force: :cascade do |t|
@@ -49,7 +59,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.bigint "imageable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[imageable_type imageable_id], name: "index_attachments_on_imageable_type_and_imageable_id"
+    t.index ["imageable_type", "imageable_id"], name: "index_attachments_on_imageable_type_and_imageable_id"
   end
 
   create_table "auth_sessions", force: :cascade do |t|
@@ -60,6 +70,8 @@ ActiveRecord::Schema.define(version: 21) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "api_token_id"
+    t.bigint "account_id"
+    t.index ["account_id"], name: "index_auth_sessions_on_account_id"
     t.index ["api_token_id"], name: "index_auth_sessions_on_api_token_id"
     t.index ["tg_account_id"], name: "index_auth_sessions_on_tg_account_id"
     t.index ["user_id"], name: "index_auth_sessions_on_user_id"
@@ -109,7 +121,7 @@ ActiveRecord::Schema.define(version: 21) do
     t.bigint "commentable_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index %w[commentable_type commentable_id], name: "index_comments_on_commentable_type_and_commentable_id"
+    t.index ["commentable_type", "commentable_id"], name: "index_comments_on_commentable_type_and_commentable_id"
   end
 
   create_table "course_categories", force: :cascade do |t|
@@ -306,6 +318,7 @@ ActiveRecord::Schema.define(version: 21) do
   end
 
   add_foreign_key "api_tokens", "auth_sessions"
+  add_foreign_key "auth_sessions", "accounts"
   add_foreign_key "auth_sessions", "api_tokens"
   add_foreign_key "auth_sessions", "tg_accounts"
   add_foreign_key "auth_sessions", "users"

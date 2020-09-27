@@ -18,7 +18,7 @@ module Teachbase
               "profile"
             end
 
-            def user_accounts
+            def accounts
               "user_accounts"
             end
           end

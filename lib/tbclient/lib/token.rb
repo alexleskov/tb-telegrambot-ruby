@@ -19,25 +19,22 @@ module Teachbase
                   :expires_in,
                   :refresh_token,
                   :created_at,
-                  :resource_owner_id
+                  :resource_owner_id,
+                  :expiration_time
 
       def initialize(api_type, api_version, params)
         @api_type = api_type
         @api_version = api_version
-        @params = params
         @account_id = params[:account_id]
+        @expiration_time = params[:expiration_time] || $app_config.token_expiration_time
+        @params = params
         @grant_type = self.class.grant_types[api_type]
         @value = call_token
-
         raise "API token '#{value}' is null" unless value
       end
 
       def call_token
-        if @params[:access_token]
-          @params[:access_token].to_s
-        else
-          token_request
-        end
+        @params[:access_token] ? @params[:access_token].to_s : token_request
       end
 
       def token_request
@@ -78,7 +75,7 @@ module Teachbase
       end
 
       def access_token_expired_at(raw_token_response)
-        token_exp_time = @params[:token_expiration_time].to_i
+        token_exp_time = @expiration_time.to_i
         raise "Token time limit = '#{token_exp_time}'. It can't be < 0." if token_exp_time.negative?
 
         Time.at(raw_token_response["created_at"]).utc + token_exp_time

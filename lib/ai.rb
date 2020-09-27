@@ -3,7 +3,7 @@
 module Teachbase
   module Bot
     class AI
-      SMALL_TALK_INTENTS_SLUG = %w[greetings creator]
+      SMALL_TALK_INTENTS_SLUG = %w[greetings creator].freeze
 
       attr_reader :client
 

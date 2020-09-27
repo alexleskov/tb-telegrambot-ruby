@@ -6,7 +6,7 @@ module Teachbase
       class Base
         class Text < Teachbase::Bot::InterfaceController
           def on_enter
-            answer.text.send_out("#{Emoji.t(:rocket)}<b>#{I18n.t('enter')} #{I18n.t('in')} #{I18n.t(params[:account_name])}</b>")
+            answer.text.send_out("#{Emoji.t(:rocket)}<b>#{I18n.t('enter')} #{I18n.t('in')} #{params[:account_name]}</b>")
           end
 
           def about_bot
@@ -14,7 +14,7 @@ module Teachbase
           end
 
           def greetings
-            answer.menu.hide("<b>#{params[:user_name]}!</b> #{I18n.t('greetings')} #{I18n.t('in')} #{I18n.t(params[:account_name])}!")
+            answer.menu.hide("<b>#{params[:user_name]}!</b> #{I18n.t('greetings')} #{I18n.t('in')} #{params[:account_name]}!")
           end
 
           def farewell
