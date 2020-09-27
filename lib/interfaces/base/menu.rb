@@ -134,7 +134,7 @@ module Teachbase
               acc_ids << account["id"]
               acc_names << account["name"]
             end
-            params[:text] ||= "Choose account"
+            params[:text] ||= "<b>#{Emoji.t(:school)} #{I18n.t('choose_account')}</b>"
             params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: acc_names,
                                                         buttons_actions: acc_ids,
                                                         back_button: params[:back_button]).raw

@@ -144,6 +144,7 @@ en:
   company: "Company"
   accounts: "Accounts"
   not_found: "Not found"
+  choose_account: "Choose account"
 ru:
   greeting_message: "Привет,"
   farewell_message: "Пока"
@@ -290,3 +291,4 @@ ru:
   company: "Организация"
   accounts: "Аккаунты"
   not_found: "Не найдено"
+  choose_account: "Выберите аккаунт"
