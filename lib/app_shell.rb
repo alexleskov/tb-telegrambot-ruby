@@ -115,17 +115,12 @@ module Teachbase
         find_avaliable_accounts
         raise TeachbaseBotException::Account.new("Access denied", 403) unless @avaliable_accounts
 
-        choosed_account = if @avaliable_accounts.size > 1
-                            controller.interface.sys.menu(accounts: @avaliable_accounts).accounts
-                            user_answer = controller.take_data
-                            controller.interface.sys.destroy(delete_bot_message: :last)
-                            raise TeachbaseBotException::Account.new("Access denied", 403) unless user_answer.is_a?(String)
+        controller.interface.sys.menu(accounts: @avaliable_accounts).accounts
+        user_answer = controller.take_data
+        controller.interface.sys.destroy(delete_bot_message: :last)
+        raise TeachbaseBotException::Account.new("Access denied", 403) unless user_answer.is_a?(String)
 
-                            @avaliable_accounts.select { |account| account["id"] == user_answer.to_i }
-                          else
-                            @avaliable_accounts
-                          end
-        choosed_account.first
+        @avaliable_accounts.select { |account| account["id"] == user_answer.to_i }.first
       end
 
       def find_avaliable_accounts
