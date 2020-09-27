@@ -61,7 +61,7 @@ module Teachbase
       def authorization(mode = access_mode)
         user(mode)
         return unless authsession.is_a?(Teachbase::Bot::AuthSession)
-        
+
         authorizer.send(:db_user_account_auth_data) unless authsession.account
         data_loader.user.me
         authsession
@@ -138,7 +138,7 @@ module Teachbase
         avaliable_accounts_ids.each do |account_id|
           accounts << accounts_by_lms.select { |account_by_lms| account_by_lms["id"] == account_id && account_by_lms["status"] == "enabled" }.first
         end
-        @avaliable_accounts = accounts.sort_by! { |account| account["name"] }        
+        @avaliable_accounts = accounts.sort_by! { |account| account["name"] }
       end
 
       def ask_answer(params = {})

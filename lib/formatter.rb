@@ -108,7 +108,7 @@ module Formatter
     result = if error.http_code == 401 || error.http_code == 403
                "#{I18n.t('forbidden')}\n#{I18n.t('try_again')}"
              elsif error.http_code == 404
-               "#{I18n.t('not_found')}"
+               I18n.t('not_found').to_s
              end
     "#{I18n.t('error')}. #{result}"
   end

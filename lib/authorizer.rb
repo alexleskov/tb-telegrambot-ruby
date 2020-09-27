@@ -78,7 +78,7 @@ module Teachbase
         take_user_account_auth_data
       rescue RuntimeError => e
         $logger.debug e.to_s
-        unless token && token.value
+        unless token&.value
           authsession&.update!(active: false)
           apitoken&.update!(active: false)
         end
@@ -144,7 +144,6 @@ module Teachbase
         user_account.update!(name: data["name"], status: data["status"], logo_url: data["logo_url"])
         user_account
       end
-
     end
   end
 end
