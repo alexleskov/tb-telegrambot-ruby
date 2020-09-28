@@ -125,6 +125,7 @@ module Teachbase
         def courses_list_by(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0)
           return courses_update if state.to_sym == :update
 
+          interface.sys.destroy(delete_bot_message: :last)
           offset = offset.to_i
           limit = limit.to_i
           course_sessions = appshell.data_loader.cs.list(state: state, category: appshell.settings.scenario)
