@@ -40,8 +40,9 @@ class InlineCallbackButton < Button
     def last_unical_callback(sent_messages)
       raise unless sent_messages
 
-      callbacks = sent_messages.order(created_at: :desc).where(message_type: "callback_data").limit(5)
-                               .select(:data)
+      msg_with_callbacks = sent_messages.where(message_type: "callback_data")
+      msg_with_callbacks.order(created_at: :asc).limit(5).destroy_all if msg_with_callbacks.all.size >= 10
+      callbacks = msg_with_callbacks.limit(5).order(created_at: :desc).select(:data)
       return if callbacks.empty?
 
       result = callbacks.each_with_index do |clb, ind|
@@ -56,8 +57,6 @@ class InlineCallbackButton < Button
     param = super
     create_callback(param)
   end
-
-  private
 
   def create_callback(param)
     return unless param
