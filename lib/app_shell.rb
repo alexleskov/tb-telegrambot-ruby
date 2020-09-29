@@ -117,7 +117,7 @@ module Teachbase
 
         controller.interface.sys.menu(accounts: @avaliable_accounts).accounts
         user_answer = controller.take_data
-        controller.interface.sys.destroy(delete_bot_message: :last)
+        controller.interface.sys.destroy(delete_bot_message: { mode: :last })
         raise TeachbaseBotException::Account.new("Access denied", 403) unless user_answer.is_a?(String)
 
         @avaliable_accounts.select { |account| account["id"] == user_answer.to_i }.first

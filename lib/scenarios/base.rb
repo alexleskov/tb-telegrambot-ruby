@@ -103,7 +103,7 @@ module Teachbase
           result = yield ? true : false
 
           if mode == :silence && result
-            interface.sys.destroy(delete_bot_message: :last)
+            interface.sys.destroy(delete_bot_message: { mode: :last })
             return result
           end
 
@@ -112,7 +112,7 @@ module Teachbase
           else
             interface.sys.text.update_status(:fail)
           end
-          interface.sys.destroy(delete_bot_message: :previous)
+          interface.sys.destroy(delete_bot_message: { mode: :previous })
           result
         end
 
@@ -125,7 +125,7 @@ module Teachbase
         def courses_list_by(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0)
           return courses_update if state.to_sym == :update
 
-          interface.sys.destroy(delete_bot_message: :last)
+          interface.sys.destroy(delete_bot_message: { mode: :last, type: :reply_markup })
           offset = offset.to_i
           limit = limit.to_i
           course_sessions = appshell.data_loader.cs.list(state: state, category: appshell.settings.scenario)
@@ -223,7 +223,7 @@ module Teachbase
         end
 
         def answer_confirm(cs_tb_id, sec_id, type, answer_type, param, object_tb_id)
-          interface.sys.destroy(delete_bot_message: :last)
+          interface.sys.destroy(delete_bot_message: { mode: :last })
           if param.to_sym == :decline
             appshell.clear_cached_answers
             interface.sys.text.declined

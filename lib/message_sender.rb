@@ -62,11 +62,12 @@ class MessageSender
   private
 
   def find_msg_on_destroy
-    case delete_bot_message.to_sym
+    msg = delete_bot_message[:type] ? bot_messages.where.not(delete_bot_message[:type] => nil) : bot_messages
+    case delete_bot_message[:mode]
     when :last
-      bot_messages.last_sended
+      msg.last_sended
     when :previous
-      bot_messages.previous_sended
+      msg.previous_sended
     end
   end
 
