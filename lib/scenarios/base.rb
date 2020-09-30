@@ -209,9 +209,9 @@ module Teachbase
 
           interface.sys.text.ask_answer
           appshell.ask_answer(mode: :bulk, saving: :cache)
-          interface.sys.menu.after_auth
           interface.sys(content).menu(disable_web_page_preview: true, mode: :none,
                                       user_answer: appshell.user_cached_answer).confirm_answer(answer_type)
+          interface.sys.menu.after_auth
         end
 
         def content_track_time(cs_tb_id, sec_id, time_spent, content_tb_id)
@@ -223,14 +223,7 @@ module Teachbase
         end
 
         def answer_confirm(cs_tb_id, sec_id, type, answer_type, param, object_tb_id)
-          interface.sys.destroy(delete_bot_message: { mode: :last })
-          if param.to_sym == :decline
-            appshell.clear_cached_answers
-            interface.sys.text.declined
-          else
-            result = check_status(:default) { answer_submit(cs_tb_id, sec_id, object_tb_id, answer_type, type) }
-            appshell.clear_cached_answers if result
-          end
+          on_answer_confirmation(reaction: param) { answer_submit(cs_tb_id, sec_id, object_tb_id, answer_type, type) }
           content_by(type, sec_id, cs_tb_id, object_tb_id)
         end
 
@@ -249,6 +242,16 @@ module Teachbase
         end
 
         def ready; end
+
+        def send_message_to(_recipient)
+          interface.sys.text.ask_answer
+          appshell.ask_answer(mode: :bulk, saving: :cache)
+          interface.sys.menu(disable_web_page_preview: true, mode: :none,
+                             user_answer: appshell.user_cached_answer).confirm_answer(:message)
+          user_reaction = take_data
+          on_answer_confirmation(reaction: user_reaction) { block_given? ? yield : true }
+          interface.sys.menu.after_auth
+        end
 
         def match_data
           on router.main(path: :login).regexp do
@@ -343,17 +346,31 @@ module Teachbase
         end
 
         def match_ai_skill
+          on %r{small_talks} do
+            interface.sys.text.answer.text.send_out(@c_data)
+          end
+
           on %r{courses} do
-            if entities_slugs.any?("active")
+            if @c_data["active"]
               courses_list_by(:active)
-            elsif entities_slugs.any?("archived")
+            elsif @c_data["archived"]
               courses_list_by(:archived)
-            elsif entities_slugs.any?("on")
+            elsif @c_data["on"] && !@c_data["active"] && !@c_data["archived"]
               courses_states
-            else
-              interface.sys.text.on_undefined_action
             end
           end
+
+          on %r{to_human} do
+            if @c_data["curator"]
+
+            elsif @c_data["techsupport"]
+              send_message_to(:techsupport)
+            elsif @c_data["human"]
+
+            end
+          end
+
+          interface.sys.text.on_undefined_text unless @c_data
         end
 
         protected
@@ -376,6 +393,18 @@ module Teachbase
               disable_web_page_preview: true }
           when :quiz, :scorm_package
             { mode: :edit_msg, approve_button: true }
+          end
+        end
+
+        def on_answer_confirmation(params)
+          interface.sys.destroy(delete_bot_message: { mode: :last })
+          params[:checker_mode] ||= :default
+          if params[:reaction].to_sym == :accept
+            result = check_status(params[:checker_mode]) { yield }
+            appshell.clear_cached_answers if result
+          else
+            appshell.clear_cached_answers
+            interface.sys.text.declined
           end
         end
 

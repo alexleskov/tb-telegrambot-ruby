@@ -95,7 +95,11 @@ module Teachbase
         data = controller.take_data
         return if break_taking_data?(data)
 
-        value = data.respond_to?(:text) ? data.text : data.file
+        value = if data.respond_to?(:text)
+                  data.text
+                elsif data.respond_to?(:file)
+                  data.file
+                end
         data if validation(validate_type, value)
       end
 

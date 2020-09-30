@@ -21,14 +21,6 @@ module Teachbase
             answer.menu.hide("<b>#{params[:user_name]}!</b> #{I18n.t('farewell_message')} #{Emoji.t(:crying_cat_face)}")
           end
 
-          def on_farewell
-            answer.text.send_out("#{Emoji.t(:door)}<b>#{I18n.t('sign_out')}</b>")
-          end
-
-          def on_save(action, status)
-            answer.text.send_out("#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t(action.to_s)}: <b>#{I18n.t(status.to_s)}</b>")
-          end
-
           def link(url, link_name)
             answer.content.url(link: url, link_name: link_name)
           end
@@ -37,17 +29,17 @@ module Teachbase
             answer.text.send_out(sign_by_status(status))
           end
 
-          def ask_enter_the_number(object_type)
-            answer.text.send_out("#{Emoji.t(:pencil2)} <b>#{I18n.t('enter_the_number')} #{sign_by_object_type(object_type)}:</b>")
+          def on_farewell
+            answer.text.send_out("#{Emoji.t(:door)}<b>#{I18n.t('sign_out')}</b>")
+          end
+
+          def on_save(action, status)
+            answer.text.send_out("#{Emoji.t(:floppy_disk)} #{I18n.t('editted')}. #{I18n.t(action.to_s)}: <b>#{I18n.t(status.to_s)}</b>")
           end
 
           def on_empty(title_options = { text: "" })
             params[:text] ||= "#{create_title(title_options)}\n"
             answer.text.send_out("\n#{params[:text]}\n#{sing_on_empty}")
-          end
-
-          def ask_next_action
-            answer.text.send_out("<i>#{I18n.t('start_menu_message')}</i>")
           end
 
           def on_error(error = "Undefined error")
@@ -58,12 +50,28 @@ module Teachbase
             answer.text.send_out(I18n.t('undefined_action').to_s)
           end
 
+          def on_undefined_text
+            answer.text.send_out(I18n.t('undefined_text').to_s)
+          end
+
           def on_forbidden
             answer.text.send_out("#{Emoji.t(:x)} #{I18n.t('forbidden')}")
           end
 
           def declined
             answer.text.send_out("#{Emoji.t(:leftwards_arrow_with_hook)} <i>#{I18n.t('declined')}</i>")
+          end
+
+          def message_sent
+            answer.text.send_out("<i>#{I18n.t('message')} #{I18n.t('sent').downcase}</i>")
+          end
+
+          def ask_enter_the_number(object_type)
+            answer.text.send_out("#{Emoji.t(:pencil2)} <b>#{I18n.t('enter_the_number')} #{sign_by_object_type(object_type)}:</b>")
+          end
+
+          def ask_next_action
+            answer.text.send_out("<i>#{I18n.t('start_menu_message')}</i>")
           end
 
           def ask_login

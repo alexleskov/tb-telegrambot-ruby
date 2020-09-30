@@ -10,49 +10,36 @@ module Teachbase
       def initialize(params)
         @ai = Teachbase::Bot::AI.new
         super(params)
-      end
-
-      def find_reaction_by_ai
         @reaction = ai.find_reaction(text)
-        if reaction.is_a?(Sapcai::DialogMessage)
-          send_message(reaction.content)
-        elsif skill?
-          reaction
-        else
-          send_message(I18n.t('undefined_text').to_s)
-        end
-      end
-
-      def entities_slugs
-        return if !skill? && reaction.entities.empty?
-
-        result = []
-        reaction.entities.each { |entity| result << entity.name }
-        result
       end
 
       private
 
-      def send_message(text)
-        interface.sys.text.answer.text.send_out(text)
-      end
-
-      def on(skill_slug)
-        find_reaction_by_ai
-        return unless skill?
-
-        skill_slug =~ reaction.intents.first.slug
+      def on(command)
+        command =~ find_action
         return unless $LAST_MATCH_INFO
 
-        @c_data = reaction
         yield
       end
 
-      def skill?
-        # p "reaction: #{reaction}"
-        return if reaction.nil? || reaction.is_a?(Sapcai::DialogMessage) || reaction.intents.empty?
+      def find_action
+        if reaction.is_a?(Sapcai::DialogMessage)
+          @c_data = reaction.content
+          "small_talks"
+        elsif skill?
+          @c_data = entities_by_skill
+          reaction.intent.slug
+        end
+      end
 
-        true
+      def skill?
+        reaction&.is_a?(Sapcai::Response) && !reaction.intents.empty?
+      end
+
+      def entities_by_skill
+        return if !skill? && reaction.entities.empty?
+
+        YAML.safe_load(reaction.raw)["results"]["entities"]
       end
     end
   end
