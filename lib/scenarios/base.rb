@@ -397,7 +397,7 @@ module Teachbase
         end
 
         def on_answer_confirmation(params)
-          interface.sys.destroy(delete_bot_message: { mode: :last })
+          interface.sys.destroy(delete_bot_message: { mode: :last, type: :reply_markup })
           params[:checker_mode] ||= :default
           if params[:reaction].to_sym == :accept
             result = check_status(params[:checker_mode]) { yield }
