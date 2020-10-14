@@ -6,7 +6,8 @@ module Teachbase
       module Base
         include Formatter
 
-        DEFAULT_COUNT_PAGINAION = 10
+        DEFAULT_COUNT_PAGINAION = 15
+        TEACHSUPPORT_TG_ID = 439802952
 
         def starting
           interface.sys.text.about_bot
@@ -370,7 +371,7 @@ module Teachbase
             if @c_data["curator"]
               p "curator"
             elsif @c_data["techsupport"]
-              send_message_to(876_403_528)
+              send_message_to(TEACHSUPPORT_TG_ID)
             elsif @c_data["human"]
               p "human"
             end
