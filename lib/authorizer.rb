@@ -76,7 +76,6 @@ module Teachbase
         user.update!(password: crypted_password)
         authsession.activate_by(user.id, apitoken.id)
         take_user_account_auth_data
-        @appshell.controller.interface.sys.menu.after_auth
       rescue RuntimeError => e
         $logger.debug e.to_s
         unless token&.value
