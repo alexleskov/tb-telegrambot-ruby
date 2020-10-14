@@ -40,10 +40,14 @@ module Teachbase
           def confirm_answer(answer_type)
             buttons_signs = %i[accept decline]
             buttons_actions = []
-            buttons_signs.each do |buttons_sign|
-              buttons_actions << router.content(path: :confirm_answer, id: entity.tb_id,
-                                                p: [param: buttons_sign, answer_type: answer_type, type: entity.class.type_like_sym,
-                                                    sec_id: entity.section.id, cs_id: cs_tb_id]).link
+            if answer_type.to_sym == :message
+              buttons_actions = buttons_signs
+            else
+              buttons_signs.each do |buttons_sign|
+                buttons_actions << router.content(path: :confirm_answer, id: entity.tb_id,
+                                                  p: [param: buttons_sign, answer_type: answer_type, type: entity.class.type_like_sym,
+                                                      sec_id: entity.section.id, cs_id: cs_tb_id]).link
+              end
             end
             params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
                                                         buttons_actions: buttons_actions,

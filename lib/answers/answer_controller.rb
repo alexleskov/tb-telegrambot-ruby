@@ -25,7 +25,7 @@ module Teachbase
 
         @msg_params.merge!(options)
         @msg_params[:text] = options[:text].squeeze(" ") if options[:text]
-        @msg_params[:chat] = destination # TODO: Add option options[:to_chat_id]
+        @msg_params[:chat] = destination
       end
 
       protected

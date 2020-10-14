@@ -52,18 +52,20 @@ module Teachbase
 
         appshell.user
         yield
-      rescue RuntimeError => e
-        raise e if [400, 401, 402, 403, 404].include?(e.http_code)
-
-        if (@retries += 1) <= MAX_RETRIES
-          $logger.debug "#{e}\n#{I18n.t('retry')} №#{@retries}.."
-          sleep(@retries)
-          retry
+      rescue RuntimeError, TeachbaseBotException => e
+        if e.respond_to?(:http_code) && [400, 401, 402, 403, 404].include?(e.http_code)
+          relogin_after_error(e)
+          appshell.controller.interface.sys.menu.starting
         else
           appshell.logout
-          $logger.debug "Unexpected error after retries: #{e}. code: #{e.http_code}"
+          $logger.debug "Unexpected error after retries: #{e}"
           raise e
         end
+      end
+
+      def relogin_after_error(error)
+        appshell.logout
+        appshell.controller.interface.sys.menu(text: to_text_by_exceiption_code(error)).sign_in_again
       end
     end
   end
