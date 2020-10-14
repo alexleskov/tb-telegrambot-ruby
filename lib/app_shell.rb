@@ -161,14 +161,10 @@ module Teachbase
       end
 
       def cached_answers_files
-        result = []
-        files = controller.tg_user.cache_messages.files
-        return result if files.empty?
+        file_ids = controller.tg_user.cache_messages.files_ids
+        return [] if file_ids.empty?
 
-        files.each do |file_id|
-          result << { file: controller.filer.upload(file_id) }
-        end
-        result
+        file_ids
       end
 
       def user_cached_answer
@@ -191,8 +187,7 @@ module Teachbase
       def request_answer_bulk(params)
         loop do
           user_answer = request_data(params[:answer_type])
-          $logger.debug "user_answer: #{user_answer}"
-          break if user_answer.nil? || (user_answer.respond_to?(:text) && break_taking_data?(user_answer.text))
+          break if user_answer.nil?
 
           user_answer.save_message(params[:saving])
           controller.interface.sys.menu(params).ready

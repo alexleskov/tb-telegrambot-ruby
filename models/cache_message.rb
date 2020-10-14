@@ -17,7 +17,7 @@ module Teachbase
           result.join(DELIMETER)
         end
 
-        def files
+        def files_ids
           result = []
           where(message_type: "file").select(:file_id).each do |cache_message|
             result << cache_message.file_id

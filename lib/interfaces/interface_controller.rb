@@ -59,7 +59,6 @@ module Teachbase
           result << "<b>#{I18n.t('answer').capitalize} №#{user_answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(user_answer.status)} #{to_italic(I18n.t(user_answer.status).capitalize)}</b>
                      <pre>#{sanitize_html(user_answer.text)}</pre>\n\n#{build_attachments}#{build_comments}"
         end
-        p "result: #{result.join("\n")}"
         result.join("\n")
       end
 

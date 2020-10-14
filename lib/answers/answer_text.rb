@@ -12,6 +12,10 @@ class Teachbase::Bot::AnswerText < Teachbase::Bot::AnswerController
     create(text: text, disable_notification: disable_notification)
   end
 
+  def send_to(text, tg_id)
+    create(text: text, reply_to_tg_id: tg_id)
+  end
+
   def empty_message(title = "")
     send_out "#{title}#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>"
   end

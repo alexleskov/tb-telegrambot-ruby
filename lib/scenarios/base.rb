@@ -230,7 +230,8 @@ module Teachbase
         def answer_submit(cs_tb_id, sec_id, object_tb_id, answer_type, type)
           raise "Can't submit answer" unless type.to_sym == :task
 
-          content_loader(type, cs_tb_id, sec_id, object_tb_id).submit(answer_type.to_sym => build_answer_data)
+          content_loader(type, cs_tb_id, sec_id, object_tb_id)
+            .submit(answer_type.to_sym => build_answer_data(files_mode: :upload))
         end
 
         def task_answers(cs_tb_id, task_tb_id)
@@ -243,14 +244,19 @@ module Teachbase
 
         def ready; end
 
-        def send_message_to(_recipient)
+        def send_message_to(tg_id)
           interface.sys.text.ask_answer
           appshell.ask_answer(mode: :bulk, saving: :cache)
           interface.sys.menu(disable_web_page_preview: true, mode: :none,
                              user_answer: appshell.user_cached_answer).confirm_answer(:message)
-          user_reaction = take_data
-          on_answer_confirmation(reaction: user_reaction) { block_given? ? yield : true }
-          interface.sys.menu.after_auth
+          user_reaction = appshell.controller.take_data
+          answer_data = build_answer_data(files_mode: :download_url)
+          on_answer_confirmation(reaction: user_reaction) do
+            interface.sys.text(from: "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})",
+                               text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
+                     .to_tg_id(tg_id)
+          end
+          appshell.authsession(:without_api) ? interface.sys.menu.after_auth : interface.sys.menu.starting
         end
 
         def match_data
@@ -362,11 +368,11 @@ module Teachbase
 
           on %r{to_human} do
             if @c_data["curator"]
-
+              p "curator"
             elsif @c_data["techsupport"]
-              send_message_to(:techsupport)
+              send_message_to(876_403_528)
             elsif @c_data["human"]
-
+              p "human"
             end
           end
 
@@ -397,7 +403,9 @@ module Teachbase
         end
 
         def on_answer_confirmation(params)
-          interface.sys.destroy(delete_bot_message: { mode: :last, type: :reply_markup })
+          params[:mode] ||= :last
+          params[:type] ||= :reply_markup
+          interface.sys.destroy(delete_bot_message: params)
           params[:checker_mode] ||= :default
           if params[:reaction].to_sym == :accept
             result = check_status(params[:checker_mode]) { yield }
@@ -408,12 +416,32 @@ module Teachbase
           end
         end
 
+        def build_attachments_list(attachments_array)
+          return "" if attachments_array.empty?
+
+          result = ["#{Emoji.t(:bookmark_tabs)} #{to_italic(I18n.t('attachments').capitalize)}"]
+          attachments_array.each_with_index do |attachment, ind|
+            result << "#{to_url_link(attachment[:file], I18n.t('file').capitalize.to_s)} #{ind + 1}"
+          end
+          result.join("\n")
+        end
+
         def build_back_button_data
           { mode: :basic, sent_messages: appshell.controller.tg_user.tg_account_messages }
         end
 
-        def build_answer_data
-          { text: appshell.cached_answers_texts, attachments: appshell.cached_answers_files }
+        def build_answer_data(params)
+          raise "No such mode: '#{params[:files_mode]}'." unless %i[upload download_url].include?(params[:files_mode].to_sym)
+
+          attachments = []
+          files_ids = appshell.cached_answers_files
+          unless files_ids.empty?
+            appshell.cached_answers_files.each do |file_id|
+              attachments << { file: appshell.controller.filer.public_send(params[:files_mode], file_id) }
+            end
+            attachments
+          end
+          { text: appshell.cached_answers_texts, attachments: attachments }
         end
 
         def find_sections_by(option, sections)

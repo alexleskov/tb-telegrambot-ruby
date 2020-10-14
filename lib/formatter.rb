@@ -67,6 +67,25 @@ module Formatter
     integer.positive? ? integer / 60 : 0
   end
 
+  def to_text_by_editorjs(editorjs_content)
+    result = []
+    editorjs_content["blocks"].each do |block|
+      result << build_text_block_by_data_type(block) + DELIMETER
+    end
+    to_paragraph(result)
+  end
+
+  def to_text_by_exceiption_code(error)
+    return unless error.respond_to?(:http_code)
+
+    result = if error.http_code == 401 || error.http_code == 403
+               "#{I18n.t('forbidden')}\n#{I18n.t('try_again')}"
+             elsif error.http_code == 404
+               I18n.t('not_found').to_s
+             end
+    "#{I18n.t('error')}. #{result}"
+  end
+
   def chomp_file_name(url, mode = :with_extension)
     file_name = url.to_s.split('/')[-1]
     return file_name if mode == :with_extension
@@ -75,14 +94,6 @@ module Formatter
     return file_name unless $1
 
     $1
-  end
-
-  def to_text_by_editorjs(editorjs_content)
-    result = []
-    editorjs_content["blocks"].each do |block|
-      result << build_text_block_by_data_type(block) + DELIMETER
-    end
-    to_paragraph(result)
   end
 
   def attach_emoji(sign)
@@ -100,17 +111,6 @@ module Formatter
   def button_sign_by_content_type(cont_type, object)
     type = object.respond_to?(:content_type) ? object.content_type : cont_type
     "#{attach_emoji(type)} #{attach_emoji(object.status)} #{object.name}"
-  end
-
-  def to_text_by_exceiption_code(error)
-    return unless error.respond_to?(:http_code)
-
-    result = if error.http_code == 401 || error.http_code == 403
-               "#{I18n.t('forbidden')}\n#{I18n.t('try_again')}"
-             elsif error.http_code == 404
-               I18n.t('not_found').to_s
-             end
-    "#{I18n.t('error')}. #{result}"
   end
 
   private

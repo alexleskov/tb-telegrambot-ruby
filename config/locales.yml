@@ -147,6 +147,7 @@ en:
   choose_account: "Choose account"
   message: "Message"
   sent: "Sent"
+  file: "File"
 ru:
   greeting_message: "Привет,"
   farewell_message: "Пока"
@@ -296,3 +297,4 @@ ru:
   choose_account: "Выберите аккаунт"
   message: "Сообщение"
   sent: "Отправлено"
+  file: "Файл"
