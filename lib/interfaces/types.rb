@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/answers/answers'
 require './lib/interfaces/interface_controller'
 require './lib/interfaces/object'
 require './lib/interfaces/course_session'

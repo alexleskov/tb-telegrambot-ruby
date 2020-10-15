@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require './lib/interfaces/types'
+require './lib/answers/answers'
 
 module Teachbase
   module Bot
