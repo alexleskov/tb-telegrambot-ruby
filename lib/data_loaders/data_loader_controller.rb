@@ -53,7 +53,7 @@ module Teachbase
         appshell.user
         yield
       rescue RuntimeError, TeachbaseBotException => e
-        if e.respond_to?(:http_code) && [400, 401, 402, 403, 404].include?(e.http_code)
+        if e.respond_to?(:http_code) && (400..404).include?(e.http_code)
           relogin_after_error(e)
           appshell.controller.interface.sys.menu.starting
         else

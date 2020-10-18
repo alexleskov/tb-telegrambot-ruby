@@ -1,13 +1,23 @@
 # frozen_string_literal: true
 
+require './lib/scenarios/base/content'
+require './lib/scenarios/base/course_session'
+require './lib/scenarios/base/profile'
+require './lib/scenarios/base/section'
+require './lib/scenarios/base/setting'
+
 module Teachbase
   module Bot
     module Scenarios
       module Base
         include Formatter
+        include Teachbase::Bot::Scenarios::Base::Content
+        include Teachbase::Bot::Scenarios::Base::CourseSession
+        include Teachbase::Bot::Scenarios::Base::Profile
+        include Teachbase::Bot::Scenarios::Base::Section
+        include Teachbase::Bot::Scenarios::Base::Setting
 
-        DEFAULT_COUNT_PAGINAION = 15
-        TEACHSUPPORT_TG_ID = 439802952
+        TEACHSUPPORT_TG_ID = 439_802_952
 
         def starting
           interface.sys.text.about_bot
@@ -42,62 +52,12 @@ module Teachbase
 
         alias closing sign_out
 
-        def settings
-          interface.sys.menu(scenario: appshell.settings.scenario,
-                             localization: appshell.settings.localization).settings
-        end
-
-        def user_profile
-          appshell.data_loader.user.profile.me
-          user = appshell.user
-          return interface.sys.text.on_empty unless user.profile && user
-
-          interface.user(user).text.profile
-        end
-
-        def profile_links
-          links = appshell.data_loader.user.profile.links
-          return interface.sys.text.on_empty if links.empty?
-
-          links.each do |link_param|
-            interface.sys.text.link(link_param["url"], link_param["label"])
-          end
-        end
-
-        alias more_actions profile_links
-
         def change_account
           appshell.logout_account
           sign_in
         end
 
         alias accounts change_account
-
-        def settings_edit
-          interface.sys.menu(back_button: build_back_button_data).edit_settings
-        end
-
-        def setting_choose(setting)
-          interface.sys.menu(back_button: build_back_button_data).choosing("Setting", setting.to_sym)
-        end
-
-        def langugage_change(lang)
-          raise "Lang param is empty" if lang.empty?
-
-          appshell.change_localization(lang.to_s)
-          I18n.with_locale appshell.settings.localization.to_sym do
-            interface.sys.text.on_save("localization", lang)
-            interface.sys.menu.starting
-          end
-        end
-
-        def scenario_change(mode)
-          raise "Mode param is empty" if mode.empty?
-
-          appshell.change_scenario(mode)
-          interface.sys.text.on_save("scenario", mode)
-          interface.sys.menu.starting
-        end
 
         def check_status(mode = :silence)
           interface.sys.text.update_status(:in_progress)
@@ -115,132 +75,6 @@ module Teachbase
           end
           interface.sys.destroy(delete_bot_message: { mode: :previous })
           result
-        end
-
-        def courses_states
-          interface.cs.menu(text: "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>").states
-        end
-
-        alias cs_list courses_states
-
-        def courses_list_by(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0)
-          return courses_update if state.to_sym == :update
-
-          interface.sys.destroy(delete_bot_message: { mode: :last, type: :reply_markup })
-          offset = offset.to_i
-          limit = limit.to_i
-          course_sessions = appshell.data_loader.cs.list(state: state, category: appshell.settings.scenario)
-          return interface.sys.text.on_empty if course_sessions.empty?
-
-          interface.cs.menu(text: course_sessions.first.sign_course_state)
-                   .main(course_sessions.limit(limit).offset(offset))
-          offset += limit
-          return if offset >= course_sessions.size
-
-          interface.sys.menu(object_type: :cs, path: :list, all_count: course_sessions.size, param: state,
-                             limit_count: limit, offset_num: offset).show_more
-        end
-
-        def courses_update
-          check_status(:default) { appshell.data_loader.cs.update_all_states }
-        end
-
-        def sections_choose(cs_tb_id)
-          sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
-          return interface.sys.text.on_empty if sections.empty?
-
-          cs = sections.first.course_session
-          interface.section(cs).menu(stages: %i[title],
-                                     back_button: { mode: :custom,
-                                                    action: router.cs(path: :list, p: [type: :states]).link })
-                   .main
-        rescue RuntimeError => e
-          return interface.sys.text.on_empty if e.http_code == 404
-        end
-
-        def sections_by(option, cs_tb_id)
-          option = option.to_sym
-          all_sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
-          sections_by_option = find_sections_by(option, all_sections)
-          return interface.sys.text.on_empty if all_sections.empty? || sections_by_option.empty?
-
-          cs = sections_by_option.first.course_session
-          interface.section(cs).menu(stages: %i[title menu],
-                                     params: { state: "#{option}_sections" }).show_by_option(sections_by_option, option)
-        end
-
-        def section_contents(cs_tb_id, sec_pos)
-          section_loader = appshell.data_loader.section(option: :position, value: sec_pos,
-                                                        cs_tb_id: cs_tb_id)
-          check_status do
-            return interface.sys.text.on_empty unless section_loader.contents
-
-            section_loader.progress
-          end
-          interface.section(section_loader.db_entity)
-                   .menu(stages: %i[title], back_button: { mode: :custom,
-                                                           action: router.cs(path: :entity, id: cs_tb_id).link })
-                   .contents
-        end
-
-        def section_additions(cs_tb_id, sec_id)
-          section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
-          return interface.sys.text.on_empty if section_loader.links.empty?
-
-          interface.sys(section_loader.db_entity)
-                   .menu(back_button: build_back_button_data, links: section_loader.links, stages: %i[title]).links
-        end
-
-        def content_by(type, sec_id, cs_tb_id, content_tb_id)
-          entity = content_loader(type, cs_tb_id, sec_id, content_tb_id).me
-          return interface.sys.text.on_empty unless entity
-
-          options = default_open_content_options(type.to_sym)
-          return interface.sys.text.on_error unless options
-
-          options[:stages] = %i[title]
-          interface.public_send(type, entity).menu(options).show
-        rescue RuntimeError => e
-          return interface.sys.text.on_forbidden if e.http_code == 401 || e.http_code == 403
-        end
-
-        def content_take_answer(cs_tb_id, answer_type, content_tb_id)
-          content = appshell.user.task_by_cs_tbid(cs_tb_id, content_tb_id)
-          return unless content
-
-          interface.sys.text.ask_answer
-          appshell.ask_answer(mode: :bulk, saving: :cache)
-          interface.sys(content).menu(disable_web_page_preview: true, mode: :none,
-                                      user_answer: appshell.user_cached_answer).confirm_answer(answer_type)
-          interface.sys.menu.after_auth
-        end
-
-        def content_track_time(cs_tb_id, sec_id, time_spent, content_tb_id)
-          section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
-          check_status(:default) do
-            section_loader.content.material(tb_id: content_tb_id).track(time_spent)
-          end
-          interface.sys.text.ask_next_action
-        end
-
-        def answer_confirm(cs_tb_id, sec_id, type, answer_type, param, object_tb_id)
-          on_answer_confirmation(reaction: param) { answer_submit(cs_tb_id, sec_id, object_tb_id, answer_type, type) }
-          content_by(type, sec_id, cs_tb_id, object_tb_id)
-        end
-
-        def answer_submit(cs_tb_id, sec_id, object_tb_id, answer_type, type)
-          raise "Can't submit answer" unless type.to_sym == :task
-
-          content_loader(type, cs_tb_id, sec_id, object_tb_id)
-            .submit(answer_type.to_sym => build_answer_data(files_mode: :upload))
-        end
-
-        def task_answers(cs_tb_id, task_tb_id)
-          task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
-          return unless task
-
-          interface.task(task).menu(back_button: build_back_button_data,
-                                    stages: %i[title answers]).user_answers
         end
 
         def ready; end
@@ -383,24 +217,7 @@ module Teachbase
         protected
 
         def access_denied?(e)
-          e.respond_to?(:http_code) && (e.http_code == 401 || e.http_code == 403)
-        end
-
-        def content_loader(content_type, cs_tb_id, sec_id, content_tb_id)
-          appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
-                  .content.load_by(type: content_type, tb_id: content_tb_id)
-        end
-
-        def default_open_content_options(object_type)
-          case object_type.to_sym
-          when :material
-            { mode: :edit_msg, approve_button: { time_spent: 25 } }
-          when :task
-            { mode: :edit_msg, show_answers_button: true, approve_button: true,
-              disable_web_page_preview: true }
-          when :quiz, :scorm_package
-            { mode: :edit_msg, approve_button: true }
-          end
+          e.respond_to?(:http_code) && [401, 403].include?(e.http_code)
         end
 
         def on_answer_confirmation(params)
@@ -443,22 +260,6 @@ module Teachbase
             attachments
           end
           { text: appshell.cached_answers_texts, attachments: attachments }
-        end
-
-        def find_sections_by(option, sections)
-          case option
-          when :find_by_query_num
-            interface.sys.text.ask_enter_the_number(:section)
-            sections.where(position: appshell.request_data(:string).text)
-          when :show_all
-            sections
-          when :show_avaliable
-            sections.where(is_available: true, is_publish: true)
-          when :show_unvaliable
-            sections.where(is_available: false)
-          else
-            raise "No such option: '#{option}' for showing sections"
-          end
         end
       end
     end
