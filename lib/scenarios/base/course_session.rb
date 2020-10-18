@@ -6,7 +6,7 @@ module Teachbase
       module Base
         module CourseSession
           DEFAULT_COUNT_PAGINAION = 15
-          
+
           def courses_states
             interface.cs.menu(text: "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>").states
           end

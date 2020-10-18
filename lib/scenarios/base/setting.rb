@@ -34,7 +34,7 @@ module Teachbase
             appshell.change_scenario(mode)
             interface.sys.text.on_save("scenario", mode)
             interface.sys.menu.starting
-          end          
+          end
         end
       end
     end

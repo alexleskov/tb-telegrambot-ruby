@@ -75,7 +75,6 @@ module Teachbase
               { mode: :edit_msg, approve_button: true }
             end
           end
-
         end
       end
     end

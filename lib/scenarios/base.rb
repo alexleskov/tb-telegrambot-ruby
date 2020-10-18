@@ -17,7 +17,7 @@ module Teachbase
         include Teachbase::Bot::Scenarios::Base::Section
         include Teachbase::Bot::Scenarios::Base::Setting
 
-        TEACHSUPPORT_TG_ID = 439802952
+        TEACHSUPPORT_TG_ID = 439_802_952
 
         def starting
           interface.sys.text.about_bot
