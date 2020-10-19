@@ -95,6 +95,10 @@ module Teachbase
         end
 
         def match_data
+          on router.main(path: :accounts).regexp do
+            accounts
+          end
+          
           on router.main(path: :login).regexp do
             sign_in
           end

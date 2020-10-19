@@ -18,6 +18,7 @@ module Teachbase
       START = "start"
       LOGOUT = "close"
       LOGIN = "sign_in"
+      ACCOUNTS = "accounts"
 
       class << self
         def param(value = STRING_REGEXP)

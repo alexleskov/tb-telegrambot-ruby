@@ -10,35 +10,30 @@ module Teachbase
           def main
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
 
-            answer.menu.create(buttons: main_buttons,
-                               mode: :none,
-                               type: :menu_inline,
-                               text: [create_title(params),
-                                      entity.statistics,
-                                      entity.categories_name,
-                                      description,
-                                      entity.sign_aval_sections_count_from].compact.join("\n"),
-                               slices_count: 3)
+            params.merge!(type: :menu_inline, slices_count: 3, buttons: main_buttons,
+                          text: [create_title(params), entity.statistics, entity.categories_name, description,
+                                 entity.sign_aval_sections_count_from].compact.join("\n"))
+            params[:mode] ||= :none
+            answer.menu.create(params)
           end
 
           def show_by_option(sections, option)
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
 
+            params.merge!(text: [create_title(params), build_list_with_state(sections.sort_by(&:position))].join("\n"),
+                          callback_data: route_to_cs)
             params[:mode] ||= option == :find_by_query_num ? :none : :edit_msg
-            answer.menu.custom_back(text: "#{create_title(params)}
-                                           #{build_list_with_state(sections.sort_by(&:position))}",
-                                    mode: params[:mode],
-                                    callback_data: route_to_cs)
+            answer.menu.custom_back(params)
           end
 
           def contents
             raise "Entity must be a Section" unless entity.is_a?(Teachbase::Bot::Section)
 
-            answer.menu.create(buttons: contents_buttons,
-                               mode: :none,
-                               type: :menu_inline,
-                               text: "#{create_title(object: entity.course_session,
+            params.merge!(type: :menu_inline, buttons: contents_buttons,
+                          text: "#{create_title(object: entity.course_session,
                                                      stages: %i[title], params: { cover_url: '' })}#{create_title(params)}")
+            params[:mode] ||= :none
+            answer.menu.create(params)
           end
 
           private

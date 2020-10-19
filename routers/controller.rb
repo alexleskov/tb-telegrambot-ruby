@@ -36,6 +36,10 @@ module Teachbase
           [root_class::LOGIN]
         end
 
+        def accounts
+          [root_class::ACCOUNTS]
+        end
+
         def root
           [self.class::SOURCE]
         end

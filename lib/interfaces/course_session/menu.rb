@@ -6,19 +6,16 @@ module Teachbase
       class CourseSession
         class Menu < Teachbase::Bot::InterfaceController
           def main(course_sessions)
+            params.merge!(text: "#{create_title(params)}\n\n#{build_list(course_sessions)}",
+                          callback_data: router.cs(path: :list, p: [type: :states]).link)
             params[:mode] ||= :none
-            answer.menu.custom_back(text: "#{create_title(params)}\n\n#{build_list(course_sessions)}",
-                                    mode: params[:mode],
-                                    callback_data: router.cs(path: :list, p: [type: :states]).link)
+            answer.menu.custom_back(params)
           end
 
           def states
+            params.merge!(type: :menu_inline, slices_count: 2, buttons: state_buttons)
             params[:mode] ||= :none
-            answer.menu.create(buttons: state_buttons,
-                               text: params[:text],
-                               mode: params[:mode],
-                               slices_count: 2,
-                               type: :menu_inline)
+            answer.menu.create(params)
           end
 
           private

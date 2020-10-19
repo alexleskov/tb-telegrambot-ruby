@@ -10,7 +10,7 @@ module Teachbase
             user = appshell.user
             return interface.sys.text.on_empty unless user.profile && user
 
-            interface.user(user).text.profile
+            interface.user(user).menu.profile
           end
 
           def profile_links
