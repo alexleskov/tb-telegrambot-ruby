@@ -4,32 +4,32 @@ module Teachbase
   module Bot
     class Interfaces
       class Base
-        class Menu < Teachbase::Bot::InterfaceController
+        class Menu < Teachbase::Bot::Interfaces::Menu
           def sign_in_again
-            params.merge!(type: :menu_inline,
-                          buttons: InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.main(path: :login).link)]).raw)
-            params[:mode] ||= :none
-            params[:text] ||= "#{I18n.t('error')}. #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
-            answer.menu.create(params)
+            @type = :menu_inline
+            @buttons = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.main(path: :login).link)]).raw
+            @mode ||= :none
+            @text ||= "#{I18n.t('error')}. #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+            self
           end
 
           def starting
-            params.merge!(type: :menu, slices_count: 2)
-            params[:text] ||= I18n.t('start_menu_message').to_s
-            params[:buttons] = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[sign_in settings]).raw
-            answer.menu.create(params)
+            @type = :menu
+            @slices_count = 2
+            @text = I18n.t('start_menu_message').to_s
+            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[sign_in settings]).raw
+            self
           end
 
           def on_empty
-            params.merge!(type: :menu_inline)
-            params[:text] ||= "#{params[:text]}\n#{sing_on_empty}"
-            params[:mode] ||= :none
-            back_button = InlineCallbackButton.custom_back(params[:back_button][:action])
-            params[:buttons] = InlineCallbackKeyboard.collect(buttons: [back_button]).raw
-            answer.menu.create(params)
+            @type = :menu_inline
+            @mode ||= :none
+            @buttons = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.custom_back(back_button[:action])]).raw
+            on_empty_params
+            self
           end
 
-          def confirm_answer(answer_type)
+          def confirm_answer(answer_type, user_answer)
             buttons_signs = %i[accept decline]
             buttons_actions = []
             if answer_type.to_sym == :message
@@ -41,107 +41,123 @@ module Teachbase
                                                       sec_id: entity.section.id, cs_id: cs_tb_id]).link
               end
             end
-            params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
-                                                        buttons_actions: buttons_actions,
-                                                        emojis: %i[ok leftwards_arrow_with_hook]).raw
-            params[:text] ||= "<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n<pre>#{params[:user_answer]}</pre>"
-            answer.menu.confirmation(params)
+            @type = :menu_inline
+            @slices_count = 2
+            @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
+                                                emojis: %i[ok leftwards_arrow_with_hook]).raw
+            @text ||= "<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n<pre>#{user_answer}</pre>"
+            self
           end
 
-          def settings
-            params.merge!(slices_count: 1, type: :menu_inline)
-            params[:text] ||= "<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>
-                              \n #{I18n.t('scenario')}: #{I18n.t(to_snakecase(params[:scenario]))}
-                              #{I18n.t('localization')}: #{I18n.t(params[:localization])}"
-            params[:mode] ||= :none
-            params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
-                                                        buttons_actions: [router.setting(path: :edit).link]).raw
-            answer.menu.create(params)
+          def settings(settings_data)
+            @type = :menu_inline
+            @text ||= ["<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>\n",
+                       "#{I18n.t('scenario')}: #{I18n.t(to_snakecase(settings_data[:scenario]))}",
+                       "#{I18n.t('localization')}: #{I18n.t(settings_data[:localization])}"].join("\n")
+            @mode ||= :none
+            @buttons = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
+                                                buttons_actions: [router.setting(path: :edit).link]).raw
+            self
           end
 
           def edit_settings
-            params.merge!(slices_count: 2, type: :menu_inline)
-            params[:text] ||= "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>"
+            @type = :menu_inline
+            @slices_count = 2
+            @text ||= "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>"
+            @mode ||= :edit_msg
             buttons_actions = []
             buttons_signs = settings_class::PARAMS
-            buttons_signs.each do |buttons_sign|
-              buttons_actions << router.setting(path: :edit, p: [param: buttons_sign]).link
-            end
-            params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
-                                                        buttons_actions: buttons_actions,
-                                                        back_button: params[:back_button]).raw
-            answer.menu.create(params)
+            buttons_signs.each { |buttons_sign| buttons_actions << router.setting(path: :edit, p: [param: buttons_sign]).link }      
+            @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
+                                                back_button: back_button).raw
+            self
           end
 
-          def choosing(type, option_name)
-            params[:text] ||= "<b>#{Emoji.t(:wrench)} #{I18n.t("choose_#{option_name.downcase}")}</b>"
+          def choosing(class_type, option_name)
+            @type = :menu_inline
+            @text ||= "<b>#{Emoji.t(:wrench)} #{I18n.t("choose_#{option_name.downcase}")}</b>"
             buttons_actions = []
-            buttons_signs = to_constantize("#{option_name.upcase}_PARAMS", "Teachbase::Bot::#{type.capitalize}::")
-            emojis = to_constantize("#{option_name.upcase}_EMOJI", "Teachbase::Bot::#{type.capitalize}::")
+            class_for_choosing = "Teachbase::Bot::#{class_type.capitalize}::"
+            buttons_signs = to_constantize("#{option_name.upcase}_PARAMS", class_for_choosing)
             buttons_signs.each do |buttons_sign|
               buttons_actions << router.setting(path: option_name.downcase.to_s, p: [param: buttons_sign]).link
             end
-            params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
-                                                        buttons_actions: buttons_actions,
-                                                        emojis: emojis,
-                                                        back_button: params[:back_button]).raw
-            params.merge!(type: :menu_inline, slices_count: buttons_signs.size)
-            answer.menu.create(params)
+            @slices_count = buttons_signs.size
+            @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
+                                                buttons_actions: buttons_actions,
+                                                emojis: to_constantize("#{option_name.upcase}_EMOJI", class_for_choosing),
+                                                back_button: back_button).raw
+            self
           end
 
           def ready
-            params.merge!(type: :menu, slices_count: 1)
-            params[:text] ||= "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_next_answer')} #{Emoji.t(:point_down)}"
-            params[:buttons] = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[ready]).raw
-            answer.menu.create(params)
+            @type = :menu
+            @text ||= "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_next_answer')} #{Emoji.t(:point_down)}"
+            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[ready]).raw
+            self
           end
 
-          def show_more
-            path_params = [offset: params[:offset_num], lim: params[:limit_count]]
-            path_params = params[:param] ? path_params << { param: params[:param] } : path_params
-            params[:callback_data] = router.public_send(params[:object_type], path: params[:path],
-                                                                              p: path_params).link
-            answer.menu.show_more(params)
+          def links(links_list)
+            raise unless links_list.is_a?(Array)
+
+            @type = :menu_inline
+            @mode ||= :edit_msg
+            @text ||= "#{create_title(title_params)}<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"            
+            @buttons = build_links_buttons(links_list)
+            self
           end
 
-          def links
-            raise unless params[:links].is_a?(Array)
+          def accounts(accounts_list)
+            raise unless accounts_list.is_a?(Array)
 
-            params.merge!(slices_count: 1, type: :menu_inline, mode: :edit_msg)
-            params[:text] ||= "#{create_title(params)}<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
-            buttons = []
-            params[:links].each do |link_params|
-              raise unless link_params.is_a?(Hash)
-
-              buttons << InlineUrlButton.to_open(link_params["source"], link_params["title"])
-            end
-            params[:buttons] = InlineUrlKeyboard.collect(buttons: buttons, back_button: params[:back_button]).raw
-            answer.menu.create(params)
+            @type = :menu_inline
+            @slices_count = 2
+            @mode ||= :none
+            @text ||= "<b>#{Emoji.t(:school)} #{I18n.t('choose_account')}</b>"
+            @buttons = build_accounts_buttons(accounts_list)
+            self
           end
 
-          def accounts
-            raise unless params[:accounts].is_a?(Array)
+          def about_bot
+            @type = :hide_kb
+            @text ||= I18n.t('about_bot').to_sym
+            self
+          end
 
+          def greetings(user_name, account_name)
+            @type = :hide_kb
+            @text ||= "<b>#{user_name}!</b> #{I18n.t('greetings')} #{I18n.t('in')} #{account_name}!"
+            self
+          end
+
+          def farewell(user_name)
+            @type = :hide_kb
+            @text ||= "<b>#{user_name}!</b> #{I18n.t('farewell_message')} #{Emoji.t(:crying_cat_face)}"
+            self
+          end
+
+          private
+
+          def build_accounts_buttons(accounts_list)
             acc_ids = []
             acc_names = []
-            params[:accounts].each do |account|
+            accounts_list.each do |account|
               next if account["status"] == "disabled"
 
               acc_ids << account["id"]
               acc_names << account["name"]
             end
-            params[:text] ||= "<b>#{Emoji.t(:school)} #{I18n.t('choose_account')}</b>"
-            params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: acc_names,
-                                                        buttons_actions: acc_ids,
-                                                        back_button: params[:back_button]).raw
-            params.merge!(type: :menu_inline, slices_count: 2, mode: :none)
-            answer.menu.create(params)
+            InlineCallbackKeyboard.g(buttons_signs: acc_names, buttons_actions: acc_ids, back_button: back_button).raw
           end
 
-          private
+          def build_links_buttons(links_list)
+            buttons_list = []
+            links_list.each do |link_params|
+              raise unless link_params.is_a?(Hash)
 
-          def init_commands
-            answer.menu.command_list
+              buttons_list << InlineUrlButton.to_open(link_params["source"], link_params["title"])
+            end
+            InlineUrlKeyboard.collect(buttons: buttons_list, back_button: back_button).raw
           end
 
           def settings_class

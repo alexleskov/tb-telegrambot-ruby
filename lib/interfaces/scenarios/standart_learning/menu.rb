@@ -6,11 +6,12 @@ module Teachbase
       class StandartLearning
         class Menu < Teachbase::Bot::Interfaces::Base::Menu
           def after_auth
-            params.merge!(type: :menu, slices_count: 2)
-            params[:text] ||= I18n.t('start_menu_message').to_s
-            params[:buttons] = TextCommandKeyboard.g(commands: init_commands,
-                                                     buttons_signs: %i[cs_list profile settings more_actions sign_out]).raw
-            answer.menu.create(params)
+            @type = :menu
+            @slices_count = 2
+            @text ||= I18n.t('start_menu_message').to_s
+            @buttons = TextCommandKeyboard.g(commands: init_commands,
+                                             buttons_signs: %i[cs_list profile settings more_actions sign_out]).raw
+            self
           end
         end
       end

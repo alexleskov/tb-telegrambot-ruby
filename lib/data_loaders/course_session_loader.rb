@@ -19,12 +19,18 @@ module Teachbase
         mode = params[:mode] || :normal
         delete_all_by_state(state) if mode == :with_reload
         lms_load(data: :listing, state: state)
+        tb_ids_by_lms_info = []
         lms_info.each do |course_lms|
           @tb_id = course_lms["id"]
+          tb_ids_by_lms_info << course_lms["id"].to_i
           next if course_lms["updated_at"] == db_entity.edited_at
 
           update_data(course_lms.merge!("status" => state))
           categories
+        end
+        unsigned_cs_tb_ids = current_cs_tb_ids - tb_ids_by_lms_info
+        unless unsigned_cs_tb_ids.empty?
+          clear_unsigned_course_sessions(unsigned_cs_tb_ids)
         end
         appshell.user.course_sessions_by(state: state, limit: params[:limit], offset: params[:offset],
                                          scenario: params[:category])
@@ -90,6 +96,10 @@ module Teachbase
 
       private
 
+      def clear_unsigned_course_sessions(unsigned_cs_tb_ids)
+        appshell.user.course_sessions.where(:tb_id => unsigned_cs_tb_ids).destroy_all
+      end
+
       def init_sec_loader(option, value)
         Teachbase::Bot::SectionLoader.new(appshell, option: option, value: value, cs_tb_id: tb_id)
       end
@@ -111,6 +121,10 @@ module Teachbase
             raise "Can't call such data: '#{options[:data]}'"
           end
         end
+      end
+
+      def current_cs_tb_ids
+        appshell.user.course_sessions.all.pluck(:tb_id)
       end
 
       def last_version

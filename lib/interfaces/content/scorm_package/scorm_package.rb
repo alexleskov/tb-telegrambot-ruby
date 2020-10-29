@@ -3,9 +3,7 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Material
-        class Text < Teachbase::Bot::InterfaceController
-        end
+      class ScormPackage < Teachbase::Bot::Interfaces::ContentItem
       end
     end
   end

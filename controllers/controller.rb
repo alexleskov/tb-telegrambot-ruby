@@ -30,7 +30,8 @@ module Teachbase
         @tg_user = respond.msg_responder.tg_user
         @message = respond.msg_responder.message
         @message_params = {}
-        @interface = Teachbase::Bot::Interfaces.new(respond, dest)
+        @interface = Teachbase::Bot::Interfaces
+        interface.configure(respond, dest)
         @filer = Teachbase::Bot::Filer.new(respond)
         @router = Teachbase::Bot::Routers.new
         @appshell = Teachbase::Bot::AppShell.new(self)

@@ -3,8 +3,8 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Task
-        class Text < Teachbase::Bot::InterfaceController
+      class Quiz
+        class Text < Teachbase::Bot::Interfaces::ContentItem::Text
         end
       end
     end

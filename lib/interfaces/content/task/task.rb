@@ -3,7 +3,7 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Quiz < Teachbase::Bot::Interfaces::Object
+      class Task < Teachbase::Bot::Interfaces::ContentItem
       end
     end
   end

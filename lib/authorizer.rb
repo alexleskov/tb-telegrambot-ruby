@@ -103,7 +103,7 @@ module Teachbase
 
         @login = data.first
         @crypted_password = data.second
-        kind_of_login(login)
+        @login_type = kind_of_login(login)
       end
 
       def take_user_account_auth_data
@@ -128,12 +128,12 @@ module Teachbase
       end
 
       def kind_of_login(user_login)
-        @login_type = case user_login
-                      when Validator::EMAIL_MASK
-                        :email
-                      when Validator::PHONE_MASK
-                        :phone
-                      end
+        case user_login
+        when Validator::EMAIL_MASK
+          :email
+        when Validator::PHONE_MASK
+          :phone
+        end
       end
 
       def fetch_user_account(data)

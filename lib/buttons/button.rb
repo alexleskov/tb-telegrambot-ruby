@@ -16,7 +16,8 @@ class Button
               :button_sign,
               :emoji,
               :position,
-              :value
+              :value,
+              :action_type
 
   def initialize(type, options)
     @type = type
@@ -25,6 +26,7 @@ class Button
     @emoji = options[:emoji]
     @command_prefix = options[:command_prefix] || ""
     @position = options[:position]
+    @action_type = options[:action_type]
   end
 
   def create

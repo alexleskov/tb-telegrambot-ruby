@@ -6,12 +6,22 @@ module Teachbase
       include Formatter
 
       attr_reader :params, :answer, :entity, :router
+      attr_accessor :text,
+                    :mode,
+                    :disable_web_page_preview,
+                    :disable_notification,
+                    :title_params
 
-      def initialize(params, answer, entity)
+      def initialize(params, entity)
         @params = params
-        @answer = answer
         @entity = entity
+        @answer = Teachbase::Bot::Interfaces.answers_controller
         @router = Teachbase::Bot::Routers.new
+        @text = params[:text]
+        @mode = params[:mode]
+        @disable_web_page_preview = params[:disable_web_page_preview] || true
+        @disable_notification = params[:disable_notification] || false
+        @title_params = params[:title_params]
       end
 
       def sing_on_empty
@@ -20,6 +30,30 @@ module Teachbase
 
       def sign_on_error
         "<b>#{I18n.t('error')}</b>"
+      end
+
+      def sign_by_object_type(object_type)
+        case object_type.to_sym
+        when :section
+          I18n.t('section2')
+        else
+          raise "No such sign for object type: '#{object_type}'"
+        end
+      end
+
+      def sign_entity_status
+        "<b>#{I18n.t('state').capitalize}: #{attach_emoji(entity.status)} #{to_italic(I18n.t(entity.status).capitalize)}</b>"
+      end
+
+      def sign_by_status(status)
+        case status.to_sym
+        when :in_progress
+          "#{Emoji.t(:arrows_counterclockwise)} #{to_bolder(I18n.t('updating_data'))}"
+        when :success
+          "#{Emoji.t(:thumbsup)} #{I18n.t('updating_success')}"
+        else
+          "#{Emoji.t(:thumbsdown)} #{sign_on_error}"
+        end
       end
 
       def create_title(options)
@@ -71,51 +105,11 @@ module Teachbase
         "#{result}\n\n#{attachments(entity)}"
       end
 
-      def show
-        raise "Must have ':text' param" unless params[:text]
-
-        params[:text] = params[:text].dup.insert(0, create_title(object: entity.course_session, stages: %i[title], params: { cover_url: '' }))
-        params.merge!(type: :menu_inline, disable_notification: true,
-                      slices_count: 2, buttons: build_action_buttons)
-        answer.menu.create(params)
-      end
-
       protected
 
-      def build_content
-        content_source = entity.build_source
-        if url?(content_source)
-          to_url_link(content_source, "#{Emoji.t(:link)} #{I18n.t('open').capitalize}: #{entity.name}")
-        else
-          content_source
-        end
-      end
-
-      def build_approve_button
-        return unless params[:approve_button]
-      end
-
-      def build_show_answers_button
-        return unless entity.respond_to?(:answers)
-        return unless entity.answers && !entity.answers.empty? && params[:show_answers_button] && entity.course_session.active?
-
-        InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
-                               callback_data: router.content(path: :answers, id: entity.tb_id,
-                                                             p: [cs_id: cs_tb_id]).link)
-      end
-
-      def build_to_section_button
-        return unless params[:back_button]
-
-        InlineCallbackButton.custom_back(route_to_section)
-      end
-
-      def build_action_buttons
-        params[:back_button] ||= true
-        buttons = [build_show_answers_button,
-                   build_approve_button,
-                   build_to_section_button]
-        InlineCallbackKeyboard.collect(buttons: buttons).raw
+      def on_empty_params
+        title = title_params ? "#{create_title(title_params)}\n" : ""
+        @text ||= "#{title}#{sing_on_empty}"
       end
 
       def cs_tb_id
@@ -132,30 +126,6 @@ module Teachbase
 
       def route_to_cs
         router.cs(path: :entity, id: cs_tb_id).link
-      end
-
-      def sign_by_object_type(type)
-        case type.to_sym
-        when :section
-          I18n.t('section2')
-        else
-          raise "No such sign for object type: '#{type}'"
-        end
-      end
-
-      def sign_entity_status
-        "<b>#{I18n.t('state').capitalize}: #{attach_emoji(entity.status)} #{to_italic(I18n.t(entity.status).capitalize)}</b>"
-      end
-
-      def sign_by_status(status)
-        case status.to_sym
-        when :in_progress
-          "#{Emoji.t(:arrows_counterclockwise)} #{to_bolder(I18n.t('updating_data'))}"
-        when :success
-          "#{Emoji.t(:thumbsup)} #{I18n.t('updating_success')}"
-        else
-          "#{Emoji.t(:thumbsdown)} #{sign_on_error}"
-        end
       end
     end
   end

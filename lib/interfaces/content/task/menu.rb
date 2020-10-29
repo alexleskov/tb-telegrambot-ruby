@@ -4,19 +4,22 @@ module Teachbase
   module Bot
     class Interfaces
       class Task
-        class Menu < Teachbase::Bot::InterfaceController
-          def show
-            params[:text] = "#{create_title(params)}\n#{sign_entity_status}\n#{description}"
+        class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
+          def content
+            @text = "#{create_title(title_params)}\n#{sign_entity_status}\n#{description}"
             super
           end
 
           def user_answers
-            params.merge!(mode: :edit_msg, disable_web_page_preview: true, type: :menu_inline,
-                          slices_count: 2, text: "#{create_title(params)}\n#{answers}")
-            buttons = []
-            buttons << build_comment_button
-            params[:buttons] = InlineCallbackKeyboard.collect(buttons: buttons, back_button: params[:back_button]).raw
-            answer.menu.create(params)
+            @type = :menu_inline
+            @mode ||= :edit_msg
+            @disable_web_page_preview ||= true
+            @slices_count = 2
+            @text = "#{create_title(title_params)}\n#{answers}"
+            buttons_list = []
+            buttons_list << build_comment_button
+            @buttons = InlineCallbackKeyboard.collect(buttons: buttons_list, back_button: back_button).raw
+            self
           end
 
           private
