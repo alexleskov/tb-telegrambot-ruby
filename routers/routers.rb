@@ -33,8 +33,8 @@ module Teachbase
           "at:#{value}"
         end
 
-        def lim(value = DIGIT_REGEXP)
-          "lim:#{value}"
+        def limit(value = DIGIT_REGEXP)
+          "limit:#{value}"
         end
 
         def offset(value = DIGIT_REGEXP)

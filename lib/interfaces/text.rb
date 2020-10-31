@@ -8,7 +8,7 @@ module Teachbase
           answer.text.send_out(text, disable_notification)
         end
 
-        def send_to(from_user, tg_id)
+        def send_to(tg_id, from_user)
           answer.text.send_to("#{I18n.t('message')}: #{from_user}\n\n#{text}", tg_id)
         end
 

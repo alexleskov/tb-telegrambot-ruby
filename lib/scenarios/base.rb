@@ -87,7 +87,7 @@ module Teachbase
           answer_data = build_answer_data(files_mode: :download_url)
           on_answer_confirmation(reaction: user_reaction) do
             interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
-                         .send_to("#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})", tg_id)
+                         .send_to(tg_id, "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})")
           end
           appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
         end
@@ -129,7 +129,7 @@ module Teachbase
             courses_list_by(c_data[1])
           end
 
-          on router.cs(path: :list, p: %i[offset lim param]).regexp do
+          on router.cs(path: :list, p: %i[offset limit param]).regexp do
             courses_list_by(c_data[1], c_data[2], c_data[3])
           end
 
@@ -226,7 +226,7 @@ module Teachbase
           e.respond_to?(:http_code) && [401, 403].include?(e.http_code)
         end
 
-        def on_answer_confirmation(params)
+        def on_answer_confirmation(params, &block)
           params[:mode] ||= :last
           params[:type] ||= :reply_markup
           interface.destroy(delete_bot_message: params)
