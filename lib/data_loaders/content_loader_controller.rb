@@ -35,7 +35,7 @@ module Teachbase
 
       def me
         raise "Section not found" unless section_db
-        
+
         lms_load
         update_data(lms_info, :no_create)
       end

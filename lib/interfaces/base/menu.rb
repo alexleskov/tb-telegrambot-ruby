@@ -45,10 +45,10 @@ module Teachbase
             @slices_count = 2
             @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
                                                 emojis: %i[ok leftwards_arrow_with_hook]).raw
-            @text ||= [ "<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n",
-                        "#{Emoji.t(:memo)} #{I18n.t('text').capitalize}:",
-                        "<pre>#{user_answer[:text]}</pre>\n",
-                        "#{Emoji.t(:bookmark_tabs)} #{I18n.t('attachments').capitalize}: #{user_answer[:files].size}" ].join("\n")
+            @text ||= ["<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n",
+                       "#{Emoji.t(:memo)} #{I18n.t('text').capitalize}:",
+                       "<pre>#{user_answer[:text]}</pre>\n",
+                       "#{Emoji.t(:bookmark_tabs)} #{I18n.t('attachments').capitalize}: #{user_answer[:files].size}"].join("\n")
             self
           end
 
@@ -70,7 +70,7 @@ module Teachbase
             @mode ||= :edit_msg
             buttons_actions = []
             buttons_signs = settings_class::PARAMS
-            buttons_signs.each { |buttons_sign| buttons_actions << router.setting(path: :edit, p: [param: buttons_sign]).link }      
+            buttons_signs.each { |buttons_sign| buttons_actions << router.setting(path: :edit, p: [param: buttons_sign]).link }
             @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
                                                 back_button: back_button).raw
             self
@@ -105,7 +105,7 @@ module Teachbase
 
             @type = :menu_inline
             @mode ||= :edit_msg
-            @text ||= "#{create_title(title_params)}<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"            
+            @text ||= "#{create_title(title_params)}<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
             @buttons = build_links_buttons(links_list)
             self
           end

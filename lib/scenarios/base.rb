@@ -17,7 +17,7 @@ module Teachbase
         include Teachbase::Bot::Scenarios::Base::Section
         include Teachbase::Bot::Scenarios::Base::Setting
 
-        TEACHSUPPORT_TG_ID = 439802952
+        TEACHSUPPORT_TG_ID = 439_802_952
 
         def starting
           interface.sys.menu.about_bot.show
@@ -57,7 +57,7 @@ module Teachbase
 
         alias accounts change_account
 
-        def check_status(mode = :silence, &block)
+        def check_status(mode = :silence)
           text_interface = interface.sys.text
           text_interface.update_status(:in_progress).show
           result = yield
@@ -82,12 +82,12 @@ module Teachbase
           interface.sys.text.ask_answer.show
           appshell.ask_answer(mode: :bulk, saving: :cache)
           interface.sys.menu(disable_web_page_preview: true, mode: :none)
-                       .confirm_answer(:message, appshell.user_cached_answer).show
+                   .confirm_answer(:message, appshell.user_cached_answer).show
           user_reaction = appshell.controller.take_data
           answer_data = build_answer_data(files_mode: :download_url)
           on_answer_confirmation(reaction: user_reaction) do
             interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
-                         .send_to(tg_id, "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})")
+                     .send_to(tg_id, "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})")
           end
           appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
         end
@@ -96,7 +96,7 @@ module Teachbase
           on router.main(path: :accounts).regexp do
             accounts
           end
-          
+
           on router.main(path: :login).regexp do
             sign_in
           end
@@ -226,7 +226,7 @@ module Teachbase
           e.respond_to?(:http_code) && [401, 403].include?(e.http_code)
         end
 
-        def on_answer_confirmation(params, &block)
+        def on_answer_confirmation(params)
           params[:mode] ||= :last
           params[:type] ||= :reply_markup
           interface.destroy(delete_bot_message: params)

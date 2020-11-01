@@ -29,9 +29,7 @@ module Teachbase
           categories
         end
         unsigned_cs_tb_ids = current_cs_tb_ids - tb_ids_by_lms_info
-        unless unsigned_cs_tb_ids.empty?
-          clear_unsigned_course_sessions(unsigned_cs_tb_ids)
-        end
+        clear_unsigned_course_sessions(unsigned_cs_tb_ids) unless unsigned_cs_tb_ids.empty?
         appshell.user.course_sessions_by(state: state, limit: params[:limit], offset: params[:offset],
                                          scenario: params[:category])
       end
@@ -97,7 +95,7 @@ module Teachbase
       private
 
       def clear_unsigned_course_sessions(unsigned_cs_tb_ids)
-        appshell.user.course_sessions.where(:tb_id => unsigned_cs_tb_ids).destroy_all
+        appshell.user.course_sessions.where(tb_id: unsigned_cs_tb_ids).destroy_all
       end
 
       def init_sec_loader(option, value)

@@ -15,7 +15,7 @@ module Teachbase
             options[:mode] = :edit_msg
             options[:title_params] = { stages: %i[title] }
             options[:back_button] = { mode: :custom, action: router.section(path: :entity, position: entity.section.position,
-                                                                                           p: [cs_id: cs_tb_id]).link }
+                                                                            p: [cs_id: cs_tb_id]).link }
             interface.public_send(type, entity).menu(options).content.show
           rescue RuntimeError, TeachbaseBotException => e
             return interface.sys.text.on_forbidden.show if e.respond_to?(:http_code) && (401..403).include?(e.http_code)
@@ -28,7 +28,7 @@ module Teachbase
             interface.sys.text.ask_answer.show
             appshell.ask_answer(mode: :bulk, saving: :cache)
             interface.sys(content).menu(disable_web_page_preview: true, mode: :none)
-                                  .confirm_answer(answer_type, appshell.user_cached_answer).show
+                     .confirm_answer(answer_type, appshell.user_cached_answer).show
             interface.sys.menu.after_auth.show
           end
 

@@ -33,7 +33,6 @@ module Teachbase
               content_source
             end
           end
-
         end
       end
     end

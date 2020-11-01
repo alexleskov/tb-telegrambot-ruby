@@ -20,7 +20,7 @@ module Teachbase
             buttons_list = [build_pagination_button(:less, pagination_options),
                             build_pagination_button(:more, pagination_options)]
             buttons_list.compact!
-            keyboard_param = { buttons:  buttons_list}
+            keyboard_param = { buttons: buttons_list }
             if buttons_list.empty? || (buttons_list.first.action_type == :more && buttons_list.size == 1)
               keyboard_param[:back_button] = back_button
             end

@@ -27,7 +27,7 @@ module Teachbase
             interface.section(cs).menu(title_params: { stages: %i[title menu], params: { state: "#{option}_sections" } },
                                        back_button: { mode: :custom,
                                                       action: router.cs(path: :entity, id: cs_tb_id).link })
-                                 .show_by_option(sections_by_option, option).show
+                     .show_by_option(sections_by_option, option).show
           end
 
           def section_contents(cs_tb_id, sec_pos)

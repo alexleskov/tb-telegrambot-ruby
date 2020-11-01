@@ -23,11 +23,12 @@ module Teachbase
 
           def show_by_option(sections, option)
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
+
             @type = :menu_inline
             @disable_notification = true
             @mode ||= option == :find_by_query_num ? :none : :edit_msg
             @text ||= [create_title(title_params), build_list_with_state(sections.sort_by(&:position))].join("\n")
-            #buttons_list = [InlineCallbackButton.custom_back(route_to_cs)]
+            # buttons_list = [InlineCallbackButton.custom_back(route_to_cs)]
             @buttons = InlineCallbackKeyboard.collect(buttons: [], back_button: back_button).raw
             self
           end

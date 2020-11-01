@@ -55,7 +55,7 @@ module Teachbase
       rescue RuntimeError, TeachbaseBotException => e
         if e.respond_to?(:http_code) && !(400..404).include?(e.http_code)
           $logger.debug "Unexpected error: #{e}. Data: #{e.response}"
-          #relogin_after_error(e)
+          # relogin_after_error(e)
           raise e
         else
           raise e

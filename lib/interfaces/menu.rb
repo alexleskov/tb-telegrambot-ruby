@@ -4,7 +4,6 @@ module Teachbase
   module Bot
     class Interfaces
       class Menu < Teachbase::Bot::InterfaceController
-
         attr_accessor :buttons, :back_button, :slices_count
         attr_reader :type
 
