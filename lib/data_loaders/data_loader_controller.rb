@@ -53,19 +53,18 @@ module Teachbase
         appshell.user
         yield
       rescue RuntimeError, TeachbaseBotException => e
-        if e.respond_to?(:http_code) && (400..404).include?(e.http_code)
-          relogin_after_error(e)
-          appshell.controller.interface.sys.menu.starting
+        if e.respond_to?(:http_code) && !(400..404).include?(e.http_code)
+          $logger.debug "Unexpected error: #{e}. Data: #{e.response}"
+          # relogin_after_error(e)
+          raise e
         else
-          appshell.logout
-          $logger.debug "Unexpected error after retries: #{e}"
           raise e
         end
       end
 
       def relogin_after_error(error)
         appshell.logout
-        appshell.controller.interface.sys.menu(text: to_text_by_exceiption_code(error)).sign_in_again
+        appshell.controller.interface.sys.menu(text: to_text_by_exceiption_code(error)).sign_in_again.show
       end
     end
   end

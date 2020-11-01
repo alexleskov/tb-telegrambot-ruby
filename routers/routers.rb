@@ -18,6 +18,7 @@ module Teachbase
       START = "start"
       LOGOUT = "close"
       LOGIN = "sign_in"
+      ACCOUNTS = "accounts"
 
       class << self
         def param(value = STRING_REGEXP)
@@ -32,8 +33,8 @@ module Teachbase
           "at:#{value}"
         end
 
-        def lim(value = DIGIT_REGEXP)
-          "lim:#{value}"
+        def limit(value = DIGIT_REGEXP)
+          "limit:#{value}"
         end
 
         def offset(value = DIGIT_REGEXP)
@@ -52,8 +53,6 @@ module Teachbase
           "#{Teachbase::Bot::Routers::Section::SOURCE}#{value}"
         end
       end
-
-      def initialize; end
 
       def main(options)
         Teachbase::Bot::Routers::Controller.new(options, self)

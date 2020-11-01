@@ -43,7 +43,8 @@ module Decorators
     end
 
     def sign_open(params)
-      "#{title(params)}\n#{to_italic(I18n.t('open'))}: #{params[:route]}"
+      [title(params), "(#{time_by(:started_at)} — #{time_by(:deadline)})",
+       "#{to_italic(I18n.t('open'))}: #{params[:route]}"].join("\n")
     end
 
     private

@@ -3,7 +3,9 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Task < Teachbase::Bot::Interfaces::Object
+      class Material
+        class Text < Teachbase::Bot::Interfaces::ContentItem::Text
+        end
       end
     end
   end

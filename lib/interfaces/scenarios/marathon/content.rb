@@ -3,7 +3,9 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Quiz < Teachbase::Bot::Interfaces::Object
+      class Marathon
+        class Content < Teachbase::Bot::Interfaces::Base::Content
+        end
       end
     end
   end

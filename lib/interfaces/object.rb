@@ -4,21 +4,22 @@ module Teachbase
   module Bot
     class Interfaces
       class Object
-        def initialize(answer, entity = nil)
-          @answer = answer
+        def initialize(entity)
           @entity = entity
         end
 
-        def destroy(params)
-          @answer.destroy.create(params)
-        end
-
         def text(params = {})
-          self.class::Text.new(params, @answer, @entity)
+          self.class::Text.new(params, @entity)
         end
 
         def menu(params = {})
-          self.class::Menu.new(params, @answer, @entity)
+          self.class::Menu.new(params, @entity)
+        end
+
+        private
+
+        def content(params = {})
+          self.class::Content.new(params, @entity)
         end
       end
     end

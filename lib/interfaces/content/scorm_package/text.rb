@@ -3,8 +3,8 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Section
-        class Text < Teachbase::Bot::Interfaces::Text
+      class ScormPackage
+        class Text < Teachbase::Bot::Interfaces::ContentItem::Text
         end
       end
     end

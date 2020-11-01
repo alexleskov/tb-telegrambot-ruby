@@ -5,15 +5,17 @@ require './models/command'
 module Teachbase
   module Bot
     class CommandList
-      @sign_and_emoji = [:sign_in, Emoji.t(:rocket)],
-                        [:sign_out, Emoji.t(:door)],
-                        [:settings, Emoji.t(:wrench)],
-                        [:profile, Emoji.t(:mortar_board)],
-                        [:cs_list, Emoji.t(:books)],
-                        [:update_profile_data, Emoji.t(:arrows_counterclockwise)],
-                        [:ready, Emoji.t(:hand)],
-                        [:more_actions, Emoji.t(:link)],
-                        [:accounts, Emoji.t(:school)]
+      @sign_and_emoji = { sign_in: Emoji.t(:rocket),
+                          sign_out: Emoji.t(:door),
+                          settings: Emoji.t(:wrench),
+                          profile: Emoji.t(:tiger),
+                          cs_list: Emoji.t(:books),
+                          update_profile_data: Emoji.t(:arrows_counterclockwise),
+                          ready: Emoji.t(:hand),
+                          more_actions: Emoji.t(:link),
+                          accounts: Emoji.t(:school),
+                          studying: Emoji.t(:mortar_board) }
+
       class << self
         attr_reader :sign_and_emoji
       end
@@ -26,8 +28,8 @@ module Teachbase
       end
 
       def create
-        Teachbase::Bot::CommandList.sign_and_emoji.each do |data|
-          all << Teachbase::Bot::Command.new(data[0], data[1])
+        Teachbase::Bot::CommandList.sign_and_emoji.each do |key, value|
+          all << Teachbase::Bot::Command.new(key, value)
         end
         all
         raise "'CommandList' not created" if all.empty?

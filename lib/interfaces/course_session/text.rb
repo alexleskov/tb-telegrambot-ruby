@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Interfaces
       class CourseSession
-        class Text < Teachbase::Bot::InterfaceController
+        class Text < Teachbase::Bot::Interfaces::Text
         end
       end
     end

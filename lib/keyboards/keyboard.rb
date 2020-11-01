@@ -48,7 +48,7 @@ class Keyboard
       value << [button]
     end
     back = init_back_button(back_button) if back_button
-    back ? value << [back] : value
+    back ? value.unshift([back]) : value
   end
 
   def check_building_params

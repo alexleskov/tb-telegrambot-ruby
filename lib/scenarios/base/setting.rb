@@ -6,16 +6,16 @@ module Teachbase
       module Base
         module Setting
           def settings
-            interface.sys.menu(scenario: appshell.settings.scenario,
-                               localization: appshell.settings.localization).settings
+            interface.sys.menu.settings(scenario: appshell.settings.scenario,
+                                        localization: appshell.settings.localization).show
           end
 
           def settings_edit
-            interface.sys.menu(back_button: build_back_button_data).edit_settings
+            interface.sys.menu(back_button: { mode: :custom, action: router.setting(path: :root).link }).edit_settings.show
           end
 
           def setting_choose(setting)
-            interface.sys.menu(back_button: build_back_button_data).choosing("Setting", setting.to_sym)
+            interface.sys.menu(back_button: build_back_button_data).choosing("Setting", setting.to_sym).show
           end
 
           def langugage_change(lang)
@@ -23,8 +23,8 @@ module Teachbase
 
             appshell.change_localization(lang.to_s)
             I18n.with_locale appshell.settings.localization.to_sym do
-              interface.sys.text.on_save("localization", lang)
-              interface.sys.menu.starting
+              interface.sys.text.on_save("localization", lang).show
+              interface.sys.menu.starting.show
             end
           end
 
@@ -32,8 +32,8 @@ module Teachbase
             raise "Mode param is empty" if mode.empty?
 
             appshell.change_scenario(mode)
-            interface.sys.text.on_save("scenario", mode)
-            interface.sys.menu.starting
+            interface.sys.text.on_save("scenario", mode).show
+            interface.sys.menu.starting.show
           end
         end
       end

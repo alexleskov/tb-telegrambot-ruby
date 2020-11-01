@@ -24,7 +24,7 @@ module Teachbase
         raise unless options.is_a?(Hash)
 
         @msg_params.merge!(options)
-        @msg_params[:text] = options[:text].squeeze(" ") if options[:text]
+        @msg_params[:text] = options[:text].to_s.squeeze(" ") if options[:text]
         @msg_params[:chat] = destination
       end
 

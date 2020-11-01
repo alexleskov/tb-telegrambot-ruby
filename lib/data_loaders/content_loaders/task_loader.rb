@@ -19,7 +19,8 @@ module Teachbase
       def submit(params)
         raise unless db_entity || !params.is_a?(Hash)
 
-        update_data(lms_upload(params.merge!(data: :submit)), :no_create)
+        params[:data] = :submit
+        update_data(lms_upload(params), :no_create)
       end
 
       private

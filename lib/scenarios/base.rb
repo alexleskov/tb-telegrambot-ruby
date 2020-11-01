@@ -20,34 +20,32 @@ module Teachbase
         TEACHSUPPORT_TG_ID = 439_802_952
 
         def starting
-          interface.sys.text.about_bot
-          interface.sys.menu.starting
+          interface.sys.menu.about_bot.show
+          interface.sys.menu.starting.show
         end
 
         def sign_in
-          interface.sys.text(user_name: appshell.user_fullname,
-                             account_name: appshell.account_name).on_enter
+          interface.sys.text.on_enter(appshell.account_name).show
           auth = appshell.authorization
           raise unless auth
 
-          interface.sys.text(user_name: appshell.user_fullname,
-                             account_name: appshell.account_name).greetings
+          interface.sys.menu.greetings(appshell.user_fullname, appshell.account_name).show
           courses_update
-          interface.sys.menu.after_auth
+          interface.sys.menu.after_auth.show
         rescue RuntimeError, TeachbaseBotException => e
           $logger.debug "Error: #{e.class}. #{e.inspect}"
           title = to_text_by_exceiption_code(e)
           title = "#{I18n.t('accounts')}: #{title}" if e.is_a?(TeachbaseBotException::Account)
           appshell.logout if access_denied?(e)
-          interface.sys.menu(text: title).sign_in_again
+          interface.sys.menu(text: title).sign_in_again.show
         end
 
         def sign_out
-          interface.sys.text(user_name: appshell.user_fullname).farewell
+          interface.sys.menu.farewell(appshell.user_fullname).show
           appshell.logout
-          interface.sys.menu.starting
+          interface.sys.menu.starting.show
         rescue RuntimeError => e
-          interface.sys.text.on_error(e)
+          interface.sys.text.on_error(e).show
         end
 
         alias closing sign_out
@@ -60,43 +58,51 @@ module Teachbase
         alias accounts change_account
 
         def check_status(mode = :silence)
-          interface.sys.text.update_status(:in_progress)
-          result = yield ? true : false
+          text_interface = interface.sys.text
+          text_interface.update_status(:in_progress).show
+          result = yield
 
           if mode == :silence && result
-            interface.sys.destroy(delete_bot_message: { mode: :last })
+            interface.destroy(delete_bot_message: { mode: :last })
             return result
           end
 
           if result
-            interface.sys.text.update_status(:success)
+            text_interface.update_status(:success).show
           else
-            interface.sys.text.update_status(:fail)
+            text_interface.update_status(:fail).show
           end
-          interface.sys.destroy(delete_bot_message: { mode: :previous })
+          interface.destroy(delete_bot_message: { mode: :previous })
           result
         end
 
         def ready; end
 
         def send_message_to(tg_id)
-          interface.sys.text.ask_answer
+          interface.sys.text.ask_answer.show
           appshell.ask_answer(mode: :bulk, saving: :cache)
-          interface.sys.menu(disable_web_page_preview: true, mode: :none,
-                             user_answer: appshell.user_cached_answer).confirm_answer(:message)
+          interface.sys.menu(disable_web_page_preview: true, mode: :none)
+                   .confirm_answer(:message, appshell.user_cached_answer).show
           user_reaction = appshell.controller.take_data
           answer_data = build_answer_data(files_mode: :download_url)
           on_answer_confirmation(reaction: user_reaction) do
-            interface.sys.text(from: "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})",
-                               text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
-                     .to_tg_id(tg_id)
+            interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
+                     .send_to(tg_id, "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})")
           end
-          appshell.authsession(:without_api) ? interface.sys.menu.after_auth : interface.sys.menu.starting
+          appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
         end
 
         def match_data
+          on router.main(path: :accounts).regexp do
+            accounts
+          end
+
           on router.main(path: :login).regexp do
             sign_in
+          end
+
+          on router.setting(path: :root).regexp do
+            settings
           end
 
           on router.setting(path: :edit).regexp do
@@ -123,7 +129,7 @@ module Teachbase
             courses_list_by(c_data[1])
           end
 
-          on router.cs(path: :list, p: %i[offset lim param]).regexp do
+          on router.cs(path: :list, p: %i[offset limit param]).regexp do
             courses_list_by(c_data[1], c_data[2], c_data[3])
           end
 
@@ -211,7 +217,7 @@ module Teachbase
             end
           end
 
-          interface.sys.text.on_undefined_text unless @c_data
+          interface.sys.text.on_undefined.show unless @c_data
         end
 
         protected
@@ -223,14 +229,14 @@ module Teachbase
         def on_answer_confirmation(params)
           params[:mode] ||= :last
           params[:type] ||= :reply_markup
-          interface.sys.destroy(delete_bot_message: params)
+          interface.destroy(delete_bot_message: params)
           params[:checker_mode] ||= :default
           if params[:reaction].to_sym == :accept
             result = check_status(params[:checker_mode]) { yield }
             appshell.clear_cached_answers if result
           else
             appshell.clear_cached_answers
-            interface.sys.text.declined
+            interface.sys.text.declined.show
           end
         end
 

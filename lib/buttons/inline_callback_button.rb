@@ -23,8 +23,19 @@ class InlineCallbackButton < Button
     def more(options)
       raise unless options[:callback_data]
 
-      g(callback_data: (options[:callback_data]).to_s, button_sign: I18n.t('show_more').to_s,
-        emoji: :arrow_down)
+      options[:button_sign] ||= I18n.t('show_more').to_s
+      options[:emoji] ||= :arrow_right
+      options[:action_type] = :more
+      g(options)
+    end
+
+    def less(options)
+      raise unless options[:callback_data]
+
+      options[:button_sign] ||= I18n.t('show_less').to_s
+      options[:emoji] ||= :arrow_left
+      options[:action_type] = :less
+      g(options)
     end
 
     def sign_in(callback_data)

@@ -104,11 +104,11 @@ module Teachbase
       end
 
       def request_user_data
-        controller.interface.sys.text.ask_login
+        controller.interface.sys.text.ask_login.show
         user_login = request_data(:login)
         raise unless user_login
 
-        controller.interface.sys.text.ask_password
+        controller.interface.sys.text.ask_password.show
         user_password = request_data(:password)
         raise unless user_password
 
@@ -119,9 +119,9 @@ module Teachbase
         find_avaliable_accounts
         raise TeachbaseBotException::Account.new("Access denied", 403) unless @avaliable_accounts
 
-        controller.interface.sys.menu(accounts: @avaliable_accounts).accounts
+        controller.interface.sys.menu.accounts(@avaliable_accounts).show
         user_answer = controller.take_data
-        controller.interface.sys.destroy(delete_bot_message: { mode: :last })
+        controller.interface.destroy(delete_bot_message: { mode: :last })
         raise TeachbaseBotException::Account.new("Access denied", 403) unless user_answer.is_a?(String)
 
         @avaliable_accounts.select { |account| account["id"] == user_answer.to_i }.first
@@ -168,8 +168,7 @@ module Teachbase
       end
 
       def user_cached_answer
-        "#{cached_answers_texts}\n
-         #{Emoji.t(:bookmark_tabs)} #{I18n.t('attachments').capitalize}: #{cached_answers_files.size}"
+        { text: cached_answers_texts, files: cached_answers_files }
       end
 
       def call_tbapi(type, version)
@@ -190,7 +189,7 @@ module Teachbase
           break if user_answer.nil?
 
           user_answer.save_message(params[:saving])
-          controller.interface.sys.menu(params).ready
+          controller.interface.sys.menu(params).ready.show
         end
       end
 

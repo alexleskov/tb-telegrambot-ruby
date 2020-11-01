@@ -3,7 +3,9 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Material < Teachbase::Bot::Interfaces::Object
+      class Material
+        class Content < Teachbase::Bot::Interfaces::Content
+        end
       end
     end
   end

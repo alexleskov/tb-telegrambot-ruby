@@ -3,7 +3,9 @@
 module Teachbase
   module Bot
     class Interfaces
-      class ScormPackage < Teachbase::Bot::Interfaces::Object
+      class Battle
+        class Content < Teachbase::Bot::Interfaces::Base::Content
+        end
       end
     end
   end

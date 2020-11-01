@@ -3,9 +3,7 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Section
-        class Text < Teachbase::Bot::Interfaces::Text
-        end
+      class Task < Teachbase::Bot::Interfaces::ContentItem
       end
     end
   end
