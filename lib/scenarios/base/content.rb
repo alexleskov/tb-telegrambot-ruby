@@ -50,14 +50,18 @@ module Teachbase
           def answer_submit(cs_tb_id, sec_id, object_tb_id, answer_type, type)
             raise "Can't submit answer" unless type.to_sym == :task
 
-            content_loader(type, cs_tb_id, sec_id, object_tb_id).submit(answer_type.to_sym => build_answer_data(files_mode: :upload))
+            content_loader(type, cs_tb_id, sec_id, object_tb_id)
+            .submit(answer_type.to_sym => build_answer_data(files_mode: :upload))
           end
 
           def task_answers(cs_tb_id, task_tb_id)
             task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
             return unless task
 
-            interface.task(task).menu(back_button: build_back_button_data,
+            interface.task(task).menu(back_button: { mode: :custom,
+                                                     action: router.content(path: :entity, id: task_tb_id,
+                                                                            p: [cs_id: cs_tb_id, sec_id: task.section_id,
+                                                                                type: :task]).link },
                                       title_params: { stages: %i[title answers] }).user_answers.show
           end
 
