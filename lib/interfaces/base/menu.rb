@@ -45,7 +45,10 @@ module Teachbase
             @slices_count = 2
             @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
                                                 emojis: %i[ok leftwards_arrow_with_hook]).raw
-            @text ||= "<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n<pre>#{user_answer}</pre>"
+            @text ||= [ "<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n",
+                        "#{Emoji.t(:memo)} #{I18n.t('text').capitalize}:",
+                        "<pre>#{user_answer[:text]}</pre>\n",
+                        "#{Emoji.t(:bookmark_tabs)} #{I18n.t('attachments').capitalize}: #{user_answer[:files].size}" ].join("\n")
             self
           end
 

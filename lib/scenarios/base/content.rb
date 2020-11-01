@@ -11,8 +11,11 @@ module Teachbase
 
             options = default_open_content_options(type.to_sym)
             return interface.sys.text.on_error.show unless options
-            
+
+            options[:mode] = :edit_msg
             options[:title_params] = { stages: %i[title] }
+            options[:back_button] = { mode: :custom, action: router.section(path: :entity, position: entity.section.position,
+                                                                                           p: [cs_id: cs_tb_id]).link }
             interface.public_send(type, entity).menu(options).content.show
           rescue RuntimeError, TeachbaseBotException => e
             return interface.sys.text.on_forbidden.show if e.respond_to?(:http_code) && (401..403).include?(e.http_code)
@@ -38,7 +41,9 @@ module Teachbase
           end
 
           def answer_confirm(cs_tb_id, sec_id, type, answer_type, param, object_tb_id)
-            on_answer_confirmation(reaction: param) { answer_submit(cs_tb_id, sec_id, object_tb_id, answer_type, type) }
+            on_answer_confirmation(reaction: param) do
+              answer_submit(cs_tb_id, sec_id, object_tb_id, answer_type, type)
+            end
             content_by(type, sec_id, cs_tb_id, object_tb_id)
           end
 
@@ -64,15 +69,19 @@ module Teachbase
           end
 
           def default_open_content_options(object_type)
+            menu_options = {}
+
             case object_type.to_sym
             when :material
-              { mode: :edit_msg, approve_button: { time_spent: 25 } }
+              menu_options[:approve_button] = { time_spent: 25 }
             when :task
-              { mode: :edit_msg, show_answers_button: true, approve_button: true,
-                disable_web_page_preview: true }
+              menu_options[:show_answers_button] = true
+              menu_options[:approve_button] = true
+              menu_options[:disable_web_page_preview] = true
             when :quiz, :scorm_package
-              { mode: :edit_msg, approve_button: true }
+              menu_options[:approve_button] = true
             end
+            menu_options
           end
         end
       end

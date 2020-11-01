@@ -168,8 +168,7 @@ module Teachbase
       end
 
       def user_cached_answer
-        "#{cached_answers_texts}\n
-         #{Emoji.t(:bookmark_tabs)} #{I18n.t('attachments').capitalize}: #{cached_answers_files.size}"
+        { text: cached_answers_texts, files: cached_answers_files }
       end
 
       def call_tbapi(type, version)

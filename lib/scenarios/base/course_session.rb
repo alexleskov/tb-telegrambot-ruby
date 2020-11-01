@@ -8,10 +8,11 @@ module Teachbase
           DEFAULT_COUNT_PAGINAION = 5
 
           def courses_states
-            interface.cs.menu(text: "#{Emoji.t(:books)}<b>#{I18n.t('show_course_list')}</b>").states.show
+            interface.cs.menu.states.show
           end
 
           alias cs_list courses_states
+          alias studying courses_states
 
           def courses_list_by(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0)
             return courses_update if state.to_sym == :update

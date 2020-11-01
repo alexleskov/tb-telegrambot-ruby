@@ -115,18 +115,6 @@ module Teachbase
       def cs_tb_id
         entity.is_a?(Teachbase::Bot::CourseSession) ? entity.tb_id : entity.course_session.tb_id
       end
-
-      def sec_position
-        entity.is_a?(Teachbase::Bot::Section) ? entity.position : entity.section.position
-      end
-
-      def route_to_section
-        router.section(path: :entity, position: sec_position, p: [cs_id: cs_tb_id]).link
-      end
-
-      def route_to_cs
-        router.cs(path: :entity, id: cs_tb_id).link
-      end
     end
   end
 end

@@ -54,8 +54,6 @@ module Teachbase
         end
       end
 
-      def initialize; end
-
       def main(options)
         Teachbase::Bot::Routers::Controller.new(options, self)
       end

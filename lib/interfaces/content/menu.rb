@@ -30,16 +30,8 @@ module Teachbase
                                    callback_data: router.content(path: :answers, id: entity.tb_id, p: [cs_id: cs_tb_id]).link)
           end
 
-          def build_to_section_button
-            return unless back_button
-
-            InlineCallbackButton.custom_back(route_to_section)
-          end
-
           def build_action_buttons
-            @back_button ||= true
-            buttons_list = [build_show_answers_button, build_approve_button, build_to_section_button]
-            InlineCallbackKeyboard.collect(buttons: buttons_list).raw
+            InlineCallbackKeyboard.collect(buttons: [build_show_answers_button, build_approve_button], back_button: back_button).raw
           end
         end
       end

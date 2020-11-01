@@ -17,7 +17,7 @@ module Teachbase
         include Teachbase::Bot::Scenarios::Base::Section
         include Teachbase::Bot::Scenarios::Base::Setting
 
-        TEACHSUPPORT_TG_ID = 439_802_952
+        TEACHSUPPORT_TG_ID = 439802952
 
         def starting
           interface.sys.menu.about_bot.show
@@ -57,10 +57,10 @@ module Teachbase
 
         alias accounts change_account
 
-        def check_status(mode = :silence)
+        def check_status(mode = :silence, &block)
           text_interface = interface.sys.text
           text_interface.update_status(:in_progress).show
-          result = yield ? yield : false
+          result = yield
 
           if mode == :silence && result
             interface.destroy(delete_bot_message: { mode: :last })

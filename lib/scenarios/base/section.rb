@@ -24,7 +24,9 @@ module Teachbase
             return interface.sys.text.on_empty.show if all_sections.empty? || sections_by_option.empty?
 
             cs = sections_by_option.first.course_session
-            interface.section(cs).menu(title_params: { stages: %i[title menu], params: { state: "#{option}_sections" } })
+            interface.section(cs).menu(title_params: { stages: %i[title menu], params: { state: "#{option}_sections" } },
+                                       back_button: { mode: :custom,
+                                                      action: router.cs(path: :entity, id: cs_tb_id).link })
                                  .show_by_option(sections_by_option, option).show
           end
 

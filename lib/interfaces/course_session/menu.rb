@@ -33,6 +33,7 @@ module Teachbase
             @slices_count = 2
             @buttons = state_buttons
             @mode ||= :none
+            @text ||= "#{Emoji.t(:books)}<b>#{I18n.t('cs_list')}</b>"
             self
           end
 

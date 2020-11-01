@@ -92,7 +92,9 @@ module Teachbase
 
       def define_msg_type
         msg_type = MSG_TYPES.each do |type|
-          break type if @message.public_send(type) && !@message.public_send(type).empty?
+          if @message.respond_to?(type) && @message.public_send(type)# && !@message.public_send(type).empty?
+            break type 
+          end
         end
         raise "Don't know such Telegram::Bot::Types::Message: '#{@message.class}'. Only: #{MSG_TYPES}" unless msg_type
 
