@@ -55,7 +55,8 @@ module Teachbase
           def settings(settings_data)
             @type = :menu_inline
             @text ||= ["<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>\n",
-                       "#{I18n.t('scenario')}: #{I18n.t(to_snakecase(settings_data[:scenario]))}",
+                       # TODO: Get it back after update scenarios logics
+                       # "#{I18n.t('scenario')}: #{I18n.t(to_snakecase(settings_data[:scenario]))}",
                        "#{I18n.t('localization')}: #{I18n.t(settings_data[:localization])}"].join("\n")
             @mode ||= :none
             @buttons = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],

@@ -10,7 +10,8 @@ module Teachbase
                     :mode,
                     :disable_web_page_preview,
                     :disable_notification,
-                    :title_params
+                    :title_params,
+                    :path_params
 
       def initialize(params, entity)
         @params = params
@@ -22,6 +23,7 @@ module Teachbase
         @disable_web_page_preview = params[:disable_web_page_preview] || true
         @disable_notification = params[:disable_notification] || false
         @title_params = params[:title_params]
+        @path_params = params[:path_params]
       end
 
       def sing_on_empty

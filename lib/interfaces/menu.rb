@@ -4,11 +4,13 @@ module Teachbase
   module Bot
     class Interfaces
       class Menu < Teachbase::Bot::InterfaceController
-        attr_accessor :buttons, :back_button, :slices_count
+        attr_accessor :buttons, :back_button, :slices_count, :approve_button, :answers_button
         attr_reader :type
 
         def initialize(params, entity)
           @back_button = params[:back_button]
+          @approve_button = params[:approve_button]
+          @answers_button = params[:answers_button]
           @buttons = params[:buttons]
           @slices_count = params[:slices_count]
           @type = params[:type]
@@ -26,15 +28,14 @@ module Teachbase
         protected
 
         def build_pagination_button(action, pagination_options)
-          @path_parameters = {}
-          @path_parameters[:offset] = build_pagination_button_params(action, pagination_options)
-          @path_parameters[:limit] = pagination_options[:limit]
-          return unless @path_parameters[:offset]
+          router_parameters = { offset: build_pagination_button_params(action, pagination_options),
+                                limit: pagination_options[:limit] }
+          return unless router_parameters[:offset]
 
-          @path_parameters[:param] = params[:param] if params[:param]
-          InlineCallbackButton.public_send(action, button_sign: @button_sign, callback_data: router.public_send(params[:object_type],
-                                                                                                                path: params[:path],
-                                                                                                                p: [@path_parameters]).link)
+          router_parameters[:param] = path_params[:param] if path_params[:param]
+          InlineCallbackButton.public_send(action, button_sign: @button_sign,
+                                                   callback_data: router.public_send(path_params[:object_type], path: path_params[:path],
+                                                                                                                p: [router_parameters]).link)
         end
 
         def build_pagination_button_params(action, pagination_options)

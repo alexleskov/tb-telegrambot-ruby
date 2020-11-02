@@ -19,12 +19,12 @@ module Teachbase
           protected
 
           def build_approve_button
-            return unless params[:approve_button]
+            return unless approve_button
           end
 
           def build_show_answers_button
             return unless entity.respond_to?(:answers)
-            return unless entity.answers && !entity.answers.empty? && params[:show_answers_button] && entity.course_session.active?
+            return unless entity.answers && !entity.answers.empty? && answers_button && entity.course_session.active?
 
             InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
                                    callback_data: router.content(path: :answers, id: entity.tb_id, p: [cs_id: cs_tb_id]).link)

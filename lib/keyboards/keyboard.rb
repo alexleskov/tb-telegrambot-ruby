@@ -47,8 +47,13 @@ class Keyboard
     buttons.each do |button|
       value << [button]
     end
-    back = init_back_button(back_button) if back_button
-    back ? value.unshift([back]) : value
+
+    if back_button
+      back_button[:order] ||= :starting
+      back = init_back_button(back_button)
+      back_button[:order] == :starting ? value.unshift([back]) : value << [back]
+    end
+    value
   end
 
   def check_building_params

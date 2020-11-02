@@ -19,7 +19,7 @@ module Teachbase
             super
             return unless entity.course_session.active? && entity.can_submit?
 
-            time_spent = params[:approve_button][:time_spent] || DEFAULT_TIME_SPENT
+            time_spent = approve_button[:time_spent] || DEFAULT_TIME_SPENT
             InlineCallbackButton.g(button_sign: I18n.t('viewed').to_s,
                                    callback_data: router.content(path: :track_time, id: entity.tb_id,
                                                                  p: [time: time_spent, sec_id: entity.section.id, cs_id: cs_tb_id]).link)

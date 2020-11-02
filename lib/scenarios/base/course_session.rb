@@ -21,7 +21,7 @@ module Teachbase
             return interface.sys.text.on_empty.show if course_sessions.empty?
 
             interface.cs.menu(title_params: { text: course_sessions.first.sign_course_state },
-                              object_type: :cs, path: :list, param: state,
+                              path_params: { object_type: :cs, path: :list, param: state },
                               back_button: { mode: :custom, action: router.cs(path: :list, p: [type: :states]).link })
                      .main(course_sessions, limit: limit.to_i, offset: offset.to_i).show
           end

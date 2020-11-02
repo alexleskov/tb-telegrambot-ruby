@@ -51,7 +51,7 @@ module Teachbase
             raise "Can't submit answer" unless type.to_sym == :task
 
             content_loader(type, cs_tb_id, sec_id, object_tb_id)
-            .submit(answer_type.to_sym => build_answer_data(files_mode: :upload))
+              .submit(answer_type.to_sym => build_answer_data(files_mode: :upload))
           end
 
           def task_answers(cs_tb_id, task_tb_id)
@@ -79,7 +79,7 @@ module Teachbase
             when :material
               menu_options[:approve_button] = { time_spent: 25 }
             when :task
-              menu_options[:show_answers_button] = true
+              menu_options[:answers_button] = true
               menu_options[:approve_button] = true
               menu_options[:disable_web_page_preview] = true
             when :quiz, :scorm_package

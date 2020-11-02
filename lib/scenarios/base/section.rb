@@ -11,7 +11,7 @@ module Teachbase
 
             cs = sections.first.course_session
             interface.section(cs).menu(title_params: { stages: %i[title] },
-                                       back_button: { mode: :custom,
+                                       back_button: { mode: :custom, order: :ending,
                                                       action: router.cs(path: :list, p: [type: :states]).link }).main.show
           rescue RuntimeError => e
             return interface.sys.text.on_empty.show if e.http_code == 404
@@ -40,7 +40,8 @@ module Teachbase
             end
             interface.section(section_loader.db_entity)
                      .menu(title_params: { stages: %i[title] },
-                           back_button: { mode: :custom, action: router.cs(path: :entity, id: cs_tb_id).link }).contents.show
+                           back_button: { mode: :custom, order: :ending,
+                                          action: router.cs(path: :entity, id: cs_tb_id).link }).contents.show
           end
 
           def section_additions(cs_tb_id, sec_id)
@@ -48,7 +49,8 @@ module Teachbase
             return interface.sys.text.on_empty.show if section_loader.links.empty?
 
             interface.sys(section_loader.db_entity)
-                     .menu(back_button: build_back_button_data, title_params: { stages: %i[title] }).links(section_loader.links).show
+                     .menu(back_button: build_back_button_data.merge!(order: :ending),
+                           title_params: { stages: %i[title] }).links(section_loader.links).show
           end
 
           protected

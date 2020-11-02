@@ -11,11 +11,12 @@ module Teachbase
           end
 
           def settings_edit
-            interface.sys.menu(back_button: { mode: :custom, action: router.setting(path: :root).link }).edit_settings.show
+            interface.sys.menu(back_button: { mode: :custom, order: :ending,
+                                              action: router.setting(path: :root).link }).edit_settings.show
           end
 
           def setting_choose(setting)
-            interface.sys.menu(back_button: build_back_button_data).choosing("Setting", setting.to_sym).show
+            interface.sys.menu(back_button: build_back_button_data.merge!(order: :ending)).choosing("Setting", setting.to_sym).show
           end
 
           def langugage_change(lang)

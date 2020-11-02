@@ -11,7 +11,7 @@ class InlineUrlButton < Button
     end
 
     def to_open(url, text = "")
-      g(button_sign: "#{I18n.t('open').capitalize} #{text}", url: to_default_protocol(url))
+      g(button_sign: text.to_s, url: to_default_protocol(url))
     end
 
     private
