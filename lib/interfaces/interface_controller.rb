@@ -5,6 +5,8 @@ module Teachbase
     class InterfaceController
       include Formatter
 
+      LINK_ATTRS = { "url" => "source", "label" => "title" }.freeze
+
       attr_reader :params, :answer, :entity, :router
       attr_accessor :text,
                     :mode,
@@ -108,6 +110,15 @@ module Teachbase
       end
 
       protected
+
+      def replace_key_names(cnames_hash, hash_on_replace)
+        cnames_hash.each do |old_key, new_key|
+          next unless hash_on_replace[old_key]
+
+          hash_on_replace[new_key.to_s] = hash_on_replace.delete(old_key)
+        end
+        hash_on_replace
+      end
 
       def on_empty_params
         title = title_params ? "#{create_title(title_params)}\n" : ""

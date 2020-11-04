@@ -36,6 +36,11 @@ class Attribute
   private
 
   def replace_key_names
-    lms_attr_cnames.each { |old_key, new_key| lms_data[new_key.to_s] = lms_data.delete(old_key) }
+    lms_attr_cnames.each do |old_key, new_key|
+      next unless lms_data[old_key]
+
+      lms_data[new_key.to_s] = lms_data.delete(old_key)
+    end
+    lms_data
   end
 end

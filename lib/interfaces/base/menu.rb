@@ -87,8 +87,7 @@ module Teachbase
               buttons_actions << router.setting(path: option_name.downcase.to_s, p: [param: buttons_sign]).link
             end
             @slices_count = buttons_signs.size
-            @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs),
-                                                buttons_actions: buttons_actions,
+            @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
                                                 emojis: to_constantize("#{option_name.upcase}_EMOJI", class_for_choosing),
                                                 back_button: back_button).raw
             self
@@ -107,7 +106,7 @@ module Teachbase
             @type = :menu_inline
             @mode ||= :edit_msg
             @text ||= "#{create_title(title_params)}<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
-            @buttons = build_links_buttons(links_list)
+            @buttons = InlineUrlKeyboard.collect(buttons: build_links_buttons(links_list), back_button: back_button).raw
             self
           end
 
@@ -152,16 +151,6 @@ module Teachbase
               acc_names << account["name"]
             end
             InlineCallbackKeyboard.g(buttons_signs: acc_names, buttons_actions: acc_ids, back_button: back_button).raw
-          end
-
-          def build_links_buttons(links_list)
-            buttons_list = []
-            links_list.each do |link_params|
-              raise unless link_params.is_a?(Hash)
-
-              buttons_list << InlineUrlButton.to_open(link_params["source"], link_params["title"])
-            end
-            InlineUrlKeyboard.collect(buttons: buttons_list, back_button: back_button).raw
           end
 
           def settings_class

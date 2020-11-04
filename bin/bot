@@ -21,7 +21,7 @@ Telegram::Bot::Client.new($app_config.load_token).run do |bot|
     end
     MessageResponder.new(bot: bot, message: message).detect_type
   rescue => e
-   $logger.debug "Error: #{e}."
+    $logger.debug "Error: #{e}."
     # end
   end
 end

@@ -36,7 +36,7 @@ module Teachbase
             raise "Entity must be a Section" unless entity.is_a?(Teachbase::Bot::Section)
 
             @type = :menu_inline
-            @mode ||= :nonne
+            @mode ||= :none
             @buttons = contents_buttons
             @text = "#{create_title(object: entity.course_session,
                                     stages: %i[title], params: { cover_url: '' })}#{create_title(title_params)}"

@@ -48,9 +48,11 @@ module Teachbase
             section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
             return interface.sys.text.on_empty.show if section_loader.links.empty?
 
-            interface.sys(section_loader.db_entity)
-                     .menu(back_button: build_back_button_data.merge!(order: :ending),
-                           title_params: { stages: %i[title] }).links(section_loader.links).show
+            section_db = section_loader.db_entity
+            interface.sys(section_db).menu(back_button: { mode: :custom, order: :ending,
+                                                          action: router.section(path: :entity, position: section_db.position,
+                                                                                 p: [cs_id: cs_tb_id]).link },
+                                           title_params: { stages: %i[title] }).links(section_loader.links).show
           end
 
           protected

@@ -38,6 +38,17 @@ module Teachbase
                                                                                                                 p: [router_parameters]).link)
         end
 
+        def build_links_buttons(links_list)
+          buttons_list = []
+          links_list.each do |link_params|
+            raise unless link_params.is_a?(Hash)
+
+            link_params = replace_key_names(Teachbase::Bot::InterfaceController::LINK_ATTRS, link_params)
+            buttons_list << InlineUrlButton.to_open(link_params["source"], link_params["title"])
+          end
+          buttons_list
+        end
+
         def build_pagination_button_params(action, pagination_options)
           case action
           when :more

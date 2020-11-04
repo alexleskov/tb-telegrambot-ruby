@@ -14,12 +14,10 @@ module Teachbase
           end
 
           def profile_links
-            links = appshell.data_loader.user.profile.links
-            return interface.sys.text.on_empty.show if links.empty?
+            links_list = appshell.data_loader.user.profile.links
+            return interface.sys.text.on_empty.show if links_list.empty?
 
-            links.each do |link_param|
-              interface.sys.send(:content, link: link_param["url"], link_name: link_param["label"]).url
-            end
+            interface.sys.menu(text: "#{Emoji.t(:link)}#{I18n.t('more_actions')}", mode: :none).links(links_list).show
           end
 
           alias more_actions profile_links
