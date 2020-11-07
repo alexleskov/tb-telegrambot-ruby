@@ -35,11 +35,11 @@ module Teachbase
 
       def user(mode = access_mode)
         authsession(mode)
-        authorizer.user
+        @current_user = @current_user ? @current_user : authorizer.user
       end
 
       def authsession(mode = access_mode)
-        authorizer.call_authsession(mode)
+        @current_authsession = @current_authsession ? @current_authsession : authorizer.call_authsession(mode)
       end
 
       def user_fullname(option = :string)
@@ -89,6 +89,10 @@ module Teachbase
       def logout_account
         authorizer.reset_account
         authorizer.send(:take_user_account_auth_data)
+        authorizer.send(:login_by_user_data,
+                        client_id: authorizer.account.client_id,
+                        client_secret: authorizer.account.client_secret,
+                        account_id: authorizer.account.tb_id)
       end
 
       def request_data(validate_type)

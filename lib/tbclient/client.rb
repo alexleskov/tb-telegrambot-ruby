@@ -15,7 +15,7 @@ module Teachbase
       API_VERSIONS = [1, 2].freeze
       DEFAULT_ANSWER_TYPE = :json
 
-      attr_reader :api_type, :api_version, :lms_host, :response, :token
+      attr_reader :api_type, :api_version, :lms_host, :response, :token, :client_params
 
       def initialize(api_type, version_number, client_params = {})
         @api_type = api_type

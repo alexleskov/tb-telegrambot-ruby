@@ -31,13 +31,14 @@ module Teachbase
         unsigned_cs_tb_ids = current_cs_tb_ids - tb_ids_by_lms_info
         clear_unsigned_course_sessions(unsigned_cs_tb_ids) unless unsigned_cs_tb_ids.empty?
         appshell.user.course_sessions_by(state: state, limit: params[:limit], offset: params[:offset],
-                                         scenario: params[:category])
+                                         account_id: current_account.id, scenario: params[:category])
       end
 
-      def update_all_states
+      def update_all_states(params = {})
         courses = {}
+        mode = params[:mode] || :none
         Teachbase::Bot::CourseSession::STATES.each do |state|
-          courses[state] = appshell.data_loader.cs.list(state: state, mode: :with_reload)
+          courses[state] = list(state: state, mode: mode)
         end
         courses
       end
@@ -70,7 +71,7 @@ module Teachbase
       end
 
       def delete_all_by_state(state)
-        call_data { appshell.user.course_sessions.where(status: state.to_s).destroy_all }
+        call_data { appshell.user.course_sessions.where(status: state.to_s, account_id: current_account.id).destroy_all }
       end
 
       def model_class
@@ -81,9 +82,9 @@ module Teachbase
         call_data do
           case mode
           when :with_create
-            appshell.user.course_sessions.find_or_create_by!(tb_id: tb_id)
+            appshell.user.course_sessions.find_or_create_by!(tb_id: tb_id, account_id: current_account.id)
           else
-            appshell.user.course_sessions.find_by!(tb_id: tb_id)
+            appshell.user.course_sessions.find_by!(tb_id: tb_id, account_id: current_account.id)
           end
         end
       end
@@ -95,7 +96,7 @@ module Teachbase
       private
 
       def clear_unsigned_course_sessions(unsigned_cs_tb_ids)
-        appshell.user.course_sessions.where(tb_id: unsigned_cs_tb_ids).destroy_all
+        appshell.user.course_sessions.where(tb_id: unsigned_cs_tb_ids, account_id: current_account.id).destroy_all
       end
 
       def init_sec_loader(option, value)
@@ -122,11 +123,12 @@ module Teachbase
       end
 
       def current_cs_tb_ids
-        appshell.user.course_sessions.all.pluck(:tb_id)
+        appshell.user.course_sessions.where(account_id: current_account.id).pluck(:tb_id)
       end
 
       def last_version
-        appshell.user.course_sessions.find_by(tb_id: tb_id, edited_at: lms_load(data: :info)["updated_at"])
+        appshell.user.course_sessions.find_by(tb_id: tb_id, account_id: current_account.id,
+                                              edited_at: lms_load(data: :info)["updated_at"])
       end
     end
   end

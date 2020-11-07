@@ -9,6 +9,7 @@ module Teachbase
       include Decorators::CourseSession
 
       belongs_to :user
+      belongs_to :account
       has_many :sections, dependent: :destroy
       has_many :materials, dependent: :destroy
       has_many :quizzes, dependent: :destroy

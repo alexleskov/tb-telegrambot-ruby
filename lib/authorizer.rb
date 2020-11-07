@@ -62,10 +62,13 @@ module Teachbase
         authsession
       end
 
-      def login_by_user_data
+      def login_by_user_data(client_params = {})
+        client_params[:client_id] ||= $app_config.client_id
+        client_params[:client_secret] ||= $app_config.client_secret
+        client_params[:account_id] ||= $app_config.account_id
         take_user_auth_data
-        authsession.api_auth(:mobile, 2, client_id: $app_config.client_id, client_secret: $app_config.client_secret,
-                                         account_id: $app_config.account_id, user_login: login,
+        authsession.api_auth(:mobile, 2, client_id: client_params[:client_id], client_secret: client_params[:client_secret],
+                                         account_id: client_params[:account_id], user_login: login,
                                          password: crypted_password.decrypt(:symmetric, password: $app_config.load_encrypt_key))
         token = authsession.tb_api.token
         raise "Can't authorize authsession id: #{authsession.id}. User login: #{login}" unless token.value

@@ -10,7 +10,7 @@ module Teachbase
       def me
         lms_load(data: :profile)
         return unless lms_info.is_a?(Hash)
-
+        
         update_data(lms_info.merge!("tb_id" => lms_info["id"]))
         profile.me
         db_entity

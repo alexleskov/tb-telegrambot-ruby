@@ -45,6 +45,10 @@ module Teachbase
         Attribute.create(model_class.attribute_names, data, self.class::CUSTOM_ATTRS)
       end
 
+      def current_account
+        appshell.authsession.account
+      end
+
       protected
 
       def call_data

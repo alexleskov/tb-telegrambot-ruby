@@ -15,7 +15,7 @@ module Teachbase
           alias studying courses_states
 
           def courses_list_by(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0)
-            return courses_update if state.to_sym == :update
+            return courses_update(:with_reload) if state.to_sym == :update
 
             course_sessions = appshell.data_loader.cs.list(state: state, category: appshell.settings.scenario)
             return interface.sys.text.on_empty.show if course_sessions.empty?
@@ -26,8 +26,8 @@ module Teachbase
                      .main(course_sessions, limit: limit.to_i, offset: offset.to_i).show
           end
 
-          def courses_update
-            check_status(:default) { appshell.data_loader.cs.update_all_states }
+          def courses_update(mode = :none)
+            check_status(:default) { appshell.data_loader.cs.update_all_states(mode: mode) }
           end
         end
       end
