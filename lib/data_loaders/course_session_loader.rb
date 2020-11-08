@@ -17,7 +17,7 @@ module Teachbase
         raise "No such option for update course sessions list" unless Teachbase::Bot::CourseSession::STATES.include?(state)
 
         mode = params[:mode] || :normal
-        delete_all_by_state(state) if mode == :with_reload
+        delete_all_by(status: state) if mode == :with_reload
         lms_load(data: :listing, state: state)
         tb_ids_by_lms_info = []
         lms_info.each do |course_lms|
@@ -28,9 +28,9 @@ module Teachbase
           update_data(course_lms.merge!("status" => state))
           categories
         end
-        unsigned_cs_tb_ids = current_cs_tb_ids - tb_ids_by_lms_info
-        clear_unsigned_course_sessions(unsigned_cs_tb_ids) unless unsigned_cs_tb_ids.empty?
-        appshell.user.course_sessions_by(state: state, limit: params[:limit], offset: params[:offset],
+        unsigned_cs_tb_ids = current_cs_tb_ids(state) - tb_ids_by_lms_info
+        delete_all_by(tb_id: unsigned_cs_tb_ids) unless unsigned_cs_tb_ids.empty?
+        appshell.user.course_sessions_by(status: state, limit: params[:limit], offset: params[:offset],
                                          account_id: current_account.id, scenario: params[:category])
       end
 
@@ -56,13 +56,9 @@ module Teachbase
       end
 
       def sections
-        call_data do
-          db_entity&.sections&.destroy_all
-          lms_load(data: :sections)
-          lms_info.each_with_index do |section_lms, ind|
-            init_sec_loader(:position, ind + 1).update_data(section_lms)
-          end
-        end
+        db_entity&.sections&.destroy_all
+        lms_load(data: :sections)
+        lms_info.each_with_index { |section_lms, ind| init_sec_loader(:position, ind + 1).update_data(section_lms) }
         db_entity.sections.order(position: :asc)
       end
 
@@ -70,22 +66,16 @@ module Teachbase
         init_sec_loader(option, value).db_entity
       end
 
-      def delete_all_by_state(state)
-        call_data { appshell.user.course_sessions.where(status: state.to_s, account_id: current_account.id).destroy_all }
-      end
-
       def model_class
         Teachbase::Bot::CourseSession
       end
 
       def db_entity(mode = :with_create)
-        call_data do
-          case mode
-          when :with_create
-            appshell.user.course_sessions.find_or_create_by!(tb_id: tb_id, account_id: current_account.id)
-          else
-            appshell.user.course_sessions.find_by!(tb_id: tb_id, account_id: current_account.id)
-          end
+        course_sessions_db = appshell.user.course_sessions
+        if mode == :with_create
+          course_sessions_db.find_or_create_by!(tb_id: tb_id, account_id: current_account.id)
+        else
+          course_sessions_db.find_by!(tb_id: tb_id, account_id: current_account.id)
         end
       end
 
@@ -95,8 +85,9 @@ module Teachbase
 
       private
 
-      def clear_unsigned_course_sessions(unsigned_cs_tb_ids)
-        appshell.user.course_sessions.where(tb_id: unsigned_cs_tb_ids, account_id: current_account.id).destroy_all
+      def delete_all_by(options)
+        options[:account_id] = current_account.id
+        appshell.user.course_sessions_by(options).destroy_all
       end
 
       def init_sec_loader(option, value)
@@ -122,8 +113,8 @@ module Teachbase
         end
       end
 
-      def current_cs_tb_ids
-        appshell.user.course_sessions.where(account_id: current_account.id).pluck(:tb_id)
+      def current_cs_tb_ids(status)
+        appshell.user.course_sessions_by(status: status.to_s, account_id: current_account.id).pluck(:tb_id)
       end
 
       def last_version

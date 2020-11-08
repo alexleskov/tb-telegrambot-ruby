@@ -19,7 +19,7 @@ module Teachbase
       has_many :categories, through: :course_categories
 
       def list_state(state)
-        order(name: :asc).where(status: state.to_s)
+        order(name: :asc).where("status = ?", state.to_s)
       end
 
       def active?

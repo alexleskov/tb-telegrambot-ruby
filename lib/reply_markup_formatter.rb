@@ -10,7 +10,7 @@ class ReplyMarkupFormatter
 
   def build_markup
     Telegram::Bot::Types::ReplyKeyboardMarkup
-      .new(keyboard: array.each_slice(@slices).to_a, one_time_keyboard: true)
+      .new(keyboard: array.each_slice(@slices).to_a, one_time_keyboard: false)
   end
 
   def build_inline_markup

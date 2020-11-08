@@ -45,13 +45,10 @@ module Teachbase
       def db_entity(mode = :no_create)
         raise "No such option: '#{option}" unless %i[position id].include?(option.to_sym)
 
-        call_data do
-          case mode
-          when :with_create
-            model_class.find_or_create_by!(option.to_sym => value, user_id: appshell.user.id, course_session_id: cs_id)
-          else
-            model_class.find_by(option.to_sym => value, user_id: appshell.user.id, course_session_id: cs_id)
-          end
+        if mode == :with_create
+          model_class.find_or_create_by!(option.to_sym => value, user_id: appshell.user.id, course_session_id: cs_id)
+        else
+          model_class.find_by(option.to_sym => value, user_id: appshell.user.id, course_session_id: cs_id)
         end
       end
 

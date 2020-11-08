@@ -19,13 +19,11 @@ module Teachbase
       end
 
       def db_entity(mode = :no_create)
-        call_data do
-          case mode
-          when :with_create
-            section_db.public_send(self.class::METHOD_CNAME).find_or_create_by!(tb_id: tb_id)
-          else
-            section_db.public_send(self.class::METHOD_CNAME).find_by!(tb_id: tb_id)
-          end
+        contents_db = section_db.public_send(self.class::METHOD_CNAME)
+        if mode == :with_create
+          contents_db.find_or_create_by!(tb_id: tb_id)
+        else
+          contents_db.find_by!(tb_id: tb_id)
         end
       end
 
