@@ -25,7 +25,7 @@ module Teachbase
       end
 
       def db_entity(_mode = :none)
-        call_data { appshell.user }
+        appshell.user
       end
 
       def model_class

@@ -24,13 +24,10 @@ module Teachbase
       end
 
       def db_entity(mode = :with_create)
-        call_data do
-          case mode
-          when :with_create
-            model_class.find_or_create_by!(user_id: user_loader.db_entity.id)
-          else
-            model_class.find_by(user_id: user_loader.db_entity.id)
-          end
+        if mode == :with_create
+          model_class.find_or_create_by!(user_id: user_loader.db_entity.id)
+        else
+          model_class.find_by(user_id: user_loader.db_entity.id)
         end
       end
 

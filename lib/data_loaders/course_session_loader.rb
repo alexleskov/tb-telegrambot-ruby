@@ -13,33 +13,48 @@ module Teachbase
       end
 
       def list(params)
-        state = params[:state].to_s
-        raise "No such option for update course sessions list" unless Teachbase::Bot::CourseSession::STATES.include?(state)
+        status = params[:state].to_s
+        raise "No such option for update course sessions list" unless Teachbase::Bot::CourseSession::STATES.include?(status)
 
         mode = params[:mode] || :normal
-        delete_all_by_state(state) if mode == :with_reload
-        lms_load(data: :listing, state: state)
-        tb_ids_by_lms_info = []
+        list_load_params = { per_page: params[:per_page], page: params[:page] }
+        delete_all_by(status: status) if mode == :with_reload
+
+        if params[:category] && params[:category] != "standart_learning"
+          list_load_params[:course_types] = [Teachbase::Bot::Category.find_by_name(params[:category]).tb_id]
+        end
+        # TO DO: Add course category filter for lms_load if will use category filter for db entities
+        lms_load(data: :listing, state: status, params: list_load_params)
+        @lms_tb_ids = []
         lms_info.each do |course_lms|
-          @tb_id = course_lms["id"]
-          tb_ids_by_lms_info << course_lms["id"].to_i
+          @lms_tb_ids << @tb_id = course_lms["id"].to_i
           next if course_lms["updated_at"] == db_entity.edited_at
 
-          update_data(course_lms.merge!("status" => state))
+          update_data(course_lms.merge!("status" => status))
           categories
         end
-        unsigned_cs_tb_ids = current_cs_tb_ids - tb_ids_by_lms_info
-        clear_unsigned_course_sessions(unsigned_cs_tb_ids) unless unsigned_cs_tb_ids.empty?
-        appshell.user.course_sessions_by(state: state, limit: params[:limit], offset: params[:offset],
-                                         scenario: params[:category])
+        cs_db = courses_db_with_paginate(status, params[:limit], params[:offset], params[:category])
+        @db_tb_ids = cs_db.pluck(:tb_id)
+        return cs_db unless delete_unsigned
+
+        courses_db_with_paginate(status, params[:limit], params[:offset], params[:category])
       end
 
-      def update_all_states
+      def update_all_states(params = {})
         courses = {}
-        Teachbase::Bot::CourseSession::STATES.each do |state|
-          courses[state] = appshell.data_loader.cs.list(state: state, mode: :with_reload)
+        mode = params[:mode] || :none
+        Teachbase::Bot::CourseSession::STATES.each do |status|
+          courses[status] = list(state: status, mode: mode)
         end
         courses
+      end
+
+      def total_cs_count(params)
+        params[:params] ||= {}
+        if params[:category] && params[:category] != "standart_learning"
+          params[:params][:course_types] = [Teachbase::Bot::Category.find_by_name(params[:category]).tb_id]
+        end
+        lms_load(data: :total_cs_count, state: params[:state], params: params[:params])
       end
 
       def info
@@ -55,13 +70,9 @@ module Teachbase
       end
 
       def sections
-        call_data do
-          db_entity&.sections&.destroy_all
-          lms_load(data: :sections)
-          lms_info.each_with_index do |section_lms, ind|
-            init_sec_loader(:position, ind + 1).update_data(section_lms)
-          end
-        end
+        db_entity&.sections&.destroy_all
+        lms_load(data: :sections)
+        lms_info.each_with_index { |section_lms, ind| init_sec_loader(:position, ind + 1).update_data(section_lms) }
         db_entity.sections.order(position: :asc)
       end
 
@@ -69,22 +80,16 @@ module Teachbase
         init_sec_loader(option, value).db_entity
       end
 
-      def delete_all_by_state(state)
-        call_data { appshell.user.course_sessions.where(status: state.to_s).destroy_all }
-      end
-
       def model_class
         Teachbase::Bot::CourseSession
       end
 
       def db_entity(mode = :with_create)
-        call_data do
-          case mode
-          when :with_create
-            appshell.user.course_sessions.find_or_create_by!(tb_id: tb_id)
-          else
-            appshell.user.course_sessions.find_by!(tb_id: tb_id)
-          end
+        course_sessions_db = appshell.user.course_sessions
+        if mode == :with_create
+          course_sessions_db.find_or_create_by!(tb_id: tb_id, account_id: current_account.id)
+        else
+          course_sessions_db.find_by!(tb_id: tb_id, account_id: current_account.id)
         end
       end
 
@@ -94,8 +99,16 @@ module Teachbase
 
       private
 
-      def clear_unsigned_course_sessions(unsigned_cs_tb_ids)
-        appshell.user.course_sessions.where(tb_id: unsigned_cs_tb_ids).destroy_all
+      def delete_all_by(options)
+        options[:account_id] = current_account.id
+        appshell.user.course_sessions_by(options).destroy_all
+      end
+
+      def delete_unsigned
+        unsigned_cs_tb_ids = @db_tb_ids - @lms_tb_ids
+        return if unsigned_cs_tb_ids.empty?
+
+        delete_all_by(tb_id: unsigned_cs_tb_ids)
       end
 
       def init_sec_loader(option, value)
@@ -103,11 +116,11 @@ module Teachbase
       end
 
       def lms_load(options)
+        options[:params] ||= {}
+        options[:params].merge!(order_by: "started_at", order_direction: "desc")
         @lms_info = call_data do
           case options[:data].to_sym
           when :listing
-            options[:params] ||= { page: 1, per_page: 100 }
-            options[:params].merge!(order_by: "started_at", order_direction: "desc")
             appshell.authsession.load_course_sessions(options[:state], options[:params])
           when :progress
             appshell.authsession.load_cs_progress(tb_id)
@@ -115,18 +128,24 @@ module Teachbase
             appshell.authsession.load_cs_info(tb_id)
           when :sections
             lms_load(data: :info)["sections"]
+          when :total_cs_count
+            options[:params][:answer_type] = :raw
+            options[:params]
+            appshell.authsession.load_course_sessions(options[:state], options[:params]).headers[:total].to_i
           else
             raise "Can't call such data: '#{options[:data]}'"
           end
         end
       end
 
-      def current_cs_tb_ids
-        appshell.user.course_sessions.all.pluck(:tb_id)
+      def courses_db_with_paginate(status, limit, offset, category)
+        appshell.user.course_sessions_by(status: status, account_id: current_account.id, limit: limit, offset: offset,
+                                         scenario: category).order(started_at: :desc)
       end
 
       def last_version
-        appshell.user.course_sessions.find_by(tb_id: tb_id, edited_at: lms_load(data: :info)["updated_at"])
+        appshell.user.course_sessions.find_by(tb_id: tb_id, account_id: current_account.id,
+                                              edited_at: lms_load(data: :info)["updated_at"])
       end
     end
   end

@@ -13,19 +13,23 @@ module Teachbase
       has_many :course_sessions, dependent: :destroy
 
       def course_sessions_by(params)
-        sessions_list = course_sessions.order(started_at: :desc)
-        params[:scenario] ||= "standart_learning"
-        result = if params[:scenario].to_s == "standart_learning"
-                   sessions_list.where(status: params[:state].to_s)
-                 else
-                   sessions_list.joins('LEFT JOIN course_categories ON course_categories.course_session_id = course_sessions.id
-                                        LEFT JOIN categories ON categories.id = course_categories.category_id')
-                                .where('course_sessions.status = :status AND categories.name ILIKE :category', status: params[:state].to_s,
-                                                                                                               category: find_category_cname_by(params[:scenario]))
-                 end
-        return result unless params[:limit] && params[:offset]
+        sessions_list = course_sessions
+        option_key = params.map { |key, _value| key if %i[status tb_id].include?(key.to_sym) }.first
+        query_param = { option_key.to_sym => params[option_key], account_id: params[:account_id] }
+        query_string =
+          if params[:scenario].to_s == "standart_learning"
+            "#{option_key} IN (:#{option_key}) AND account_id = :account_id"
+          else
+            sessions_list = sessions_list.joins('LEFT JOIN course_categories ON course_categories.course_session_id = course_sessions.id
+                                                 LEFT JOIN categories ON categories.id = course_categories.category_id')
+            query_param[:category] = find_category_cname_by(params[:scenario])
+            "course_sessions.#{option_key} IN (:#{option_key})
+             AND course_sessions.account_id = :account_id AND categories.name ILIKE :category"
+          end
+        sessions_list = sessions_list.where(query_string, query_param)
+        return sessions_list unless params[:limit] && params[:offset]
 
-        result.limit(params[:limit]).offset(params[:offset])
+        sessions_list.limit(params[:limit]).offset(params[:offset])
       end
 
       def sections_by_cs_tbid(cs_tb_id)
@@ -47,7 +51,7 @@ module Teachbase
       private
 
       def find_category_cname_by(name)
-        I18n.t(name.to_s)
+        Teachbase::Bot::Scenarios::LIST.include?(name) ? I18n.t(name.to_s) : name
       end
     end
   end

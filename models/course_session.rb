@@ -9,6 +9,7 @@ module Teachbase
       include Decorators::CourseSession
 
       belongs_to :user
+      belongs_to :account
       has_many :sections, dependent: :destroy
       has_many :materials, dependent: :destroy
       has_many :quizzes, dependent: :destroy
@@ -18,7 +19,7 @@ module Teachbase
       has_many :categories, through: :course_categories
 
       def list_state(state)
-        order(name: :asc).where(status: state.to_s)
+        order(name: :asc).where("status = ?", state.to_s)
       end
 
       def active?

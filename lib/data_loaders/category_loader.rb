@@ -29,13 +29,10 @@ module Teachbase
       #       end
 
       def db_entity(mode = :with_create)
-        call_data do
-          case mode
-          when :with_create
-            model_class.find_or_create_by!(tb_id: tb_id)
-          else
-            model_class.find_by!(tb_id: tb_id)
-          end
+        if mode == :with_create
+          model_class.find_or_create_by!(tb_id: tb_id, account_id: current_account.id)
+        else
+          model_class.find_by!(tb_id: tb_id, account_id: current_account.id)
         end
       end
 
