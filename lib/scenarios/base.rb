@@ -30,13 +30,14 @@ module Teachbase
           raise unless auth
 
           interface.sys.menu.greetings(appshell.user_fullname, appshell.account_name).show
+          # TO DO: Delete course_update after fix on Teachbase with course_sessions list sorting
           courses_update
           interface.sys.menu.after_auth.show
         rescue RuntimeError, TeachbaseBotException => e
           $logger.debug "On auth error: #{e.class}. #{e.inspect}"
           title = to_text_by_exceiption_code(e)
           title = "#{I18n.t('accounts')}: #{title}" if e.is_a?(TeachbaseBotException::Account)
-          appshell.logout if access_denied?(e)
+          appshell.logout if access_denied?(e) || e.is_a?(TeachbaseBotException::Account)
           interface.sys.menu.starting.show
           interface.sys.menu(text: title).sign_in_again.show
         end
@@ -58,7 +59,7 @@ module Teachbase
           $logger.debug "On auth error: #{e.class}. #{e.inspect}"
           title = to_text_by_exceiption_code(e)
           title = "#{I18n.t('accounts')}: #{title}" if e.is_a?(TeachbaseBotException::Account)
-          appshell.logout if access_denied?(e)
+          appshell.logout if access_denied?(e) || e.is_a?(TeachbaseBotException::Account)
           interface.sys.menu.starting.show
           interface.sys.menu(text: title).sign_in_again.show
         end

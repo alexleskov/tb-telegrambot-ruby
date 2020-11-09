@@ -14,19 +14,18 @@ module Teachbase
 
       def course_sessions_by(params)
         sessions_list = course_sessions
-        option_key = params.map { |key, value| key if [:status, :tb_id].include?(key.to_sym) }.first
+        option_key = params.map { |key, _value| key if %i[status tb_id].include?(key.to_sym) }.first
         query_param = { option_key.to_sym => params[option_key], account_id: params[:account_id] }
-        if params[:scenario].to_s == "standart_learning"
-          query_string = "#{option_key} IN (:#{option_key}) AND account_id = :account_id"
-          query_param
-        else
-          sessions_list = sessions_list.joins('LEFT JOIN course_categories ON course_categories.course_session_id = course_sessions.id
-                                               LEFT JOIN categories ON categories.id = course_categories.category_id')
-          query_string = "course_sessions.#{option_key} IN (:#{option_key})
-                         AND course_sessions.account_id = :account_id AND categories.name ILIKE :category"
-          query_param[:category] = find_category_cname_by(params[:scenario])
-          query_param
-        end
+        query_string =
+          if params[:scenario].to_s == "standart_learning"
+            "#{option_key} IN (:#{option_key}) AND account_id = :account_id"
+          else
+            sessions_list = sessions_list.joins('LEFT JOIN course_categories ON course_categories.course_session_id = course_sessions.id
+                                                 LEFT JOIN categories ON categories.id = course_categories.category_id')
+            query_param[:category] = find_category_cname_by(params[:scenario])
+            "course_sessions.#{option_key} IN (:#{option_key})
+             AND course_sessions.account_id = :account_id AND categories.name ILIKE :category"
+          end
         sessions_list = sessions_list.where(query_string, query_param)
         return sessions_list unless params[:limit] && params[:offset]
 

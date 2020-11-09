@@ -35,11 +35,11 @@ module Teachbase
 
       def user(mode = access_mode)
         authsession(mode)
-        @current_user = @current_user ? @current_user : authorizer.user
+        @current_user ||= authorizer.user
       end
 
       def authsession(mode = access_mode)
-        @current_authsession = @current_authsession ? @current_authsession : authorizer.call_authsession(mode)
+        @current_authsession ||= authorizer.call_authsession(mode)
       end
 
       def user_fullname(option = :string)

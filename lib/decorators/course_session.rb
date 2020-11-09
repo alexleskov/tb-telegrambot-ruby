@@ -19,12 +19,12 @@ module Decorators
 
     def title(params)
       cover_url =
-      if params
-        params[:cover_url]
-      else
-        URL_WITHOUT_PARAMS =~ icon_url
-        $LAST_MATCH_INFO
-      end
+        if params
+          params[:cover_url]
+        else
+          URL_WITHOUT_PARAMS =~ icon_url
+          $LAST_MATCH_INFO
+        end
       "#{Emoji.t(:book)} <a href='#{cover_url}'>#{to_bolder(name)}</a>"
     end
 

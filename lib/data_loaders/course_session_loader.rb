@@ -21,7 +21,7 @@ module Teachbase
         delete_all_by(status: status) if mode == :with_reload
 
         if params[:category] && params[:category] != "standart_learning"
-          list_load_params[:course_types] = [ Teachbase::Bot::Category.find_by_name(params[:category]).tb_id ]
+          list_load_params[:course_types] = [Teachbase::Bot::Category.find_by_name(params[:category]).tb_id]
         end
         # TO DO: Add course category filter for lms_load if will use category filter for db entities
         lms_load(data: :listing, state: status, params: list_load_params)
@@ -36,7 +36,7 @@ module Teachbase
         cs_db = courses_db_with_paginate(status, params[:limit], params[:offset], params[:category])
         @db_tb_ids = cs_db.pluck(:tb_id)
         return cs_db unless delete_unsigned
-        
+
         courses_db_with_paginate(status, params[:limit], params[:offset], params[:category])
       end
 
@@ -52,7 +52,7 @@ module Teachbase
       def total_cs_count(params)
         params[:params] ||= {}
         if params[:category] && params[:category] != "standart_learning"
-          params[:params][:course_types] = [ Teachbase::Bot::Category.find_by_name(params[:category]).tb_id ]
+          params[:params][:course_types] = [Teachbase::Bot::Category.find_by_name(params[:category]).tb_id]
         end
         lms_load(data: :total_cs_count, state: params[:state], params: params[:params])
       end
@@ -103,7 +103,7 @@ module Teachbase
         options[:account_id] = current_account.id
         appshell.user.course_sessions_by(options).destroy_all
       end
-      
+
       def delete_unsigned
         unsigned_cs_tb_ids = @db_tb_ids - @lms_tb_ids
         return if unsigned_cs_tb_ids.empty?
@@ -130,7 +130,7 @@ module Teachbase
             lms_load(data: :info)["sections"]
           when :total_cs_count
             options[:params][:answer_type] = :raw
-            options[:params] 
+            options[:params]
             appshell.authsession.load_course_sessions(options[:state], options[:params]).headers[:total].to_i
           else
             raise "Can't call such data: '#{options[:data]}'"
@@ -140,7 +140,7 @@ module Teachbase
 
       def courses_db_with_paginate(status, limit, offset, category)
         appshell.user.course_sessions_by(status: status, account_id: current_account.id, limit: limit, offset: offset,
-                                         scenario: category).order(started_at: :desc) 
+                                         scenario: category).order(started_at: :desc)
       end
 
       def last_version
