@@ -91,9 +91,9 @@ module Formatter
     return file_name if mode == :with_extension
 
     ONLY_FILE_NAME_REGEXP =~ file_name
-    return file_name unless $1
+    return file_name unless $LAST_MATCH_INFO
 
-    $1
+    $LAST_MATCH_INFO
   end
 
   def attach_emoji(sign)

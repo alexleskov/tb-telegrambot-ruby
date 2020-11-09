@@ -4,6 +4,8 @@ module Decorators
   module CourseSession
     include Formatter
 
+    URL_WITHOUT_PARAMS = %r{^[^?]+}.freeze
+
     def time_by(option)
       raise "Can't get time by param: '#{option}" unless respond_to?(option)
 
@@ -16,7 +18,13 @@ module Decorators
     end
 
     def title(params)
-      cover_url = params ? params[:cover_url] : icon_url
+      cover_url =
+      if params
+        params[:cover_url]
+      else
+        URL_WITHOUT_PARAMS =~ icon_url
+        $LAST_MATCH_INFO
+      end
       "#{Emoji.t(:book)} <a href='#{cover_url}'>#{to_bolder(name)}</a>"
     end
 

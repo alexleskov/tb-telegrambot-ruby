@@ -13,11 +13,9 @@ module Teachbase
       has_many :course_sessions, dependent: :destroy
 
       def course_sessions_by(params)
-        sessions_list = course_sessions.order(started_at: :desc)
+        sessions_list = course_sessions
         option_key = params.map { |key, value| key if [:status, :tb_id].include?(key.to_sym) }.first
         query_param = { option_key.to_sym => params[option_key], account_id: params[:account_id] }
-
-        params[:scenario] ||= "standart_learning"
         if params[:scenario].to_s == "standart_learning"
           query_string = "#{option_key} IN (:#{option_key}) AND account_id = :account_id"
           query_param
@@ -54,7 +52,7 @@ module Teachbase
       private
 
       def find_category_cname_by(name)
-        I18n.t(name.to_s)
+        Teachbase::Bot::Scenarios::LIST.include?(name) ? I18n.t(name.to_s) : name
       end
     end
   end
