@@ -108,8 +108,6 @@ module Teachbase
 
       def delete_unsigned(db_tb_ids, lms_tb_ids)
         unsigned_cs_tb_ids = db_tb_ids - lms_tb_ids
-        p "lms_tb_ids: #{lms_tb_ids}"
-        p "unsigned_cs_tb_ids: #{unsigned_cs_tb_ids}"
         return if unsigned_cs_tb_ids.empty?
 
         delete_all_by(tb_id: unsigned_cs_tb_ids, account_id: current_account.id, scenario: category)

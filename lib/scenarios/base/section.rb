@@ -34,7 +34,7 @@ module Teachbase
             section_loader = appshell.data_loader.section(option: :position, value: sec_pos,
                                                           cs_tb_id: cs_tb_id)
             check_status do
-              return interface.sys.text.on_empty.show unless section_loader.contents
+              return interface.sys.text.on_empty.show unless section_loader.contents.open?
 
               section_loader.progress
             end

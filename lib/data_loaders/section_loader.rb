@@ -23,6 +23,7 @@ module Teachbase
         lms_load(data: :info)
         db_entity.update!(links_count: lms_info["links"].size)
         with_content_types(:destroy_all) { content_objects(:build) }
+        db_entity
       end
 
       def progress
