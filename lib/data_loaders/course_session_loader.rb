@@ -5,7 +5,7 @@ module Teachbase
     class CourseSessionLoader < Teachbase::Bot::DataLoaderController
       CUSTOM_ATTRS = { "updated_at" => :edited_at }.freeze
 
-      attr_reader :tb_id, :lms_info
+      attr_reader :tb_id, :lms_info, :status, :limit, :offset, :page, :per_page, :mode, :category
 
       def initialize(appshell, params)
         @tb_id = params[:tb_id]
@@ -13,31 +13,34 @@ module Teachbase
       end
 
       def list(params)
-        status = params[:state].to_s
+        @status = params[:state].to_s
+        @limit = params[:limit].to_i
+        @offset = params[:offset].to_i
+        @page = params[:page].to_i
+        @per_page = params[:per_page].to_i
+        @mode = params[:mode] || :normal
+        @category = params[:category]
         raise "No such option for update course sessions list" unless Teachbase::Bot::CourseSession::STATES.include?(status)
 
-        mode = params[:mode] || :normal
-        list_load_params = { per_page: params[:per_page], page: params[:page] }
+        list_load_params = { per_page: per_page, page: page }
         delete_all_by(status: status) if mode == :with_reload
 
-        if params[:category] && params[:category] != "standart_learning"
-          list_load_params[:course_types] = [Teachbase::Bot::Category.find_by_name(params[:category]).tb_id]
+        if category && category != "standart_learning"
+          list_load_params[:course_types] = [Teachbase::Bot::Category.find_by_name(category).tb_id]
         end
-        # TO DO: Add course category filter for lms_load if will use category filter for db entities
         lms_load(data: :listing, state: status, params: list_load_params)
-        @lms_tb_ids = []
+        lms_tb_ids = []
         lms_info.each do |course_lms|
-          @lms_tb_ids << @tb_id = course_lms["id"].to_i
+          lms_tb_ids << @tb_id = course_lms["id"].to_i
           next if course_lms["updated_at"] == db_entity.edited_at
 
           update_data(course_lms.merge!("status" => status))
           categories
         end
-        cs_db = courses_db_with_paginate(status, params[:limit], params[:offset], params[:category])
-        @db_tb_ids = cs_db.pluck(:tb_id)
-        return cs_db unless delete_unsigned
-
-        courses_db_with_paginate(status, params[:limit], params[:offset], params[:category])
+        db_tb_ids = appshell.user.course_sessions_by(status: status, account_id: current_account.id, scenario: category)
+                                 .order(started_at: :desc).select(:tb_id).pluck(:tb_id)[offset..(limit + offset) - 1]
+        delete_unsigned(db_tb_ids, lms_tb_ids)
+        courses_db_with_paginate
       end
 
       def update_all_states(params = {})
@@ -100,15 +103,16 @@ module Teachbase
       private
 
       def delete_all_by(options)
-        options[:account_id] = current_account.id
         appshell.user.course_sessions_by(options).destroy_all
       end
 
-      def delete_unsigned
-        unsigned_cs_tb_ids = @db_tb_ids - @lms_tb_ids
+      def delete_unsigned(db_tb_ids, lms_tb_ids)
+        unsigned_cs_tb_ids = db_tb_ids - lms_tb_ids
+        p "lms_tb_ids: #{lms_tb_ids}"
+        p "unsigned_cs_tb_ids: #{unsigned_cs_tb_ids}"
         return if unsigned_cs_tb_ids.empty?
 
-        delete_all_by(tb_id: unsigned_cs_tb_ids)
+        delete_all_by(tb_id: unsigned_cs_tb_ids, account_id: current_account.id, scenario: category)
       end
 
       def init_sec_loader(option, value)
@@ -138,7 +142,7 @@ module Teachbase
         end
       end
 
-      def courses_db_with_paginate(status, limit, offset, category)
+      def courses_db_with_paginate
         appshell.user.course_sessions_by(status: status, account_id: current_account.id, limit: limit, offset: offset,
                                          scenario: category).order(started_at: :desc)
       end

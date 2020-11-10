@@ -30,8 +30,6 @@ module Teachbase
           raise unless auth
 
           interface.sys.menu.greetings(appshell.user_fullname, appshell.account_name).show
-          # TO DO: Delete course_update after fix on Teachbase with course_sessions list sorting
-          courses_update
           interface.sys.menu.after_auth.show
         rescue RuntimeError, TeachbaseBotException => e
           $logger.debug "On auth error: #{e.class}. #{e.inspect}"

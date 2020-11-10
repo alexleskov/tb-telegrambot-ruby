@@ -22,13 +22,10 @@ module Teachbase
             category ||= appshell.settings.scenario
             cs_loader = appshell.data_loader.cs
             total_cs_count = cs_loader.total_cs_count(state: state, category: category)
-            # TO DO: Change after fix on Teachbase with course_sessions list sorting
-            # per_page = limit
-            # page = (offset.to_f / per_page.to_f).ceil
-            page = offset.zero? ? 1 : (offset.to_f / 100.to_f).ceil
-            per_page = page * 100
-            course_sessions = cs_loader.list(state: state, category: category, limit: limit,
-                                             offset: offset, per_page: per_page, page: page)
+            per_page = limit
+            page = (offset / per_page) + 1
+            course_sessions = cs_loader.list(state: state, category: category, limit: limit, offset: offset,
+                                             per_page: per_page, page: page)
             return interface.sys.text.on_empty.show if course_sessions.empty?
 
             interface.cs.menu(title_params: { text: course_sessions.first.sign_course_state },
