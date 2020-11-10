@@ -38,7 +38,7 @@ module Teachbase
           categories
         end
         db_tb_ids = appshell.user.course_sessions_by(status: status, account_id: current_account.id, scenario: category)
-                                 .order(started_at: :desc).select(:tb_id).pluck(:tb_id)[offset..(limit + offset) - 1]
+                            .order(started_at: :desc).select(:tb_id).pluck(:tb_id)[offset..(limit + offset) - 1]
         delete_unsigned(db_tb_ids, lms_tb_ids)
         courses_db_with_paginate
       end
