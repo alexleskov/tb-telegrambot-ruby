@@ -7,7 +7,7 @@ module Teachbase
 
       LINK_ATTRS = { "url" => "source", "label" => "title" }.freeze
 
-      attr_reader :params, :answer, :entity, :router
+      attr_reader :answer, :entity, :router
       attr_accessor :text,
                     :mode,
                     :disable_web_page_preview,
@@ -16,7 +16,6 @@ module Teachbase
                     :path_params
 
       def initialize(params, entity)
-        @params = params
         @entity = entity
         @answer = Teachbase::Bot::Interfaces.answers_controller
         @router = Teachbase::Bot::Routers.new

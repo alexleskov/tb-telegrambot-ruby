@@ -16,6 +16,15 @@ module Teachbase
               end
             end
 
+            def course_sessions_open
+              if url_ids
+                check!(:ids, [:id], url_ids)
+                "#{SOURCE}/open/#{url_ids[:id]}"
+              else
+                "#{SOURCE}/open"
+              end
+            end
+
             def course_sessions_complete
               check!(:ids, [:id], url_ids)
               "#{course_sessions}/complete"

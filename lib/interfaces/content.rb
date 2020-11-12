@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Interfaces
       class Content < Teachbase::Bot::InterfaceController
-        attr_accessor :link, :link_name, :file
+        attr_reader :link, :link_name, :file
 
         def initialize(params, entity)
           @link = params[:link]
