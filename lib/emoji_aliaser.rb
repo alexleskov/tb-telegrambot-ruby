@@ -78,6 +78,10 @@ module EmojiAliaser
       Emoji.t(:open_file_folder)
     end
 
+    def chart_with_upwards_trend
+      Emoji.t(:chart_with_upwards_trend)
+    end
+
     alias completed white_check_mark
     alias accepted white_check_mark
     alias passed white_check_mark
@@ -121,6 +125,9 @@ module EmojiAliaser
     alias scorm_package computer
 
     alias active green_book
+
+    alias poll chart_with_upwards_trend
+    alias polls chart_with_upwards_trend
 
     alias archived closed_book
   end

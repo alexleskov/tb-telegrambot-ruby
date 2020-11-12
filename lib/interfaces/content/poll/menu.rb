@@ -3,10 +3,10 @@
 module Teachbase
   module Bot
     class Interfaces
-      class ScormPackage
+      class Poll
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
           def content
-            @text = [create_title(title_params), "#{sign_entity_status}\n"].join("\n")
+            @text = [create_title(title_params), "#{sign_entity_status}\n", entity.statistics].join("\n")
             super
           end
 

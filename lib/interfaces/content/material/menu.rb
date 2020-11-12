@@ -9,7 +9,7 @@ module Teachbase
 
           def content
             @disable_web_page_preview = false
-            @text = "#{create_title(title_params)}\n#{sign_entity_status}\n\n#{build_content}"
+            @text = [create_title(title_params), "#{sign_entity_status}\n", build_content].join("\n")
             super
           end
 

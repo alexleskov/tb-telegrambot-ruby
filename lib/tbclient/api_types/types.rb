@@ -1,5 +1,6 @@
 require './lib/tbclient/lib/param_checker'
 require './lib/tbclient/lib/method_caller'
+require './lib/tbclient/api_types/versions/method_entity'
 require './lib/tbclient/api_types/versions/mobile/mobile'
 require './lib/tbclient/api_types/versions/endpoint/endpoint'
 

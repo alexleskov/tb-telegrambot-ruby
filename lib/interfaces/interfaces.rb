@@ -35,6 +35,10 @@ module Teachbase
           self::Quiz.new(entity)
         end
 
+        def poll(entity = nil)
+          self::Poll.new(entity)
+        end
+
         def user(entity = nil)
           self::User.new(entity)
         end

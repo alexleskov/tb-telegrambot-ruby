@@ -15,6 +15,7 @@ module Teachbase
       has_many :quizzes, dependent: :destroy
       has_many :tasks, dependent: :destroy
       has_many :scorm_packages, dependent: :destroy
+      has_many :polls, dependent: :destroy
       has_many :course_categories, dependent: :destroy
       has_many :categories, through: :course_categories
 

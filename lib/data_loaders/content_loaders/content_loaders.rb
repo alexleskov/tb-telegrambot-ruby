@@ -5,6 +5,7 @@ require './lib/data_loaders/content_loaders/material_loader'
 require './lib/data_loaders/content_loaders/task_loader'
 require './lib/data_loaders/content_loaders/scorm_package_loader'
 require './lib/data_loaders/content_loaders/quiz_loader'
+require './lib/data_loaders/content_loaders/poll_loader'
 
 module Teachbase
   module Bot
@@ -37,6 +38,10 @@ module Teachbase
 
       def quiz(params)
         Teachbase::Bot::QuizLoader.new(@appshell, @section_loader, params)
+      end
+
+      def poll(params)
+        Teachbase::Bot::PollLoader.new(@appshell, @section_loader, params)
       end
     end
   end
