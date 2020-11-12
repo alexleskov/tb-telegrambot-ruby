@@ -6,7 +6,7 @@ module Teachbase
       class Quiz
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
           def content
-            @text = "#{create_title(title_params)}\n#{sign_entity_status}\n#{entity.statistics}"
+            @text = [create_title(title_params), "#{sign_entity_status}\n", entity.statistics].join("\n")
             super
           end
 

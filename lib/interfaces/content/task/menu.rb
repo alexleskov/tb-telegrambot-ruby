@@ -6,7 +6,7 @@ module Teachbase
       class Task
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
           def content
-            @text = "#{create_title(title_params)}\n#{sign_entity_status}\n#{description}"
+            @text = [create_title(title_params), sign_entity_status, description].join("\n")
             super
           end
 

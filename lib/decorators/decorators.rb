@@ -7,5 +7,6 @@ require './lib/decorators/material'
 require './lib/decorators/quiz'
 require './lib/decorators/task'
 require './lib/decorators/scorm_package'
+require './lib/decorators/poll'
 
 module Decorators; end

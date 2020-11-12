@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 24) do
+ActiveRecord::Schema.define(version: 25) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -186,6 +186,27 @@ ActiveRecord::Schema.define(version: 24) do
     t.index ["user_id"], name: "index_materials_on_user_id"
   end
 
+  create_table "polls", force: :cascade do |t|
+    t.integer "tb_id", null: false
+    t.integer "position", null: false
+    t.integer "questions_count"
+    t.string "name"
+    t.string "status"
+    t.string "source"
+    t.string "introduction"
+    t.string "final_message"
+    t.boolean "show_introduction"
+    t.boolean "show_final_message"
+    t.bigint "section_id"
+    t.bigint "course_session_id"
+    t.bigint "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["course_session_id"], name: "index_polls_on_course_session_id"
+    t.index ["section_id"], name: "index_polls_on_section_id"
+    t.index ["user_id"], name: "index_polls_on_user_id"
+  end
+
   create_table "profiles", force: :cascade do |t|
     t.integer "active_courses_count", default: 0
     t.integer "average_score_percent", default: 0
@@ -338,6 +359,9 @@ ActiveRecord::Schema.define(version: 24) do
   add_foreign_key "materials", "course_sessions"
   add_foreign_key "materials", "sections"
   add_foreign_key "materials", "users"
+  add_foreign_key "polls", "course_sessions"
+  add_foreign_key "polls", "sections"
+  add_foreign_key "polls", "users"
   add_foreign_key "profiles", "users"
   add_foreign_key "quizzes", "course_sessions"
   add_foreign_key "quizzes", "sections"

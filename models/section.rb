@@ -12,7 +12,8 @@ module Teachbase
       OBJECTS_TYPES = { materials: :material,
                         scorm_packages: :scorm_package,
                         quizzes: :quiz,
-                        tasks: :task }.freeze
+                        tasks: :task,
+                        polls: :poll }.freeze
 
       belongs_to :course_session
       belongs_to :user
@@ -20,6 +21,7 @@ module Teachbase
       has_many :scorm_packages, dependent: :destroy
       has_many :quizzes, dependent: :destroy
       has_many :tasks, dependent: :destroy
+      has_many :polls, dependent: :destroy
 
       class << self
         def list_by_user_cs_tbid(cs_tb_id, user_id)
