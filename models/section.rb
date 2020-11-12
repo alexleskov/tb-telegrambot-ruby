@@ -12,8 +12,8 @@ module Teachbase
       OBJECTS_TYPES = { materials: :material,
                         scorm_packages: :scorm_package,
                         quizzes: :quiz,
-                        tasks: :task ,
-                        polls: :poll}.freeze
+                        tasks: :task,
+                        polls: :poll }.freeze
 
       belongs_to :course_session
       belongs_to :user

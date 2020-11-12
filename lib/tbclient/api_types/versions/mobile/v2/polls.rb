@@ -13,7 +13,7 @@ module Teachbase
 
             def course_sessions_polls_questions
               check!(:ids, %i[course_session_id id], url_ids)
-              "#{SOURCE}/#{url_ids[:course_session_id]}/polls/#{url_ids[:id]}/questions" 
+              "#{SOURCE}/#{url_ids[:course_session_id]}/polls/#{url_ids[:id]}/questions"
             end
 
             def course_sessions_polls_submit
