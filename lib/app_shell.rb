@@ -120,28 +120,15 @@ module Teachbase
       end
 
       def request_user_account_data
-        find_avaliable_accounts
-        raise TeachbaseBotException::Account.new("Access denied", 403) unless @avaliable_accounts
+        avaliable_accounts = data_loader.user.accounts.avaliable_list
+        raise TeachbaseBotException::Account.new("Access denied", 403) unless avaliable_accounts
 
-        controller.interface.sys.menu.accounts(@avaliable_accounts).show
+        controller.interface.sys.menu.accounts(avaliable_accounts).show
         user_answer = controller.take_data
         controller.interface.destroy(delete_bot_message: { mode: :last })
         raise TeachbaseBotException::Account.new("Access denied", 403) unless user_answer.is_a?(String)
 
-        @avaliable_accounts.select { |account| account["id"] == user_answer.to_i }.first
-      end
-
-      def find_avaliable_accounts
-        accounts_by_lms = data_loader.user.accounts.lms_info
-        account_ids_by_lms = accounts_by_lms.map { |account| account["id"] }
-        avaliable_accounts_ids = Teachbase::Bot::Account.find_all_matches_by_tbid(account_ids_by_lms).pluck(:tb_id)
-        return if avaliable_accounts_ids.empty?
-
-        accounts = []
-        avaliable_accounts_ids.each do |account_id|
-          accounts << accounts_by_lms.select { |account_by_lms| account_by_lms["id"] == account_id && account_by_lms["status"] == "enabled" }.first
-        end
-        @avaliable_accounts = accounts.sort_by! { |account| account["name"] }
+        user_answer
       end
 
       def ask_answer(params = {})

@@ -7,44 +7,33 @@ module Teachbase
 
       attr_reader :lms_info
 
-      def me
-        lms_load(data: :profile)
-        return unless lms_info.is_a?(Hash)
-
-        update_data(lms_info.merge!("tb_id" => lms_info["id"]))
-        profile.me
-        db_entity
-      end
-
-      def profile
-        Teachbase::Bot::ProfileLoader.new(self)
-      end
-
-      def accounts
-        Teachbase::Bot::AccountLoader.new(self)
-      end
-
-      def db_entity(_mode = :none)
-        appshell.user
-      end
-
       def model_class
         Teachbase::Bot::User
       end
 
-      private
+      def me
+        profile_loader = profile
+        profile_loader.me
+        return unless profile_loader.lms_info.is_a?(Hash)
 
-      def lms_load(options)
-        @lms_info = call_data do
-          case options[:data].to_sym
-          when :profile
-            appshell.authsession.load_profile
-          when :accounts
-            appshell.authsession.load_user_accounts
-          else
-            raise "Can't call such data: '#{options[:data]}'"
-          end
-        end
+        update_data(profile_loader.lms_info.merge!("tb_id" => profile_loader.lms_info["id"]))
+        db_entity
+      end
+
+      def profile
+        Teachbase::Bot::ProfileLoader.new(appshell)
+      end
+
+      def accounts
+        Teachbase::Bot::AccountLoader.new(appshell)
+      end
+
+      def documents
+        Teachbase::Bot::DocumentLoader.new(appshell)
+      end
+
+      def db_entity(mode = :no_create)
+        appshell.user
       end
     end
   end

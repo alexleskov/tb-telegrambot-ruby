@@ -12,6 +12,10 @@ module Teachbase
         super(appshell)
       end
 
+      def model_class
+        Teachbase::Bot::CourseSession
+      end
+
       def list(params)
         @status = params[:state].to_s
         @limit = params[:limit].to_i
@@ -20,7 +24,7 @@ module Teachbase
         @per_page = params[:per_page].to_i
         @mode = params[:mode] || :normal
         @category = params[:category]
-        raise "No such option for update course sessions list" unless Teachbase::Bot::CourseSession::STATES.include?(status)
+        raise "No such option for update course sessions list" unless model_class::STATES.include?(status)
 
         list_load_params = { per_page: per_page, page: page }
         delete_all_by(status: status) if mode == :with_reload
@@ -31,7 +35,7 @@ module Teachbase
         lms_load(data: :listing, state: status, params: list_load_params)
         lms_tb_ids = []
         lms_info.each do |course_lms|
-          lms_tb_ids << @tb_id = course_lms["id"].to_i
+          lms_tb_ids << @tb_id = course_lms["id"]
           next if course_lms["updated_at"] == db_entity.edited_at
 
           update_data(course_lms.merge!("status" => status))
@@ -46,7 +50,7 @@ module Teachbase
       def update_all_states(params = {})
         courses = {}
         mode = params[:mode] || :none
-        Teachbase::Bot::CourseSession::STATES.each do |status|
+        model_class::STATES.each do |status|
           courses[status] = list(state: status, mode: mode)
         end
         courses
@@ -81,19 +85,6 @@ module Teachbase
 
       def section(option, value)
         init_sec_loader(option, value).db_entity
-      end
-
-      def model_class
-        Teachbase::Bot::CourseSession
-      end
-
-      def db_entity(mode = :with_create)
-        course_sessions_db = appshell.user.course_sessions
-        if mode == :with_create
-          course_sessions_db.find_or_create_by!(tb_id: tb_id, account_id: current_account.id)
-        else
-          course_sessions_db.find_by!(tb_id: tb_id, account_id: current_account.id)
-        end
       end
 
       def cs_id

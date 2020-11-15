@@ -96,6 +96,7 @@ module Teachbase
                        $app_config.account_id
                      elsif authsession.tb_api
                        take_user_account_auth_data
+                       account.tb_id
                      end
         authsession.api_auth(:mobile, 2, access_token: apitoken.value, account_id: account_id)
       end
@@ -115,7 +116,7 @@ module Teachbase
         data = db_user_account_auth_data || @appshell.request_user_account_data
         raise unless data
 
-        @account = data.is_a?(Hash) ? fetch_user_account(data) : data
+        @account = data.is_a?(Teachbase::Bot::Account) ? data : fetch_user_account(data)
       end
 
       def db_user_account_auth_data
@@ -140,11 +141,10 @@ module Teachbase
       end
 
       def fetch_user_account(data)
-        user_account = Teachbase::Bot::Account.find_by(tb_id: data["id"])
+        user_account = Teachbase::Bot::Account.find_by(tb_id: data.to_i)
         raise TeachbaseBotException::Account.new("Access denied", 403) unless user_account
 
         authsession.update!(account_id: user_account.id)
-        user_account.update!(name: data["name"], status: data["status"], logo_url: data["logo_url"])
         user_account
       end
     end

@@ -5,6 +5,7 @@ require './lib/scenarios/base/course_session'
 require './lib/scenarios/base/profile'
 require './lib/scenarios/base/section'
 require './lib/scenarios/base/setting'
+require './lib/scenarios/base/document'
 
 module Teachbase
   module Bot
@@ -16,6 +17,7 @@ module Teachbase
         include Teachbase::Bot::Scenarios::Base::Profile
         include Teachbase::Bot::Scenarios::Base::Section
         include Teachbase::Bot::Scenarios::Base::Setting
+        include Teachbase::Bot::Scenarios::Base::Document
 
         TEACHSUPPORT_TG_ID = 439_802_952
 
@@ -175,6 +177,14 @@ module Teachbase
           on router.content(path: :answers, p: %i[cs_id]).regexp do
             task_answers(c_data[1], c_data[2])
           end
+
+          on router.document(path: :entity).regexp do
+            documents(c_data[1])
+          end
+
+          on router.main(path: :documents).regexp do
+            documents
+          end
         end
 
         def match_text_action
@@ -196,6 +206,10 @@ module Teachbase
 
           on router.section(path: :entity, p: %i[cs_id]).regexp do
             section_contents(c_data[1], c_data[2])
+          end
+
+          on router.document(path: :entity).regexp do
+            documents(c_data[1])
           end
         end
 

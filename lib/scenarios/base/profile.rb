@@ -8,7 +8,7 @@ module Teachbase
           def profile
             appshell.data_loader.user.profile.me
             user = appshell.user
-            return interface.sys.text.on_empty.show unless user.profile && user
+            return interface.sys.text.on_empty.show unless user && user.profile
 
             interface.user(user).menu.profile.show
           end

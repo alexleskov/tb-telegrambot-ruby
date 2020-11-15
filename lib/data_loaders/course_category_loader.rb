@@ -14,6 +14,10 @@ module Teachbase
         @appshell = cs_loader.appshell
       end
 
+      def model_class
+        Teachbase::Bot::CourseCategory
+      end
+
       def me
         cs_loader.info
         return if cs_loader.lms_info["course_types"].empty?
@@ -25,10 +29,6 @@ module Teachbase
       end
 
       private
-
-      def model_class
-        Teachbase::Bot::CourseCategory
-      end
 
       def init_category_loader(params)
         Teachbase::Bot::CategoryLoader.new(appshell, params)

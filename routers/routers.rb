@@ -5,6 +5,7 @@ require './routers/course_session/'
 require './routers/section/'
 require './routers/content/'
 require './routers/setting/'
+require './routers/document/'
 
 module Teachbase
   module Bot
@@ -19,6 +20,7 @@ module Teachbase
       LOGOUT = "close"
       LOGIN = "sign_in"
       ACCOUNTS = "accounts"
+      DOCUMENTS = "documents"
 
       class << self
         def param(value = STRING_REGEXP)
@@ -72,6 +74,10 @@ module Teachbase
 
       def setting(options)
         Teachbase::Bot::Routers::Setting.new(options, self)
+      end
+
+      def document(options)
+        Teachbase::Bot::Routers::Document.new(options, self)
       end
     end
   end

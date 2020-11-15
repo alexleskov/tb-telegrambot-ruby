@@ -40,6 +40,10 @@ module Teachbase
           [root_class::ACCOUNTS]
         end
 
+        def documents
+          [root_class::DOCUMENTS]
+        end
+
         def root
           [self.class::SOURCE]
         end

@@ -10,6 +10,7 @@ require './models/scorm_package'
 require './models/task'
 require './models/poll'
 require './models/attachment'
+require './models/document'
 require './models/answer'
 require './models/comment'
 require './models/cache_message'
@@ -50,6 +51,14 @@ module Teachbase
         appshell.authsession.account
       end
 
+      def db_entity(mode = :with_create)
+        if mode == :with_create
+          model_class.find_or_create_by!(tb_id: tb_id, user_id: appshell.user.id, account_id: current_account.id)
+        else
+          model_class.find_by!(tb_id: tb_id, user_id: appshell.user.id, account_id: current_account.id)
+        end
+      end
+
       protected
 
       def call_data
@@ -60,16 +69,10 @@ module Teachbase
       rescue RuntimeError, TeachbaseBotException => e
         if e.respond_to?(:http_code) && !(400..404).include?(e.http_code)
           $logger.debug "Unexpected error: #{e}. Data: #{e.response}"
-          # relogin_after_error(e)
           raise e
         else
           raise e
         end
-      end
-
-      def relogin_after_error(error)
-        appshell.logout
-        appshell.controller.interface.sys.menu(text: to_text_by_exceiption_code(error)).sign_in_again.show
       end
     end
   end
