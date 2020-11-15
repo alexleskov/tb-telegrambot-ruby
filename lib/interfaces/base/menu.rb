@@ -127,9 +127,9 @@ module Teachbase
             self
           end
 
-          def greetings(user_name, account_name)
+          def greetings(_account_name, custom_text = "")
             @type = :hide_kb
-            @text ||= "<b>#{user_name}!</b> #{I18n.t('greetings')} #{I18n.t('in')} #{account_name}!"
+            @text ||= "<b>#{I18n.t('greetings')}!</b>\n\n#{custom_text}"
             self
           end
 
