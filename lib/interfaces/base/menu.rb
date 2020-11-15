@@ -111,7 +111,7 @@ module Teachbase
           end
 
           def accounts(accounts_list)
-            raise unless accounts_list.is_a?(Array)
+            raise unless accounts_list.first.is_a?(Teachbase::Bot::Account)
 
             @type = :menu_inline
             @slices_count = 2
@@ -142,15 +142,8 @@ module Teachbase
           private
 
           def build_accounts_buttons(accounts_list)
-            acc_ids = []
-            acc_names = []
-            accounts_list.each do |account|
-              next if account["status"] == "disabled"
-
-              acc_ids << account["id"]
-              acc_names << account["name"]
-            end
-            InlineCallbackKeyboard.g(buttons_signs: acc_names, buttons_actions: acc_ids, back_button: back_button).raw
+            InlineCallbackKeyboard.g(buttons_signs: accounts_list.pluck(:name),
+                                     buttons_actions: accounts_list.pluck(:tb_id), back_button: back_button).raw
           end
 
           def settings_class

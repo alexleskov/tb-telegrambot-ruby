@@ -65,6 +65,10 @@ module Teachbase
         tb_api.request(:polls, :course_sessions_polls, course_session_id: cs_id, id: poll_id).get
       end
 
+      def load_documents
+        tb_api.request(:documents, :documents).get
+      end
+
       def load_course_types
         tb_api.request(:course_types, :course_types).get
       end

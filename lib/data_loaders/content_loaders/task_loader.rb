@@ -6,15 +6,16 @@ module Teachbase
       CUSTOM_ATTRS = {}.freeze
       METHOD_CNAME = :tasks
 
+      def model_class
+        Teachbase::Bot::Task
+      end
+
       def me
         super
         attach_all_addition_objects(db_entity, lms_info)
         db_entity
       end
 
-      def model_class
-        Teachbase::Bot::Task
-      end
 
       def submit(params)
         raise unless db_entity || !params.is_a?(Hash)

@@ -5,40 +5,34 @@ module Teachbase
     class ProfileLoader < Teachbase::Bot::DataLoaderController
       CUSTOM_ATTRS = {}.freeze
 
-      attr_reader :user_loader, :lms_info
+      attr_reader :lms_info
 
-      def initialize(user_loader)
-        raise "'#{user_loader}' is not UserLoader" unless user_loader.is_a?(Teachbase::Bot::UserLoader)
-
-        @user_loader = user_loader
-        @appshell = user_loader.appshell
-        lms_load
+      def model_class
+        Teachbase::Bot::Profile
       end
 
       def me
+        lms_load
         update_data(lms_info)
       end
 
       def links
+        me
         lms_info["links"]
       end
 
       def db_entity(mode = :with_create)
         if mode == :with_create
-          model_class.find_or_create_by!(user_id: user_loader.db_entity.id)
+          model_class.find_or_create_by!(user_id: appshell.user.id)
         else
-          model_class.find_by(user_id: user_loader.db_entity.id)
+          model_class.find_by(user_id: appshell.user.id)
         end
       end
 
       private
 
       def lms_load
-        @lms_info = call_data { user_loader.send(:lms_load, data: :profile) }
-      end
-
-      def model_class
-        Teachbase::Bot::Profile
+        @lms_info = call_data { appshell.authsession.load_profile }
       end
     end
   end

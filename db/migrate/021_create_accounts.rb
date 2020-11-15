@@ -7,7 +7,6 @@ class CreateAccounts < ActiveRecord::Migration[5.2]
       t.string :client_id, null: false
       t.string :client_secret, null: false
       t.string :name
-      t.string :status
       t.string :logo_url
 
       t.timestamps

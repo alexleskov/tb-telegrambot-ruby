@@ -16,6 +16,10 @@ module Teachbase
         super(appshell)
       end
 
+      def model_class
+        Teachbase::Bot::Section
+      end
+
       def contents
         init_cs_loader.sections unless db_entity
         return unless db_entity
@@ -51,10 +55,6 @@ module Teachbase
         else
           model_class.find_by(option.to_sym => value, user_id: appshell.user.id, course_session_id: cs_id)
         end
-      end
-
-      def model_class
-        Teachbase::Bot::Section
       end
 
       private

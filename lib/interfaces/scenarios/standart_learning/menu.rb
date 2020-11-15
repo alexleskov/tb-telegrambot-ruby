@@ -10,7 +10,7 @@ module Teachbase
             @slices_count = 2
             @text ||= I18n.t('start_menu_message').to_s
             @buttons = TextCommandKeyboard.g(commands: init_commands,
-                                             buttons_signs: %i[studying profile settings more_actions sign_out]).raw
+                                             buttons_signs: %i[studying profile documents more_actions settings sign_out]).raw
             self
           end
         end

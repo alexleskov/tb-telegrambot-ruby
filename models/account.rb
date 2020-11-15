@@ -8,6 +8,7 @@ module Teachbase
       has_many :auth_sessions, dependent: :destroy
       has_many :users, through: :auth_sessions
       has_many :course_sessions, dependent: :destroy
+      has_many :documents, dependent: :destroy
       has_many :categories, dependent: :destroy
 
       class << self

@@ -47,6 +47,10 @@ module Teachbase
           self::Section.new(entity)
         end
 
+        def document(entity = nil)
+          self::Document.new(entity)
+        end
+
         def sys(entity = nil)
           sys_class.new(entity)
         end

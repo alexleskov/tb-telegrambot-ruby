@@ -14,7 +14,8 @@ module Teachbase
                           ready: Emoji.t(:hand),
                           more_actions: Emoji.t(:link),
                           accounts: Emoji.t(:school),
-                          studying: Emoji.t(:mortar_board) }
+                          studying: Emoji.t(:mortar_board),
+                          documents: Emoji.t(:school_satchel) }
 
       class << self
         attr_reader :sign_and_emoji

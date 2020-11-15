@@ -153,6 +153,8 @@ en:
   show_less: "Show less"
   studying: "Studying"
   text: "Text"
+  documents: "Documents"
+  common_folder: "Common folder"
 ru:
   greeting_message: "Привет,"
   farewell_message: "Пока"
@@ -308,3 +310,5 @@ ru:
   show_less: "Показать меньше"
   studying: "Обучение"
   text: "Текст"
+  documents: "Документы"
+  common_folder: "Общая папка"
