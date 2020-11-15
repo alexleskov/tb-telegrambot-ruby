@@ -26,24 +26,17 @@ module Teachbase
         @category = params[:category]
         raise "No such option for update course sessions list" unless model_class::STATES.include?(status)
 
-        list_load_params = { per_page: per_page, page: page }
         delete_all_by(status: status) if mode == :with_reload
-
-        if category && category != "standart_learning"
-          list_load_params[:course_types] = [Teachbase::Bot::Category.find_by_name(category).tb_id]
-        end
-        lms_load(data: :listing, state: status, params: list_load_params)
+        lms_load(data: :listing, state: status, params: build_list_load_params)
         lms_tb_ids = []
-        lms_info.each do |course_lms|
-          lms_tb_ids << @tb_id = course_lms["id"]
-          next if course_lms["updated_at"] == db_entity.edited_at
+        lms_info.each do |object_lms|
+          lms_tb_ids << @tb_id = object_lms["id"]
+          next if object_lms["updated_at"] == db_entity.edited_at
 
-          update_data(course_lms.merge!("status" => status))
+          update_data(object_lms.merge!("status" => status))
           categories
         end
-        db_tb_ids = appshell.user.course_sessions_by(status: status, account_id: current_account.id, scenario: category)
-                            .order(started_at: :desc).select(:tb_id).pluck(:tb_id)[offset..(limit + offset) - 1]
-        delete_unsigned(db_tb_ids, lms_tb_ids)
+        delete_unsigned(lms_tb_ids)
         courses_db_with_paginate
       end
 
@@ -93,11 +86,23 @@ module Teachbase
 
       private
 
+      def build_list_load_params
+        list_load_params = { per_page: per_page, page: page }
+        if category && category != "standart_learning"
+          list_load_params[:course_types] = [Teachbase::Bot::Category.find_by_name(category).tb_id]
+        end
+        list_load_params
+      end
+
       def delete_all_by(options)
         appshell.user.course_sessions_by(options).destroy_all
       end
 
-      def delete_unsigned(db_tb_ids, lms_tb_ids)
+      def delete_unsigned(lms_tb_ids)
+        db_tb_ids = appshell.user.course_sessions_by(status: status, account_id: current_account.id, scenario: category)
+                            .order(started_at: :desc).select(:tb_id).pluck(:tb_id)[offset..(limit + offset) - 1]
+        return if db_tb_ids.empty?
+
         unsigned_cs_tb_ids = db_tb_ids - lms_tb_ids
         return if unsigned_cs_tb_ids.empty?
 

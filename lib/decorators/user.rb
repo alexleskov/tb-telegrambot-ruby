@@ -3,7 +3,7 @@
 module Decorators
   module User
     include Formatter
-    
+
     def profile_info
       ["<b>#{Emoji.t(:tiger)} #{I18n.t('profile_state')}</b>\n",
        "<a href='#{avatar_url}'>#{first_name} #{last_name}</a>",

@@ -16,7 +16,6 @@ module Teachbase
         db_entity
       end
 
-
       def submit(params)
         raise unless db_entity || !params.is_a?(Hash)
 

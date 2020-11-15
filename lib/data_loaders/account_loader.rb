@@ -20,7 +20,7 @@ module Teachbase
         avaliable_accounts.order(name: :asc)
       end
 
-      def db_entity(mode = :no_create)
+      def db_entity(_mode = :no_create)
         model_class.find_by!(tb_id: tb_id)
       end
 
@@ -32,11 +32,11 @@ module Teachbase
 
       def connected_accounts
         avaliable_accounts_ids =
-        lms_info.map do |account_by_lms|
-          next unless account_by_lms["status"] == "enabled"
+          lms_info.map do |account_by_lms|
+            next unless account_by_lms["status"] == "enabled"
 
-          account_by_lms["id"]
-        end
+            account_by_lms["id"]
+          end
         Teachbase::Bot::Account.find_all_matches_by_tbid(avaliable_accounts_ids)
       end
 
@@ -46,7 +46,7 @@ module Teachbase
             next unless avaliable_account_by_lms["id"] == avaliable_account_tb_id
 
             @tb_id = avaliable_account_tb_id
-            update_data(avaliable_account_by_lms, :no_create)       
+            update_data(avaliable_account_by_lms, :no_create)
           end
         end
       end

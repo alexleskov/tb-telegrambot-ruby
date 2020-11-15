@@ -32,7 +32,7 @@ module Teachbase
         Teachbase::Bot::DocumentLoader.new(appshell)
       end
 
-      def db_entity(mode = :no_create)
+      def db_entity(_mode = :no_create)
         appshell.user
       end
     end

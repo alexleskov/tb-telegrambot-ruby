@@ -45,7 +45,6 @@ module Teachbase
       #       def lms_load
       #         @lms_info = call_data { appshell.authsession.load_course_types }
       #       end
-
     end
   end
 end
