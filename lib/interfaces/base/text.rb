@@ -38,6 +38,11 @@ module Teachbase
             @text ||= "#{Emoji.t(:pencil2)} <b>#{I18n.t('enter_the_number')} #{sign_by_object_type(object_type)}:</b>"
             self
           end
+
+          def rare_message(text)
+            @text = text.to_s
+            self
+          end
         end
       end
     end

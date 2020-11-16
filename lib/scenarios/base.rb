@@ -89,13 +89,13 @@ module Teachbase
         def ready; end
 
         def send_message_to(tg_id, options_sender = {})
+          options_sender[:from_user] ||= "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})"
           interface.sys.text.ask_answer.show
           appshell.ask_answer(mode: :bulk, saving: :cache)
           interface.sys.menu(disable_web_page_preview: true, mode: :none)
                    .confirm_answer(:message, appshell.user_cached_answer).show
           user_reaction = appshell.controller.take_data
           answer_data = build_answer_data(files_mode: :download_url)
-          options_sender[:from_user] ||= "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})"
           on_answer_confirmation(reaction: user_reaction) do
             interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
                      .send_to(tg_id, options_sender[:from_user])
@@ -215,7 +215,7 @@ module Teachbase
           end
 
           on router.user(path: :entity).regexp do
-            profile_by(c_data[1])
+            profile(c_data[1])
           end
         end
 

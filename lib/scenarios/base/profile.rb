@@ -5,16 +5,17 @@ module Teachbase
     module Scenarios
       module Base
         module Profile
-          def profile
-            appshell.data_loader.user.profile.me
-            user = appshell.user
-            return interface.sys.text.on_empty.show unless profile_by(user.id)
+          def profile(user_id = nil)
+            on_account = appshell.current_account
+            on_user = user_id ? appshell.current_account.users.find_by(id: user_id) : appshell.user
 
-            interface.user(user).menu.profile(appshell.current_account.id).show
-          end
+            return interface.sys.text.on_empty.show unless on_user&.current_profile(on_account.id)
 
-          def profile_by(user_id)
-            Teachbase::Bot::Profile.find_by(account_id: appshell.current_account.id, user_id: user_id)
+            if user_id
+              interface.sys.text.rare_message(on_user.profile_info(on_account.id)).show
+            else
+              interface.user(on_user).menu.profile(on_account.id).show
+            end
           end
 
           def profile_links
