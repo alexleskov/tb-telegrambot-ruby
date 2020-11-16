@@ -8,9 +8,13 @@ module Teachbase
           def profile
             appshell.data_loader.user.profile.me
             user = appshell.user
-            return interface.sys.text.on_empty.show unless user&.profile
+            return interface.sys.text.on_empty.show unless profile_by(user.id)
 
-            interface.user(user).menu.profile.show
+            interface.user(user).menu.profile(appshell.current_account.id).show
+          end
+
+          def profile_by(user_id)
+            Teachbase::Bot::Profile.find_by(account_id: appshell.current_account.id, user_id: user_id)
           end
 
           def profile_links

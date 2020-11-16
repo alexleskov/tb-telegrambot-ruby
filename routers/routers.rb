@@ -6,6 +6,7 @@ require './routers/section/'
 require './routers/content/'
 require './routers/setting/'
 require './routers/document/'
+require './routers/user/'
 
 module Teachbase
   module Bot
@@ -78,6 +79,10 @@ module Teachbase
 
       def document(options)
         Teachbase::Bot::Routers::Document.new(options, self)
+      end
+
+      def user(options)
+        Teachbase::Bot::Routers::User.new(options, self)
       end
     end
   end

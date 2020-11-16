@@ -32,7 +32,7 @@ module Teachbase
           raise unless auth
 
           appshell.data_loader.user.profile.me
-          interface.sys.menu.greetings(appshell.account_name, appshell.user.profile_info).show
+          interface.sys.menu.greetings(appshell.account_name, appshell.user.profile_info(appshell.current_account.id)).show
           interface.sys.menu.after_auth.show
         rescue RuntimeError, TeachbaseBotException => e
           $logger.debug "On auth error: #{e.class}. #{e.inspect}"
@@ -88,16 +88,17 @@ module Teachbase
 
         def ready; end
 
-        def send_message_to(tg_id)
+        def send_message_to(tg_id, options_sender = {})
           interface.sys.text.ask_answer.show
           appshell.ask_answer(mode: :bulk, saving: :cache)
           interface.sys.menu(disable_web_page_preview: true, mode: :none)
                    .confirm_answer(:message, appshell.user_cached_answer).show
           user_reaction = appshell.controller.take_data
           answer_data = build_answer_data(files_mode: :download_url)
+          options_sender[:from_user] ||= "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})"
           on_answer_confirmation(reaction: user_reaction) do
             interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
-                     .send_to(tg_id, "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})")
+                     .send_to(tg_id, options_sender[:from_user])
           end
           appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
         end
@@ -211,6 +212,10 @@ module Teachbase
 
           on router.document(path: :entity).regexp do
             documents(c_data[1])
+          end
+
+          on router.user(path: :entity).regexp do
+            profile_by(c_data[1])
           end
         end
 

@@ -99,14 +99,14 @@ module Teachbase
       end
 
       def delete_unsigned(lms_tb_ids)
-        db_tb_ids = appshell.user.course_sessions_by(status: status, account_id: current_account.id, scenario: category)
+        db_tb_ids = appshell.user.course_sessions_by(status: status, account_id: appshell.current_account.id, scenario: category)
                             .order(started_at: :desc).select(:tb_id).pluck(:tb_id)[offset..(limit + offset) - 1]
         return if db_tb_ids.empty?
 
         unsigned_cs_tb_ids = db_tb_ids - lms_tb_ids
         return if unsigned_cs_tb_ids.empty?
 
-        delete_all_by(tb_id: unsigned_cs_tb_ids, account_id: current_account.id, scenario: category)
+        delete_all_by(tb_id: unsigned_cs_tb_ids, account_id: appshell.current_account.id, scenario: category)
       end
 
       def init_sec_loader(option, value)
@@ -137,12 +137,12 @@ module Teachbase
       end
 
       def courses_db_with_paginate
-        appshell.user.course_sessions_by(status: status, account_id: current_account.id, limit: limit, offset: offset,
+        appshell.user.course_sessions_by(status: status, account_id: appshell.current_account.id, limit: limit, offset: offset,
                                          scenario: category).order(started_at: :desc)
       end
 
       def last_version
-        appshell.user.course_sessions.find_by(tb_id: tb_id, account_id: current_account.id,
+        appshell.user.course_sessions.find_by(tb_id: tb_id, account_id: appshell.current_account.id,
                                               edited_at: lms_load(data: :info)["updated_at"])
       end
     end

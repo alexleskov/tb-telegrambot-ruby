@@ -7,7 +7,7 @@ module Teachbase
     class User < ActiveRecord::Base
       include Decorators::User
 
-      has_one :profile, dependent: :destroy
+      has_many :profiles, dependent: :destroy
       has_many :auth_sessions, dependent: :destroy
       has_many :tg_accounts, through: :auth_sessions
       has_many :course_sessions, dependent: :destroy
@@ -47,6 +47,10 @@ module Teachbase
 
       def task_by_cs_tbid(cs_tb_id, task_tb_id)
         Teachbase::Bot::Task.show_by_user_cs_tbid(cs_tb_id, task_tb_id, id).first
+      end
+
+      def current_profile(account_id)
+        profiles.find_by(account_id: account_id)
       end
 
       private

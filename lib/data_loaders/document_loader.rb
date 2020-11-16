@@ -21,20 +21,20 @@ module Teachbase
           update_data(object_lms.merge!("tb_id" => object_lms["id"]))
         end
         delete_unsigned(lms_tb_ids)
-        model_class.where(account_id: current_account.id, user_id: appshell.user.id)
+        model_class.where(account_id: appshell.current_account.id, user_id: appshell.user.id)
       end
 
       private
 
       def delete_unsigned(lms_tb_ids)
-        db_tb_ids = appshell.user.documents.where(account_id: current_account.id)
+        db_tb_ids = appshell.user.documents.where(account_id: appshell.current_account.id)
                             .order(built_at: :desc).select(:tb_id).pluck(:tb_id)
         return if db_tb_ids.empty?
 
         unsigned_cs_tb_ids = db_tb_ids - lms_tb_ids
         return if unsigned_cs_tb_ids.empty?
 
-        delete_all_by(tb_id: unsigned_cs_tb_ids, account_id: current_account.id)
+        delete_all_by(tb_id: unsigned_cs_tb_ids, account_id: appshell.current_account.id)
       end
 
       def delete_all_by(options)

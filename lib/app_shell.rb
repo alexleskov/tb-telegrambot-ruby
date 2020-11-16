@@ -168,6 +168,10 @@ module Teachbase
                                                         password: user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key))
       end
 
+      def current_account
+        authsession.account
+      end
+
       private
 
       def encrypt_password(password)

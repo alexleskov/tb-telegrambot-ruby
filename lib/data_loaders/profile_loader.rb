@@ -23,9 +23,9 @@ module Teachbase
 
       def db_entity(mode = :with_create)
         if mode == :with_create
-          model_class.find_or_create_by!(user_id: appshell.user.id)
+          model_class.find_or_create_by!(user_id: appshell.user.id, account_id: appshell.current_account.id)
         else
-          model_class.find_by(user_id: appshell.user.id)
+          model_class.find_by(user_id: appshell.user.id, account_id: appshell.current_account.id)
         end
       end
 
