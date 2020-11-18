@@ -5,6 +5,8 @@ require './controllers/controller'
 module Teachbase
   module Bot
     class AIController < Teachbase::Bot::TextController
+      SMALL_TALKS_SKILL_NAME = "small_talks"
+
       attr_reader :ai, :reaction
 
       def initialize(params)
@@ -25,7 +27,7 @@ module Teachbase
       def find_action
         if reaction.is_a?(Sapcai::DialogMessage)
           @c_data = reaction.content
-          "small_talks"
+          SMALL_TALKS_SKILL_NAME
         elsif skill?
           @c_data = entities_by_skill
           reaction.intent.slug

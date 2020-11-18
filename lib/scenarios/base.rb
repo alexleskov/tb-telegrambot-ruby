@@ -228,13 +228,19 @@ module Teachbase
             interface.sys.text.answer.text.send_out(@c_data)
           end
 
-          on %r{courses} do
-            if @c_data["active"]
-              courses_list_by(:active)
-            elsif @c_data["archived"]
-              courses_list_by(:archived)
-            elsif @c_data["on"] && !@c_data["active"] && !@c_data["archived"]
-              courses_states
+          on %r{bot-creator-info} do
+            interface.sys.text.rare_message(I18n.t('creation_info').to_s).show
+          end
+
+          on %r{show} do
+            if @c_data["course"]
+              if @c_data["active"]
+                courses_list_by(:active)
+              elsif @c_data["archived"]
+                courses_list_by(:archived)
+              elsif @c_data["on"] && !@c_data["active"] && !@c_data["archived"]
+                courses_states
+              end
             end
           end
 
