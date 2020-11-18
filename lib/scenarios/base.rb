@@ -89,7 +89,7 @@ module Teachbase
         def ready; end
 
         def send_message_to(tg_id, options_sender = {})
-          options_sender[:from_user] ||= "#{appshell.user_fullname} (@#{appshell.controller.tg_user.username})"
+          options_sender[:from_user] ||= appshell.user_fullname.to_s
           interface.sys.text.ask_answer.show
           appshell.ask_answer(mode: :bulk, saving: :cache)
           interface.sys.menu(disable_web_page_preview: true, mode: :none)
@@ -187,6 +187,10 @@ module Teachbase
           on router.main(path: :documents).regexp do
             documents
           end
+
+          on router.main(path: :send_message, p: %i[u_id]).regexp do
+            send_message_to(last_auth_session_by(c_data[1]).tg_account.id)
+          end
         end
 
         def match_text_action
@@ -249,6 +253,10 @@ module Teachbase
 
         protected
 
+        def last_auth_session_by(user_id)
+          Teachbase::Bot::AuthSession.where("user_id = ?", user_id.to_i).order(auth_at: :desc).first
+        end
+
         def access_denied?(e)
           e.respond_to?(:http_code) && [401, 403].include?(e.http_code)
         end
@@ -272,7 +280,7 @@ module Teachbase
 
           result = ["#{Emoji.t(:bookmark_tabs)} #{to_italic(I18n.t('attachments').capitalize)}"]
           attachments_array.each_with_index do |attachment, ind|
-            result << "#{to_url_link(attachment[:file], I18n.t('file').capitalize.to_s)} #{ind + 1}"
+            result << to_url_link(attachment[:file], "#{I18n.t('file').capitalize} #{ind + 1}").to_s
           end
           result.join("\n")
         end

@@ -9,7 +9,7 @@ module Teachbase
         end
 
         def send_to(tg_id, from_user)
-          answer.text.send_to(tg_id, "#{I18n.t('message')}: #{from_user}\n\n#{text}")
+          answer.text.send_to(tg_id, "#{I18n.t('incoming')} #{I18n.t('message').downcase} - #{from_user}:\n\n#{text}")
         end
 
         def on_undefined

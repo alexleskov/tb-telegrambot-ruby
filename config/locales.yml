@@ -156,6 +156,7 @@ en:
   text: "Text"
   documents: "Documents"
   common_folder: "Common folder"
+  incoming: "Incoming"
 ru:
   greeting_message: "Привет,"
   farewell_message: "Пока"
@@ -314,3 +315,4 @@ ru:
   text: "Текст"
   documents: "Документы"
   common_folder: "Общая папка"
+  incoming: "Входящее"

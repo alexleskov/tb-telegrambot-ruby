@@ -40,6 +40,10 @@ module Teachbase
           [root_class::ACCOUNTS]
         end
 
+        def send_message
+          [root_class::SEND_MESSAGE]
+        end
+
         def documents
           [root_class::DOCUMENTS]
         end

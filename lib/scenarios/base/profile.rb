@@ -8,14 +8,16 @@ module Teachbase
           def profile(user_id = nil)
             on_account = appshell.current_account
             on_user = user_id ? appshell.current_account.users.find_by(id: user_id) : appshell.user
-
             return interface.sys.text.on_empty.show unless on_user&.current_profile(on_account.id)
 
-            if user_id
-              interface.sys.text.rare_message(on_user.profile_info(on_account.id)).show
+            menu_options = {}
+            if on_user.id != appshell.user.id
+              menu_options[:send_message_button] = true
             else
-              interface.user(on_user).menu.profile(on_account.id).show
+              menu_options[:text] = "<b>#{Emoji.t(:tiger)} #{I18n.t('profile_state')}</b>\n\n"
+              menu_options[:accounts_button] = true
             end
+            interface.user(on_user).menu(menu_options).profile(on_account.id).show
           end
 
           def profile_links

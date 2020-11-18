@@ -22,6 +22,7 @@ module Teachbase
       LOGIN = "sign_in"
       ACCOUNTS = "accounts"
       DOCUMENTS = "documents"
+      SEND_MESSAGE = "send_message"
 
       class << self
         def param(value = STRING_REGEXP)
@@ -54,6 +55,10 @@ module Teachbase
 
         def sec_id(value = DIGIT_REGEXP)
           "#{Teachbase::Bot::Routers::Section::SOURCE}#{value}"
+        end
+
+        def u_id(value = DIGIT_REGEXP)
+          "#{Teachbase::Bot::Routers::User::SOURCE}#{value}"
         end
       end
 

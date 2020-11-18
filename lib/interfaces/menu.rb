@@ -4,13 +4,22 @@ module Teachbase
   module Bot
     class Interfaces
       class Menu < Teachbase::Bot::InterfaceController
-        attr_accessor :buttons, :back_button, :slices_count, :approve_button, :answers_button
+        attr_accessor :buttons,
+                      :back_button,
+                      :slices_count,
+                      :approve_button,
+                      :answers_button,
+                      :send_message_button,
+                      :accounts_button
+
         attr_reader :type
 
         def initialize(params, entity)
           @back_button = params[:back_button]
           @approve_button = params[:approve_button]
           @answers_button = params[:answers_button]
+          @accounts_button = params[:accounts_button]
+          @send_message_button = params[:send_message_button]
           @buttons = params[:buttons]
           @slices_count = params[:slices_count]
           @type = params[:type]
@@ -26,6 +35,20 @@ module Teachbase
         end
 
         protected
+
+        def build_accounts_button
+          return unless accounts_button
+
+          InlineCallbackButton.g(button_sign: I18n.t('accounts').to_s,
+                                 callback_data: router.main(path: :accounts).link)
+        end
+
+        def build_send_message_button
+          return unless send_message_button
+
+          InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('message').downcase}",
+                                 callback_data: router.main(path: :send_message, p: [u_id: entity.id]).link)
+        end
 
         def build_pagination_button(action, pagination_options)
           router_parameters = { offset: build_pagination_button_params(action, pagination_options),
