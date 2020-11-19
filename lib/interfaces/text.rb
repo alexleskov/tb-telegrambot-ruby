@@ -27,6 +27,11 @@ module Teachbase
           self
         end
 
+        def ask_find_keyword
+          @text = "#{Emoji.t(:pencil2)} #{I18n.t('enter_what_find')}:"
+          self
+        end
+
         def ask_next_action
           @text = "<i>#{I18n.t('start_menu_message')}</i>"
           self

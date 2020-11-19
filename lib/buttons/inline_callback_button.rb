@@ -16,8 +16,14 @@ class InlineCallbackButton < Button
       g({ callback_data: last_unical_callback(sent_messages) }.merge!(back_button_default_params))
     end
 
-    def custom_back(callback_data)
-      g({ callback_data: callback_data }.merge!(back_button_default_params))
+    def custom_back(callback_data, button_params = {})
+      button_params =
+        if button_params[:button_sign] && button_params[:emoji]
+          button_params
+        else
+          back_button_default_params
+        end
+      g({ callback_data: callback_data }.merge!(button_params))
     end
 
     def more(options)

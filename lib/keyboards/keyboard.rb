@@ -103,7 +103,7 @@ class Keyboard
 
     case options[:mode]
     when :custom
-      InlineCallbackButton.custom_back(options[:action])
+      InlineCallbackButton.custom_back(options[:action], button_sign: options[:button_sign], emoji: options[:emoji])
     when :basic
       InlineCallbackButton.back(options[:sent_messages])
     else

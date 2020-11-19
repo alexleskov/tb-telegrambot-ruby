@@ -158,6 +158,7 @@ en:
   common_folder: "Common folder"
   incoming: "Incoming"
   creation_info: "I was created by <a href='https://sun1-93.userapi.com/c639318/v639318312/33bab/rbFlIllggaM.jpg'> Alexander Leskov </a> - @alexleskov from <a href = 'https: // teachbase.ru '> Teachbase </a> in 2020. And the idea of my appearance arose as an experiment - to create an assistant in online learning."
+  enter_what_find: "Clarify what you need. Keyword or phrase"
 ru:
   greeting_message: "Привет,"
   farewell_message: "Пока"
@@ -318,3 +319,4 @@ ru:
   common_folder: "Общая папка"
   incoming: "Входящее"
   creation_info: "Меня создал <a href='https://sun1-93.userapi.com/c639318/v639318312/33bab/rbFlIllggaM.jpg'>Александр Лесков</a> - @alexleskov из <a href='https://teachbase.ru'>Teachbase</a> в 2020 году. А идея моего появления возникла как эксперимент - создать помощника в онлайн-обучении."
+  enter_what_find: "Уточните, что нужно. Ключевое слово или словосочетание"

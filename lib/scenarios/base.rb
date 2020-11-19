@@ -103,6 +103,21 @@ module Teachbase
           appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
         end
 
+        def find_entity_by(type, keyword = nil)
+          keyword ||= keyword
+          find_result =
+            case type.to_sym
+            when :course_sessions
+              appshell.user.course_sessions_by(name: "%#{keyword}%", account_id: appshell.current_account.id)
+                      .order(started_at: :desc)
+            end
+          return interface.sys.text.on_empty.show if !find_result && find_result.empty?
+
+          interface.cs.menu(title_params: { text: "#{Emoji.t(:mag_right)} \"#{keyword}\"" }, mode: :none,
+                            back_button: { mode: :custom, action: router.cs(path: :list).link,
+                                           button_sign: I18n.t('cs_list'), emoji: :books }).main(find_result).show
+        end
+
         def match_data
           on router.main(path: :accounts).regexp do
             accounts
@@ -132,7 +147,7 @@ module Teachbase
             scenario_change(c_data[1])
           end
 
-          on router.cs(path: :list, p: %i[type]).regexp do
+          on router.cs(path: :list).regexp do
             courses_states
           end
 
@@ -241,6 +256,18 @@ module Teachbase
               elsif @c_data["on"] && !@c_data["active"] && !@c_data["archived"]
                 courses_states
               end
+            end
+          end
+
+          on %r{find} do
+            if @c_data["course"]
+              if @c_data["education-name"]
+                find_entity_by(:course_sessions, @c_data["education-name"].first["value"])
+              else
+                find_entity_by(:course_sessions)
+              end
+            else
+              interface.sys.text.on_undefined.show
             end
           end
 
