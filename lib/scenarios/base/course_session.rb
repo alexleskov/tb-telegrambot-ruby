@@ -30,7 +30,7 @@ module Teachbase
 
             interface.cs.menu(title_params: { text: course_sessions.first.sign_course_state },
                               path_params: { object_type: :cs, path: :list, param: state },
-                              back_button: { mode: :custom, action: router.cs(path: :list, p: [type: :states]).link })
+                              back_button: { mode: :custom, action: router.cs(path: :list).link })
                      .main(course_sessions, limit: limit, offset: offset, all_count: total_cs_count).show
           end
 

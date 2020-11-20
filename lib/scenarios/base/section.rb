@@ -12,7 +12,7 @@ module Teachbase
             cs = sections.first.course_session
             interface.section(cs).menu(title_params: { stages: %i[title] },
                                        back_button: { mode: :custom, order: :ending,
-                                                      action: router.cs(path: :list, p: [type: :states]).link }).main.show
+                                                      action: router.cs(path: :list).link }).main.show
           rescue RuntimeError => e
             return interface.sys.text.on_empty.show if e.http_code == 404
           end
