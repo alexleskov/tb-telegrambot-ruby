@@ -110,7 +110,7 @@ module Teachbase
             case type.to_sym
             when :course_sessions
               appshell.user.course_sessions_by(name: "%#{keyword}%", account_id: appshell.current_account.id)
-                      .order(started_at: :desc)
+                      .order(rating: :desc, name: :asc)
             end
           return interface.sys.text.on_empty.show if !find_result && find_result.empty?
 
