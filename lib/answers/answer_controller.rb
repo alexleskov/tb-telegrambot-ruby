@@ -13,10 +13,6 @@ module Teachbase
         raise "No such dest '#{dest}' for send answer" unless MSG_DESTS.include?(dest)
 
         @dest = dest
-
-        # @respond = respond
-        # @command_list = respond.commands
-
         @bot = config_params[:bot]
         @tg_user = config_params[:tg_user]
         @command_list = config_params[:command_list]

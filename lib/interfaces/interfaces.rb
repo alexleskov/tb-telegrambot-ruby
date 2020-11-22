@@ -7,7 +7,7 @@ module Teachbase
   module Bot
     class Interfaces
       class << self
-        attr_accessor :sys_class
+        attr_accessor :sys_class, :config_params
         attr_reader :answers_controller
 
         def configure(config_params, dest)

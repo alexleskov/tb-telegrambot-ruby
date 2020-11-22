@@ -82,7 +82,7 @@ module Teachbase
       def change_localization(lang)
         user_settings.update!(localization: lang)
         I18n.with_locale user_settings.localization.to_sym do
-          controller.respond.reload_commands
+          controller.reload_commands_list
         end
       end
 

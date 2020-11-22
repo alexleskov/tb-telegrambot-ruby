@@ -21,17 +21,13 @@ module Teachbase
 
       def initialize(params, dest)
         @respond = params[:respond]
+        @dest = dest
         raise "Respond not found" unless respond
 
-        @tg_user = respond.msg_responder.tg_user
-        @bot = respond.msg_responder.bot
-        @message = respond.msg_responder.message
-        @user_settings = respond.msg_responder.settings
-        @command_list = respond.command_list
+        fetch_respond_data
         @message_params = {}
         @interface = Teachbase::Bot::Interfaces
-        interface_config_params = { tg_user: tg_user, bot: bot, message: message, command_list: command_list, user_settings: user_settings }
-        interface.configure(interface_config_params, dest)
+        interface.configure(build_interface_config_params, @dest)
         @filer = Teachbase::Bot::Filer.new(bot)
         @router = Teachbase::Bot::Routers.new
         @appshell = Teachbase::Bot::AppShell.new(self)
@@ -61,7 +57,26 @@ module Teachbase
         end
       end
 
+      def reload_commands_list
+        respond.reload_commands
+        fetch_respond_data
+        build_interface_config_params
+        interface.configure(build_interface_config_params, @dest)
+      end
+
       protected
+
+      def build_interface_config_params
+        { tg_user: tg_user, bot: bot, message: message, user_settings: user_settings, command_list: command_list }
+      end
+
+      def fetch_respond_data
+        @tg_user = respond.msg_responder.tg_user
+        @bot = respond.msg_responder.bot
+        @message = respond.msg_responder.message
+        @user_settings = respond.msg_responder.settings
+        @command_list = respond.command_list
+      end
 
       def find_msg_value(msg_type)
         message.public_send(msg_type) if message.respond_to?(msg_type)
