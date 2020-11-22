@@ -94,7 +94,7 @@ module Teachbase
           build_attachments = user_answer.attachments? ? "#{attachments(user_answer)}\n" : nil
           build_comments = user_answer.comments? ? "\n#{sanitize_html(comments(user_answer))}\n" : nil
           result << "<b>#{I18n.t('answer').capitalize} №#{user_answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(user_answer.status)} #{to_italic(I18n.t(user_answer.status).capitalize)}</b>
-                     <pre>#{sanitize_html(user_answer.text)}</pre>\n\n#{build_attachments}#{build_comments}"
+                     \"#{sanitize_html(user_answer.text)}\"\n\n#{build_attachments}#{build_comments}"
         end
         result.join("\n")
       end

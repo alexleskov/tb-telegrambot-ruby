@@ -10,8 +10,8 @@ module Teachbase
         attr_accessor :sys_class
         attr_reader :answers_controller
 
-        def configure(respond, dest)
-          @answers_controller = Teachbase::Bot::Answers.new(respond, dest)
+        def configure(config_params, dest)
+          @answers_controller = Teachbase::Bot::Answers.new(config_params, dest)
           @sys_class = Teachbase::Bot::Interfaces::Base
         end
 

@@ -9,7 +9,10 @@ module Teachbase
       attr_reader :respond,
                   :appshell,
                   :tg_user,
+                  :user_settings,
+                  :bot,
                   :message,
+                  :command_list,
                   :message_params,
                   :filer,
                   :interface,
@@ -21,11 +24,15 @@ module Teachbase
         raise "Respond not found" unless respond
 
         @tg_user = respond.msg_responder.tg_user
+        @bot = respond.msg_responder.bot
         @message = respond.msg_responder.message
+        @user_settings = respond.msg_responder.settings
+        @command_list = respond.command_list
         @message_params = {}
         @interface = Teachbase::Bot::Interfaces
-        interface.configure(respond, dest)
-        @filer = Teachbase::Bot::Filer.new(respond)
+        interface_config_params = { tg_user: tg_user, bot: bot, message: message, command_list: command_list, user_settings: user_settings }
+        interface.configure(interface_config_params, dest)
+        @filer = Teachbase::Bot::Filer.new(bot)
         @router = Teachbase::Bot::Routers.new
         @appshell = Teachbase::Bot::AppShell.new(self)
       rescue RuntimeError => e
@@ -33,8 +40,8 @@ module Teachbase
       end
 
       def take_data
-        respond.msg_responder.bot.listen do |taking_message|
-          options = { bot: respond.msg_responder.bot, message: taking_message }
+        bot.listen do |taking_message|
+          options = { bot: bot, message: taking_message }
           break MessageResponder.new(options).detect_type(ai_mode: :off) if taking_message
         end
       end

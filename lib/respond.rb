@@ -17,12 +17,12 @@ module Teachbase
     class Respond
       MSG_TYPES = %i[text audio document video video_note voice photo].freeze
 
-      attr_reader :commands, :msg_responder
+      attr_reader :command_list, :msg_responder
 
       def initialize(message_responder)
         @msg_responder = message_responder
         @message = msg_responder.message
-        @commands = Teachbase::Bot::CommandList.new
+        @command_list = Teachbase::Bot::CommandList.new
       end
 
       def detect_type(options)
@@ -77,7 +77,7 @@ module Teachbase
       end
 
       def reload_commands
-        @commands = Teachbase::Bot::CommandList.new
+        @command_list = Teachbase::Bot::CommandList.new
       end
 
       private
@@ -87,7 +87,7 @@ module Teachbase
       end
 
       def command?
-        commands.command_by?(:value, @message)
+        command_list.command_by?(:value, @message)
       end
 
       def define_msg_type

@@ -15,7 +15,7 @@ module Teachbase
 
       attr_reader :controller,
                   :data_loader,
-                  :settings,
+                  :user_settings,
                   :authorizer
 
       attr_accessor :access_mode
@@ -26,7 +26,7 @@ module Teachbase
 
         @account_name ||= DEFAULT_ACCOUNT_NAME
         @controller = controller
-        @settings = controller.respond.msg_responder.settings
+        @user_settings = controller.user_settings
         @authorizer = Teachbase::Bot::Authorizer.new(self)
         @data_loader = Teachbase::Bot::DataLoaders.new(self)
         set_scenario
@@ -76,12 +76,12 @@ module Teachbase
 
         controller.class.send(:include, to_constantize("Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}"))
         controller.interface.sys_class = to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}")
-        settings.update!(scenario: scenario_name)
+        user_settings.update!(scenario: scenario_name)
       end
 
       def change_localization(lang)
-        settings.update!(localization: lang)
-        I18n.with_locale settings.localization.to_sym do
+        user_settings.update!(localization: lang)
+        I18n.with_locale user_settings.localization.to_sym do
           controller.respond.reload_commands
         end
       end
@@ -190,7 +190,7 @@ module Teachbase
 
       def break_taking_data?(msg)
         if msg.respond_to?(:text)
-          result = !(msg.text =~ ABORT_ACTION_COMMAND).nil? || controller.respond.commands.command_by?(:value, msg.text)
+          result = !(msg.text =~ ABORT_ACTION_COMMAND).nil? || controller.command_list.command_by?(:value, msg.text)
           !!result
         elsif msg.nil?
           !msg
@@ -199,12 +199,12 @@ module Teachbase
       end
 
       def set_scenario
-        change_scenario(settings.scenario)
+        change_scenario(user_settings.scenario)
       end
 
       #       def set_localization
       #         user_db = user(:without_api)
-      #         lang = user_db && user_db.lang ? user_db.lang : settings.localization
+      #         lang = user_db && user_db.lang ? user_db.lang : user_settings.localization
       #         change_localization(lang)
       #       end
     end

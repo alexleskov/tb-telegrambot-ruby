@@ -6,8 +6,8 @@ module Teachbase
       module Base
         module Setting
           def settings
-            interface.sys.menu.settings(scenario: appshell.settings.scenario,
-                                        localization: appshell.settings.localization).show
+            interface.sys.menu.settings(scenario: appshell.user_settings.scenario,
+                                        localization: appshell.user_settings.localization).show
           end
 
           def settings_edit
@@ -23,7 +23,7 @@ module Teachbase
             raise "Lang param is empty" if lang.empty?
 
             appshell.change_localization(lang.to_s)
-            I18n.with_locale appshell.settings.localization.to_sym do
+            I18n.with_locale appshell.user_settings.localization.to_sym do
               interface.sys.text.on_save("localization", lang).show
               interface.sys.menu.starting.show
             end

@@ -19,7 +19,7 @@ module Teachbase
 
             limit = limit.to_i
             offset = offset.to_i
-            category ||= appshell.settings.scenario
+            category ||= appshell.user_settings.scenario
             cs_loader = appshell.data_loader.cs
             total_cs_count = cs_loader.total_cs_count(state: state, category: category)
             per_page = limit

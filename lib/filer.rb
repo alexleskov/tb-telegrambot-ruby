@@ -8,9 +8,8 @@ module Teachbase
 
       include Formatter
 
-      def initialize(respond)
-        @tg_user = respond.msg_responder.tg_user
-        @bot = respond.msg_responder.bot
+      def initialize(bot)
+        @bot = bot
       end
 
       def file_path(file_id)
@@ -36,7 +35,7 @@ module Teachbase
       private
 
       def build_local_path(download)
-        "/#{TMP_FOLDER}/#{@tg_user.id}_#{chomp_file_name(download.base_uri)}"
+        "/#{TMP_FOLDER}/#{Time.now.getutc.to_i}_#{chomp_file_name(download.base_uri)}"
       end
 
       def load_bot_token

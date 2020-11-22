@@ -7,20 +7,26 @@ module Teachbase
 
       MSG_DESTS = %i[chat from].freeze
 
-      attr_reader :msg_params, :command_list
+      attr_reader :msg_params, :command_list, :bot, :tg_user, :message, :user_settings
 
-      def initialize(respond, dest)
+      def initialize(config_params, dest)
         raise "No such dest '#{dest}' for send answer" unless MSG_DESTS.include?(dest)
 
         @dest = dest
-        @respond = respond
-        @settings = respond.msg_responder.settings
-        @command_list = respond.commands
-        @msg_params = { bot: respond.msg_responder.bot, tg_user: respond.msg_responder.tg_user }
+
+        # @respond = respond
+        # @command_list = respond.commands
+
+        @bot = config_params[:bot]
+        @tg_user = config_params[:tg_user]
+        @command_list = config_params[:command_list]
+        @message = config_params[:message]
+        @user_settings = config_params[:user_settings]
+        @msg_params = { bot: bot, tg_user: tg_user }
       end
 
       def create(options)
-        raise "Can't find destination for message #{@respond.msg_responder}" unless destination
+        raise "Can't find destination for message '#{message}'" unless destination
         raise unless options.is_a?(Hash)
 
         @msg_params.merge!(options)
@@ -31,7 +37,7 @@ module Teachbase
       protected
 
       def destination
-        @respond.msg_responder.message.public_send(@dest) if @respond.msg_responder.message.respond_to? @dest
+        message.public_send(@dest) if message.respond_to? @dest
       end
     end
   end
