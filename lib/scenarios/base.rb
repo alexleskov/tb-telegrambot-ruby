@@ -104,16 +104,7 @@ module Teachbase
         end
 
         def find_entity_by(type, keyword = nil)
-          keyword =
-            unless keyword
-              interface.sys.text.ask_find_keyword.show
-              user_answer = appshell.ask_answer(mode: :once, answer_type: :string)
-              return interface.sys.text.on_undefined.show unless user_answer
-
-              user_answer.text
-            else
-              keyword
-            end
+          keyword ||= keyword
           find_result =
             case type.to_sym
             when :course_sessions
@@ -270,7 +261,6 @@ module Teachbase
 
           on %r{find} do
             if @c_data["course"]
-              p "@c_data: #{@c_data}"
               if @c_data["education-name"]
                 find_entity_by(:course_sessions, @c_data["education-name"].first["value"])
               else

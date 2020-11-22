@@ -1,12 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/app_shell'
-require './lib/filer'
-require './lib/breadcrumb'
-require './lib/ai'
-require './lib/interfaces/interfaces'
-require './routers/routers/'
-
 module Teachbase
   module Bot
     class Controller

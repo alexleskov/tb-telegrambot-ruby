@@ -20,6 +20,12 @@ require './lib/message_responder'
 require './lib/message_sender'
 require './lib/exceptions/teachbase_bot_exception'
 require './lib/exceptions/account'
+require './lib/app_shell'
+require './lib/filer'
+require './lib/breadcrumb'
+require './lib/ai'
+require './lib/interfaces/interfaces'
+require './routers/routers/'
 
 $app_config = AppConfigurator.instance
 $app_config.configure
