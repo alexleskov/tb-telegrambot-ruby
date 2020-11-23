@@ -8,7 +8,7 @@ class MessageSender
   attr_reader :bot,
               :msg_data,
               :msg_type,
-              :chat,
+              :chat_id,
               :reply_to_tg_id,
               :reply_to_message_id,
               :parse_mode,
@@ -23,7 +23,7 @@ class MessageSender
 
   def initialize(msg_params)
     @bot = msg_params[:bot]
-    @chat = msg_params[:chat]
+    @chat_id = msg_params[:chat_id]
     @tg_user = msg_params[:tg_user]
     @bot_messages = @tg_user.bot_messages
     @text = msg_params[:text]
@@ -46,7 +46,7 @@ class MessageSender
     params[:parse_mode] = parse_mode
     params[:disable_notification] = disable_notification
     params[:disable_web_page_preview] = disable_web_page_preview
-    params[:chat_id] = find_chat_id
+    params[:chat_id] = @chat_id
     params[:reply_to_message_id] = reply_to_message_id if reply_to_message_id
     sending_message = create_message(params)
     save_message(sending_message["result"])
@@ -72,10 +72,6 @@ class MessageSender
     when :previous
       msg.previous_sended
     end
-  end
-
-  def find_chat_id
-    reply_to_tg_id ? reply_to_tg_id.to_i : chat.id
   end
 
   def find_menu_mode

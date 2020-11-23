@@ -22,18 +22,24 @@ module Teachbase
       end
 
       def create(options)
-        raise "Can't find destination for message '#{message}'" unless destination
         raise unless options.is_a?(Hash)
 
         @msg_params.merge!(options)
         @msg_params[:text] = options[:text].to_s.squeeze(" ") if options[:text]
-        @msg_params[:chat] = destination
+        @msg_params[:chat_id] = find_chat_id
+        raise "Can't find destination" unless @msg_params[:chat_id]
       end
 
       protected
 
       def destination
+        return unless message
+
         message.public_send(@dest) if message.respond_to? @dest
+      end
+
+      def find_chat_id
+        msg_params[:reply_to_tg_id] ? msg_params[:reply_to_tg_id].to_i : destination.id
       end
     end
   end
