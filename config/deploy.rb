@@ -29,7 +29,6 @@ append :linked_dirs, "log", "tmp"
 # Default value for default_env is {}
 set :default_env, RAILS_ENV: fetch(:stage)
 
-
 namespace :db do
   task :create do
     on roles(:all) do
