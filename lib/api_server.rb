@@ -3,45 +3,65 @@
 module Teachbase
   module Bot
     class ApiServer
-      CATCHING_REQUEST_PARAMS = %w[HTTP_HOST REQUEST_PATH REQUEST_METHOD CONTENT_TYPE].freeze
+      class Request
+        CATCHING_PARAMS = %w[HTTP_HOST REQUEST_PATH REQUEST_METHOD CONTENT_TYPE].freeze
+
+        attr_reader :data
+
+        def initialize(env)
+          @env = env
+          @data = fetch_data
+        end
+
+        private
+
+        def body
+          return unless @env["REQUEST_METHOD"] == "POST"
+
+          payload = @env["rack.input"].read
+          JSON.parse(payload)
+        end
+
+        def account_id
+          location = @env["REQUEST_PATH"].match(/^\/(\w*)\/(\d*)/)
+          return unless location
+
+          location[2].to_i
+        end
+
+        def fetch_data
+          { body: body, account_id: account_id }.compact.merge(@env.slice(*CATCHING_PARAMS))
+        end
+      end
 
       def call(env)
         @env = env
-        webhook = match_data
-        return [403, { "Content-Type" => "text/plain" }, ["Forbidden"]] unless webhook
+        request = init_request_by_webhook
+        return render(403, "Forbidden") unless request
 
-        [200, { "Content-Type" => "text/plain" }, ["OK"]]
+        Teachbase::Bot::Webhook::Controller.new(request)
+        render(200, "OK")
       rescue StandardError => e
-        [500, {}, [e.message]]
-      end
-
-      def match_data
-        on "/webhooks_cathcer" do
-          Teachbase::Bot::Webhook::Controller.new(fetch_request_data)
-        end
+        render(500, e.message)
       end
 
       private
 
-      def fetch_request_body
-        payload = @env["rack.input"].read
-        body = JSON.parse(payload)
+      def render(status, body)
+        [status, {}, [body]]
       end
 
-      def fetch_request_data
-        request_data = {}
-        request_data[:body] = fetch_request_body if @env["REQUEST_METHOD"] == "POST"
-        @env.map do |key, value|
-          request_data[key.downcase.to_sym] = value if CATCHING_REQUEST_PARAMS.include?(key.to_s)
+      def init_request_by_webhook
+        on "/webhooks_cathcer" do
+          Teachbase::Bot::ApiServer::Request.new(@env)
         end
-        request_data
       end
 
       def on(path)
-        location = @env["REQUEST_PATH"].match(/^#{path}$/)
+        location = @env["REQUEST_PATH"].match(/^(#{path})\/(\d*)/)
         return unless location
 
-        location[0]
+        location[1]
         yield
       end
     end

@@ -4,8 +4,8 @@ module Teachbase
   module Bot
     module Webhook
       class Controller
-        def initialize(request_data)
-          p "request_data: #{request_data}"
+        def initialize(request)
+          @request = request
         end
       end
     end
