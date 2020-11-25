@@ -38,6 +38,7 @@ module Teachbase
 
       def call(env)
         @env = env
+        request = init_request_by_webhook
         return render(403, "Error: 403. Forbidden") unless request
 
         Teachbase::Bot::Webhook::Controller.new(request)
