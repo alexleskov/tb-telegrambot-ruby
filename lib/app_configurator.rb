@@ -64,6 +64,10 @@ class AppConfigurator
     YAML.safe_load(@load_config_file)['token_expiration_time']
   end
 
+  def default_location_webhooks_endpoint
+    YAML.safe_load(@load_config_file)['default_location_webhooks_endpoint']
+  end
+
   private
 
   def setup_i18n

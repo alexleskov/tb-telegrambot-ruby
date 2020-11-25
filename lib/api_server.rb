@@ -3,6 +3,8 @@
 module Teachbase
   module Bot
     class ApiServer
+      DEFAULT_LOCATION = "telegram_bot"
+
       class Request
         CATCHING_PARAMS = %w[HTTP_HOST REQUEST_PATH REQUEST_METHOD CONTENT_TYPE].freeze
 
@@ -23,7 +25,7 @@ module Teachbase
         end
 
         def account_id
-          location = @env["REQUEST_PATH"].match(/^\/(\w*)\/(\d*)/)
+          location = @env["REQUEST_PATH"].match(%r{^#{$app_config.default_location_webhooks_endpoint}\/(\w*)\/(\d*)})
           return unless location
 
           location[2].to_i
@@ -58,7 +60,7 @@ module Teachbase
       end
 
       def on(path)
-        location = @env["REQUEST_PATH"].match(/^(#{path})\/(\d*)/)
+        location = @env["REQUEST_PATH"].match(%{^#{$app_config.default_location_webhooks_endpoint}(#{path})\/(\d*)})
         return unless location
 
         location[1]
