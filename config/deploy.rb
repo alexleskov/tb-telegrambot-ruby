@@ -50,6 +50,15 @@ namespace :deploy do
   task :restart_bot do
     on roles(:all) do
       execute :sudo, :monit, 'restart tb_bot'
+      invoke "puma:restart"
+    end
+  end
+end
+
+namespace :puma do
+  task :restart do
+    on roles(:all) do
+      execute :sudo, :monit, 'restart tb_bot_web'
     end
   end
 end

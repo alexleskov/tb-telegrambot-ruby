@@ -26,6 +26,9 @@ require './lib/breadcrumb'
 require './lib/ai'
 require './lib/interfaces/interfaces'
 require './routers/routers/'
+require './lib/webhooks/webhook'
+require './lib/webhooks/controller'
+require './lib/webhooks/base'
 
 $app_config = AppConfigurator.instance
 $app_config.configure
