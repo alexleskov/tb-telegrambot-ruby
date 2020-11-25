@@ -56,7 +56,7 @@ end
 
 namespace :puma do
   task :restart do
-    on roles(:all), in: :sequence, wait: 5 do
+    on roles(:all) do
       execute :sudo, :monit, 'restart tb_bot_web'
     end
   end
