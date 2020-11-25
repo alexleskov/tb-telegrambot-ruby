@@ -54,7 +54,7 @@ namespace :deploy do
   end
 end
 
-namespace :puma do
+namespace :webhooks_server do
   task :restart do
     on roles(:all) do
       execute :sudo, :monit, 'restart tb_bot_web'
@@ -63,4 +63,4 @@ namespace :puma do
 end
 
 before "deploy:restart_bot", "db:migrate"
-after "deploy:finishing", "deploy:restart_bot", "puma:restart"
+after "deploy:finishing", "deploy:restart_bot", "webhooks_server:restart"
