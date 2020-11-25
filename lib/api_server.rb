@@ -54,7 +54,7 @@ module Teachbase
       end
 
       def init_request_by_webhook
-        on "/webhooks_cathcer" do
+        on "/webhooks_catcher" do
           Teachbase::Bot::ApiServer::Request.new(@env)
         end
       end
