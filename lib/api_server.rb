@@ -38,6 +38,7 @@ module Teachbase
 
       def call(env)
         @env = env
+        path = "/webhooks_catcher"
         request = init_request_by_webhook
         r = %r{^#{$app_config.default_location_webhooks_endpoint}(#{path})\/(\d*)}
         return render(403, "403. Forbidden. R: #{r}") unless request
