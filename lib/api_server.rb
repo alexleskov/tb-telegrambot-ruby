@@ -42,7 +42,7 @@ module Teachbase
         return render(403, "403. Forbidden") unless request
 
         Teachbase::Bot::Webhook::Controller.new(request)
-        render(200, "OK")
+        render(200, "OK\nRequset: #{request.data}")
       rescue StandardError => e
         render(500, e.message)
       end
