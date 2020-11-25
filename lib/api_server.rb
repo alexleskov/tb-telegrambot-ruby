@@ -25,7 +25,7 @@ module Teachbase
         end
 
         def account_id
-          location = @env["REQUEST_PATH"].match(%r{^\/#{$app_config.default_location_webhooks_endpoint}\/(\w*)\/(\d*)})
+          location = @env["REQUEST_PATH"].match(%r{^#{$app_config.default_location_webhooks_endpoint}\/(\w*)\/(\d*)})
           return unless location
 
           location[2].to_i
@@ -54,13 +54,13 @@ module Teachbase
       end
 
       def init_request_by_webhook
-        on "/webhooks_catcher" do
+        on "webhooks_catcher" do
           Teachbase::Bot::ApiServer::Request.new(@env)
         end
       end
 
       def on(path)
-        location = @env["REQUEST_PATH"].match(%r{^\/#{$app_config.default_location_webhooks_endpoint}\/(#{path})\/(\d*)})
+        location = @env["REQUEST_PATH"].match(%r{^#{$app_config.default_location_webhooks_endpoint}\/(#{path})\/(\d*)})
         return unless location
 
         location[1]
