@@ -41,8 +41,7 @@ module Teachbase
         request = init_request_by_webhook
         path = "/webhooks_catcher"
         r = %r{^#{$app_config.default_location_webhooks_endpoint}(#{path})\/(\d*)}
-        p "r: #{r}"
-        return render(403, "Forbidden") unless request
+        return render(403, "Forbidden, r: #{r}") unless request
 
         Teachbase::Bot::Webhook::Controller.new(request)
         render(200, "OK")
