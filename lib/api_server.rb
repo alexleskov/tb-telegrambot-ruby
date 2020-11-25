@@ -25,7 +25,7 @@ module Teachbase
         end
 
         def account_id
-          location = @env["REQUEST_PATH"].match(%r{^#{$app_config.default_location_webhooks_endpoint}\/(\w*)\/(\d*)})
+          location = @env["REQUEST_PATH"].match(%r{^\/#{$app_config.default_location_webhooks_endpoint}\/(\w*)\/(\d*)})
           return unless location
 
           location[2].to_i
@@ -39,7 +39,7 @@ module Teachbase
       def call(env)
         @env = env
         request = init_request_by_webhook
-        return render(403, "403. Forbidden: '#{@env["REQUEST_PATH"]}'") unless request
+        return render(403, "403. Forbidden") unless request
 
         Teachbase::Bot::Webhook::Controller.new(request)
         render(200, "OK")
@@ -60,7 +60,7 @@ module Teachbase
       end
 
       def on(path)
-        location = @env["REQUEST_PATH"].match(%r{^#{$app_config.default_location_webhooks_endpoint}\/(#{path})\/(\d*)})
+        location = @env["REQUEST_PATH"].match(%r{^\/#{$app_config.default_location_webhooks_endpoint}\/(#{path})\/(\d*)})
         return unless location
 
         location[1]
