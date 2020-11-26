@@ -49,6 +49,8 @@ module Teachbase
 
         result = self.class.requests << request.data
         Teachbase::Bot::Webhook::Controller.new(request)
+        tg_client = Telegram::Bot::Client.new($app_config.load_token)
+        tg_client.api.send_message(text: "WEBHOOK", chat_id: 439802952)
         render(200, "OK\nRequest: #{request.data}\nRequests: #{result.join("\n")}")
       rescue StandardError => e
         render(500, e.message)
