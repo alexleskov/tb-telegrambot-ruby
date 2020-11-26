@@ -6,6 +6,7 @@ module Teachbase
       class Controller
         def initialize(request)
           @request = request
+          $logger.debug "webhook: #{request.data}"
         end
       end
     end
