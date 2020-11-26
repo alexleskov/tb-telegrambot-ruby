@@ -6,10 +6,10 @@ module Teachbase
       DEFAULT_LOCATION = "telegram_bot"
 
       class << self
-        attr_accessor :last_request
+        attr_accessor :requests
       end
 
-      @last_request = nil
+      @requests = []
 
       class Request
         CATCHING_PARAMS = %w[HTTP_HOST REQUEST_PATH REQUEST_METHOD CONTENT_TYPE].freeze
@@ -47,9 +47,9 @@ module Teachbase
         request = init_request_by_webhook
         return render(403, "403. Forbidden") unless request
 
-        result = self.class.last_request = request.data
+        result = self.class.requests << request.data
         Teachbase::Bot::Webhook::Controller.new(request)
-        render(200, "OK\nRequest: #{request.data}\nlast_request: #{result}")
+        render(200, "OK\nRequest: #{request.data}\nRequests: #{result.join("\n")}")
       rescue StandardError => e
         render(500, e.message)
       end
