@@ -32,7 +32,7 @@ module Teachbase
         end
 
         def fetch_data
-          { body: body, account_id: account_id }.compact.merge(@env.slice(*CATCHING_PARAMS))
+          { "BODY" => body, "ACCOUNT_ID" => account_id }.compact.merge(@env.slice(*CATCHING_PARAMS))
         end
       end
 
