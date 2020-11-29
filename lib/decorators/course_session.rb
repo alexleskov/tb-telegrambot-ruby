@@ -58,6 +58,8 @@ module Decorators
     private
 
     def emoji_by_progress
+      return Emoji.t(:new) unless progress
+      
       progress.zero? && status != "archived" ? Emoji.t(:new) : Emoji.t(:book)
     end
 
