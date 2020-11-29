@@ -104,24 +104,25 @@ module Teachbase
         end
 
         def find_entity_by(type, keyword = nil)
-          keyword =
-            unless keyword
+          find_string =
+            if keyword
+              keyword
+            else
               interface.sys.text.ask_find_keyword.show
               user_answer = appshell.ask_answer(mode: :once, answer_type: :string)
               return interface.sys.text.on_undefined.show unless user_answer
+
               user_answer.text
-            else
-              keyword
             end
           find_result =
             case type.to_sym
             when :course_sessions
-              appshell.user.course_sessions_by(name: "%#{keyword}%", account_id: appshell.current_account.id)
+              appshell.user.course_sessions_by(name: "%#{find_string}%", account_id: appshell.current_account.id)
                       .order(rating: :desc, name: :asc)
             end
           return interface.sys.text.on_empty.show if !find_result && find_result.empty?
 
-          interface.cs.menu(title_params: { text: "#{Emoji.t(:mag_right)} \"#{keyword}\"" }, mode: :none,
+          interface.cs.menu(title_params: { text: "#{Emoji.t(:mag_right)} \"#{find_string}\"" }, mode: :none,
                             back_button: { mode: :custom, action: router.main(path: :find, p: [type: :course_sessions]).link,
                                            button_sign: I18n.t('find_again'), emoji: :mag }).main(find_result).show
         end
