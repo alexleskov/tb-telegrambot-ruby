@@ -25,7 +25,7 @@ module Decorators
           URL_WITHOUT_PARAMS =~ icon_url
           $LAST_MATCH_INFO
         end
-      "#{Emoji.t(:book)} <a href='#{cover_url}'>#{to_bolder(name)}</a>"
+      "#{emoji_by_progress} <a href='#{cover_url}'>#{to_bolder(name)}</a>"
     end
 
     def statistics
@@ -56,6 +56,10 @@ module Decorators
     end
 
     private
+
+    def emoji_by_progress
+      progress.zero? && status != "archived" ? Emoji.t(:new) : Emoji.t(:book)
+    end
 
     def sign_empty_date(option)
       option == :deadline ? "\u221e" : "-"

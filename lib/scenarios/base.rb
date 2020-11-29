@@ -122,11 +122,15 @@ module Teachbase
           return interface.sys.text.on_empty.show if !find_result && find_result.empty?
 
           interface.cs.menu(title_params: { text: "#{Emoji.t(:mag_right)} \"#{keyword}\"" }, mode: :none,
-                            back_button: { mode: :custom, action: router.cs(path: :list).link,
-                                           button_sign: I18n.t('cs_list'), emoji: :books }).main(find_result).show
+                            back_button: { mode: :custom, action: router.main(path: :find, p: [type: :course_sessions]).link,
+                                           button_sign: I18n.t('find_again'), emoji: :mag }).main(find_result).show
         end
 
         def match_data
+          on router.main(path: :find, p: %i[type]).regexp do
+            find_entity_by(c_data[1].to_sym)
+          end
+
           on router.main(path: :accounts).regexp do
             accounts
           end

@@ -62,7 +62,9 @@ module Teachbase
       end
 
       def progress
-        update_data(lms_load(data: :progress))
+        lms_load(data: :progress)
+        lms_info["status"] = "archived" if lms_info["status"] == "completed"
+        update_data(lms_info)
       end
 
       def categories

@@ -23,6 +23,7 @@ module Teachbase
       ACCOUNTS = "accounts"
       DOCUMENTS = "documents"
       SEND_MESSAGE = "send_message"
+      FIND = "find"
 
       class << self
         def param(value = STRING_REGEXP)

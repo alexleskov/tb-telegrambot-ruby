@@ -6,10 +6,11 @@ module Teachbase
       module Base
         module Section
           def sections_choose(cs_tb_id)
-            sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
+            cs_loader = appshell.data_loader.cs(tb_id: cs_tb_id)
+            sections = cs_loader.sections
             return interface.sys.text.on_empty.show if sections.empty?
 
-            cs = sections.first.course_session
+            cs = cs_loader.progress
             interface.section(cs).menu(title_params: { stages: %i[title] },
                                        back_button: { mode: :custom, order: :ending,
                                                       action: router.cs(path: :list).link }).main.show

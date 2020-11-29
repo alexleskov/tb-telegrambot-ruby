@@ -57,7 +57,8 @@ module Teachbase
       private
 
       def find_params(option_key)
-        if option_key.to_sym == :name
+        case option_key.to_sym
+        when :name
           "ILIKE :#{option_key}"
         else
           "IN (:#{option_key})"

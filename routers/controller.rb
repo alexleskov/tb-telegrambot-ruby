@@ -48,6 +48,10 @@ module Teachbase
           [root_class::DOCUMENTS]
         end
 
+        def find
+          [root_class::FIND]
+        end
+
         def root
           [self.class::SOURCE]
         end
