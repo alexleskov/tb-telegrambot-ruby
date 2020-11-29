@@ -37,6 +37,13 @@ module Teachbase
           def courses_update(mode = :none)
             check_status(:default) { appshell.data_loader.cs.update_all_states(mode: mode) }
           end
+
+          def course_by(cs_tb_id)
+            course_session = appshell.data_loader.cs(tb_id: cs_tb_id).info
+            user_name = appshell.user_fullname(:array).first
+            interface.cs(course_session).text(text: "#{I18n.t('greeting_message')} #{user_name}!\n\n#{I18n.t('notify_about_new')} #{I18n.t('course').downcase}:")
+                     .course.show
+          end
         end
       end
     end

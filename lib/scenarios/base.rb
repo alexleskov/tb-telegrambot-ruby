@@ -105,15 +105,7 @@ module Teachbase
 
         def find_entity_by(type, keyword = nil)
           keyword ||= keyword
-          keyword =
-            unless keyword
-              interface.sys.text.ask_find_keyword.show
-              user_answer = appshell.ask_answer(mode: :once, answer_type: :string)
-              return interface.sys.text.on_undefined.show unless user_answer
-              user_answer.text
-            else
-              keyword
-            end
+          keyword ||= keyword
           find_result =
             case type.to_sym
             when :course_sessions
@@ -213,7 +205,10 @@ module Teachbase
           end
 
           on router.main(path: :send_message, p: %i[u_id]).regexp do
-            send_message_to(last_auth_session_by(c_data[1]).tg_account.id)
+            user_active_auth_sessions = Teachbase::Bot::AuthSession.active_auth_sessions_by(c_data[1])
+            user_active_auth_sessions.each do |user_active_auth_session|
+              send_message_to(user_active_auth_session.tg_account.id)
+            end
           end
         end
 
@@ -293,11 +288,16 @@ module Teachbase
           interface.sys.text.on_undefined.show unless @c_data
         end
 
-        protected
-
-        def last_auth_session_by(user_id)
-          Teachbase::Bot::AuthSession.where("user_id = ?", user_id.to_i).order(auth_at: :desc).first
+        def match_webhook_event
+          on %r{created} do
+            case message
+            when Teachbase::Bot::Webhook::CourseStat
+              course_by(message.cs_tb_id)
+            end
+          end
         end
+
+        protected
 
         def access_denied?(e)
           e.respond_to?(:http_code) && [401, 403].include?(e.http_code)

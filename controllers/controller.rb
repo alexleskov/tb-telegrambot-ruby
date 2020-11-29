@@ -60,7 +60,6 @@ module Teachbase
       def reload_commands_list
         respond.reload_commands
         fetch_respond_data
-        build_interface_config_params
         interface.configure(build_interface_config_params, @dest)
       end
 

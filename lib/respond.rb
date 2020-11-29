@@ -4,23 +4,24 @@ require './lib/command_list'
 require './controllers/text_controller'
 require './controllers/callback_controller'
 require './controllers/command_controller'
+require './controllers/webhook_controller'
+require './controllers/ai_controller/'
 require './controllers/file_controller/document'
 require './controllers/file_controller/photo'
 require './controllers/file_controller/video'
 require './controllers/file_controller/audio'
 require './controllers/file_controller/video_note'
 require './controllers/file_controller/voice'
-require './controllers/ai_controller/'
 
 module Teachbase
   module Bot
     class Respond
-      MSG_TYPES = %i[text audio document video video_note voice photo].freeze
+      MSG_TYPES = %i[text audio document video video_note voice photo request_body].freeze
 
       attr_reader :command_list, :msg_responder
 
-      def initialize(message_responder)
-        @msg_responder = message_responder
+      def initialize(responder)
+        @msg_responder = responder
         @message = msg_responder.message
         @command_list = Teachbase::Bot::CommandList.new
       end
@@ -42,7 +43,13 @@ module Teachbase
           else
             define_msg_type
           end
+        else @message.is_a?(Teachbase::Bot::Webhook)
+             define_msg_type
         end
+      end
+
+      def request_body
+        Teachbase::Bot::WebhookController.new(@params).match_webhook_event
       end
 
       def text
@@ -94,7 +101,7 @@ module Teachbase
         msg_type = MSG_TYPES.each do |type|
           break type if @message.respond_to?(type) && @message.public_send(type) # && !@message.public_send(type).empty?
         end
-        raise "Don't know such Telegram::Bot::Types::Message: '#{@message.class}'. Only: #{MSG_TYPES}" unless msg_type
+        raise "Don't know such message type: '#{@message.class}'. Avaliable: #{MSG_TYPES}" unless msg_type
 
         public_send(msg_type)
       end

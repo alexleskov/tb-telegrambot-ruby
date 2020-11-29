@@ -47,7 +47,7 @@ module Teachbase
           return unless send_message_button
 
           InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('message').downcase}",
-                                 callback_data: router.main(path: :send_message, p: [u_id: entity.id]).link)
+                                 callback_data: router.main(path: :send_message, p: [u_id: entity.tb_id]).link)
         end
 
         def build_pagination_button(action, pagination_options)

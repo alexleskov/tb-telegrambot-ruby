@@ -19,12 +19,11 @@ module Teachbase
           protected
 
           def build_approve_button
-            return unless approve_button
+            return unless entity.course_session.active? && approve_button
           end
 
           def build_show_answers_button
-            return unless entity.respond_to?(:answers)
-            return unless entity.answers && !entity.answers.empty? && answers_button && entity.course_session.active?
+            return unless answers_avaliable? && answers_button
 
             InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
                                    callback_data: router.content(path: :answers, id: entity.tb_id, p: [cs_id: cs_tb_id]).link)
@@ -32,6 +31,10 @@ module Teachbase
 
           def build_action_buttons
             InlineCallbackKeyboard.collect(buttons: [build_show_answers_button, build_approve_button], back_button: back_button).raw
+          end
+
+          def answers_avaliable?
+            entity.respond_to?(:answers) && entity.answers && !entity.answers.empty?
           end
         end
       end

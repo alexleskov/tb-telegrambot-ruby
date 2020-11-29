@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require './models/command'
-
 module Teachbase
   module Bot
     class CommandList

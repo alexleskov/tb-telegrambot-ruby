@@ -11,7 +11,7 @@ require './application'
 $logger = $app_config.load_logger
 $logger.debug 'Starting telegram bot'
 
-Telegram::Bot::Client.new($app_config.load_token).run do |bot|
+$app_config.tg_bot_client.run do |bot|
   bot.listen do |message|
     # Async do |task|
     if message.respond_to?(:data)

@@ -1,23 +1,5 @@
 # frozen_string_literal: true
 
-require './models/auth_session'
-require './models/profile'
-require './models/course_session'
-require './models/section'
-require './models/material'
-require './models/quiz'
-require './models/scorm_package'
-require './models/task'
-require './models/poll'
-require './models/attachment'
-require './models/document'
-require './models/answer'
-require './models/comment'
-require './models/cache_message'
-require './models/category'
-require './models/course_category'
-require './lib/attribute'
-
 module Teachbase
   module Bot
     class DataLoaderController

@@ -1,11 +1,5 @@
 # frozen_string_literal: true
 
-require './models/bot_message'
-require './models/tg_account_message'
-require './models/tg_account'
-require './models/setting'
-require './lib/respond'
-
 class MessageResponder
   attr_reader :message, :bot, :tg_user, :settings
 

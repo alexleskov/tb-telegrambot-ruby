@@ -17,9 +17,9 @@ module Decorators
       end
     end
 
-    def title(params)
+    def title(params = {})
       cover_url =
-        if params
+        if params && !params.empty?
           params[:cover_url]
         else
           URL_WITHOUT_PARAMS =~ icon_url

@@ -5,7 +5,7 @@ module Teachbase
     class AnswerController
       include Formatter
 
-      MSG_DESTS = %i[chat from].freeze
+      MSG_DESTS = %i[chat from tg_account].freeze
 
       attr_reader :msg_params, :command_list, :bot, :tg_user, :message, :user_settings
 

@@ -7,8 +7,11 @@ require './lib/database_connector'
 class AppConfigurator
   include Singleton
 
+  attr_reader :tg_bot_client
+
   def initialize
     @load_config_file = IO.read('config/secrets.yml')
+    @tg_bot_client ||= setup_tg_bot_client
   end
 
   def configure
@@ -69,6 +72,10 @@ class AppConfigurator
   end
 
   private
+
+  def setup_tg_bot_client
+    Telegram::Bot::Client.new(load_token)
+  end
 
   def setup_i18n
     I18n.load_path = Dir['config/locales.yml']

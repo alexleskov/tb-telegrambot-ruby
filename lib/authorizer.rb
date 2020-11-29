@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require './models/user'
-require './models/api_token'
-require './models/account'
-
 module Teachbase
   module Bot
     class Authorizer
