@@ -166,6 +166,7 @@ en:
   click_to_send_contact: "Click on the button in the menu to share your contacts. It is safe and will only be used for registration. Honestly."
   enter_by_auth_data: "Log in by entering your username and password yourself."
   meet_with_bot: "Let's get acquainted!"
+  about_bot_demo_mode: "My name is <a href='https://storage.yandexcloud.net/tbpublic/other/teachbaser.jpg'> Teachbaser </a> - I am a Telegram bot. Personal assistant in teaching on the Teachbase platform.\n\nI give the opportunity to study the assigned courses directly in Telegram, view the library of available documents, and when a new course is assigned, I will send a notification about it. In addition, I have many other useful functions.\n\nWe will start getting to know each other closer? Select the item of interest below and get started."
 ru:
   greeting_message: "Привет,"
   farewell_message: "Пока"
@@ -334,3 +335,5 @@ ru:
   click_to_send_contact: "Нажмите на кнопку в меню, чтобы поделиться своими контактами. Это безопасно и нужно только для регистрации. Честное слово."
   enter_by_auth_data: "Выполнить вход введя логин и пароль самостоятельно."
   meet_with_bot: "Давайте познакомимся!"
+  info_about_setted_password: "Похоже, что вы уже были зарегистрированы в системе ранее с таким номером телефона."
+  about_bot_demo_mode: "Меня зовут <a href='https://storage.yandexcloud.net/tbpublic/other/teachbaser.jpg'>Teachbaser</a> - я Telegram-бот. Персональный помощник в обучении на платформе Teachbase.\n\nДаю возможность изучать назначенные курсы прямо в Telegram, просматривать библиотеку доступных документов, а когда будет назначен новый курс, то пришлю уведомление об этом. Кроме этого, имею еще много разных полезных функций.\n\nНачнем знакомство по ближе? Выбирай ниже интересующий пункт и приступим."
