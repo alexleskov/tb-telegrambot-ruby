@@ -15,9 +15,9 @@ module Teachbase
 
           def starting
             @type = :menu
-            @slices_count = 2
-            @text = I18n.t('start_menu_message').to_s
-            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[sign_in settings]).raw
+            @slices_count = 3
+            @text ||= I18n.t('start_menu_message').to_s
+            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[demo_mode sign_in settings]).raw
             self
           end
 
@@ -127,7 +127,7 @@ module Teachbase
             self
           end
 
-          def greetings(_account_name, custom_text = "")
+          def greetings(custom_text = "")
             @type = :hide_kb
             @text ||= "<b>#{I18n.t('greetings')}!</b>\n\n#{custom_text}"
             self

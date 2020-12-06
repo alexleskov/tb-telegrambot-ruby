@@ -74,9 +74,14 @@ module Teachbase
       def change_scenario(scenario_name)
         raise "No such scenario: '#{scenario_name}'" unless Teachbase::Bot::Scenarios::LIST.include?(scenario_name)
 
-        controller.class.send(:include, to_constantize("Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}"))
+        controller.send(:extend, to_constantize("Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}"))
         controller.interface.sys_class = to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}")
         user_settings.update!(scenario: scenario_name)
+        controller.reload_commands_list
+      end
+
+      def reset_to_default_scenario
+        change_scenario("standart_learning")
       end
 
       def change_localization(lang)
@@ -103,6 +108,8 @@ module Teachbase
                   data.text
                 elsif data.respond_to?(:file)
                   data.file
+                else
+                  data
                 end
         data if validation(validate_type, value)
       end
@@ -110,11 +117,11 @@ module Teachbase
       def request_user_data
         controller.interface.sys.text.ask_login.show
         user_login = request_data(:login)
-        raise unless user_login
+        raise "Can't find user login" unless user_login
 
         controller.interface.sys.text.ask_password.show
         user_password = request_data(:password)
-        raise unless user_password
+        raise "Can't find user password" unless user_password
 
         [user_login.text, encrypt_password(user_password.text)]
       end
@@ -172,11 +179,11 @@ module Teachbase
         authsession.account
       end
 
-      private
-
       def encrypt_password(password)
         password.encrypt(:symmetric, password: $app_config.load_encrypt_key)
       end
+
+      private
 
       def request_answer_bulk(params)
         loop do

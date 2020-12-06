@@ -4,8 +4,6 @@ module Teachbase
   module Bot
     module Scenarios
       module Battle
-        include Teachbase::Bot::Scenarios::Base
-
         def match_data
           super
         end

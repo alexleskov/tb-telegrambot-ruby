@@ -20,12 +20,11 @@ module Teachbase
             limit = limit.to_i
             offset = offset.to_i
             category ||= appshell.user_settings.scenario
-            cs_loader = appshell.data_loader.cs
-            total_cs_count = cs_loader.total_cs_count(state: state, category: category)
+            cs_loader = appshell.data_loader.cs(state: state, category: category)
+            total_cs_count = cs_loader.total_cs_count
             per_page = limit
             page = (offset / per_page) + 1
-            course_sessions = cs_loader.list(state: state, category: category, limit: limit, offset: offset,
-                                             per_page: per_page, page: page)
+            course_sessions = cs_loader.list(limit: limit, offset: offset, per_page: per_page, page: page)
             return interface.sys.text.on_empty.show if course_sessions.empty?
 
             interface.cs.menu(title_params: { text: course_sessions.first.sign_course_state },

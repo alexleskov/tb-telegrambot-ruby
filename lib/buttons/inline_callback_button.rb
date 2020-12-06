@@ -70,6 +70,11 @@ class InlineCallbackButton < Button
     end
   end
 
+  def create
+    super
+    @value[type.to_sym] = find_param.to_s
+  end
+
   def find_param
     param = super
     create_callback(param)

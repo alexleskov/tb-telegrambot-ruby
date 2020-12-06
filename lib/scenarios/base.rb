@@ -20,19 +20,27 @@ module Teachbase
         include Teachbase::Bot::Scenarios::Base::Document
 
         TEACHSUPPORT_TG_ID = 439_802_952
+        DEMO_MODE_SCENARIO_NAME = "demo_mode"
 
         def starting
           interface.sys.menu.about_bot.show
           interface.sys.menu.starting.show
         end
 
+        def demo_mode
+          appshell.logout
+          appshell.change_scenario(DEMO_MODE_SCENARIO_NAME)
+          starting
+        end
+
         def sign_in
+          appshell.reset_to_default_scenario if user_settings.scenario == DEMO_MODE_SCENARIO_NAME
           interface.sys.text.on_enter(appshell.account_name).show
           auth = appshell.authorization
           raise unless auth
 
           appshell.data_loader.user.profile.me
-          interface.sys.menu.greetings(appshell.account_name, appshell.user.profile_info(appshell.current_account.id)).show
+          interface.sys.menu.greetings(appshell.user.profile_info(appshell.current_account.id)).show
           interface.sys.menu.after_auth.show
         rescue RuntimeError, TeachbaseBotException => e
           $logger.debug "On auth error: #{e.class}. #{e.inspect}"
@@ -45,6 +53,7 @@ module Teachbase
 
         def sign_out
           interface.sys.menu.farewell(appshell.user_fullname).show
+          appshell.reset_to_default_scenario if user_settings.scenario == DEMO_MODE_SCENARIO_NAME
           appshell.logout
           interface.sys.menu.starting.show
         rescue RuntimeError => e
@@ -87,6 +96,8 @@ module Teachbase
         end
 
         def ready; end
+
+        def send_contact; end
 
         def send_message_to(tg_id, options_sender = {})
           options_sender[:from_user] ||= appshell.user_fullname.to_s

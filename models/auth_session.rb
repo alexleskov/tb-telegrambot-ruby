@@ -31,7 +31,7 @@ module Teachbase
 
       def api_auth(api_type, version, oauth_params = {})
         @tb_api = Teachbase::API::Client.new(api_type, version, oauth_params)
-      end
+      end   
 
       def load_profile
         tb_api.request(:user, :profile).get
@@ -99,6 +99,31 @@ module Teachbase
       def track_time(cs_id, material_id, time_spent)
         tb_api.request(:course_sessions, :course_sessions_materials_track, session_id: cs_id,
                                                                            id: material_id, payload: { time_spent: time_spent }).post
+      end
+
+      def add_user_to_account(user_data, labels)
+        tb_api.request(:users, :users_create, payload: build_user_registration_data(user_data, labels)).post
+      end
+
+      private
+
+      def build_user_registration_data(user_data, labels)
+        payload_data = { "users" => [
+                                      { "name" => user_data.first_name,
+                                        "last_name" => user_data.last_name,
+                                        "phone" => user_data.phone,
+                                        "role_id" => 1,
+                                        "auth_type" => 0,
+                                        "password" => user_data.password.decrypt(:symmetric, password: $app_config.load_encrypt_key),
+                                        "lang" => "ru"
+                                      }
+                                    ],
+                        "options" => { "activate" => true, "skip_notify_new_users" => true, "skip_notify_active_users" => true }
+                      }
+        raise unless labels.is_a?(Hash)
+
+        labels.empty? ? payload_data : payload_data["users"][0]["labels"] = labels
+        payload_data
       end
     end
   end

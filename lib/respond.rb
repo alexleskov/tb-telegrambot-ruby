@@ -6,6 +6,7 @@ require './controllers/callback_controller'
 require './controllers/command_controller'
 require './controllers/webhook_controller'
 require './controllers/ai_controller/'
+require './controllers/contact_controller/'
 require './controllers/file_controller/document'
 require './controllers/file_controller/photo'
 require './controllers/file_controller/video'
@@ -16,7 +17,7 @@ require './controllers/file_controller/voice'
 module Teachbase
   module Bot
     class Respond
-      MSG_TYPES = %i[text audio document video video_note voice photo request_body].freeze
+      MSG_TYPES = %i[text audio document video video_note voice photo request_body contact].freeze
 
       attr_reader :command_list, :msg_responder
 
@@ -44,7 +45,7 @@ module Teachbase
             define_msg_type
           end
         else @message.is_a?(Teachbase::Bot::Webhook)
-             define_msg_type
+          define_msg_type
         end
       end
 
@@ -83,6 +84,10 @@ module Teachbase
         Teachbase::Bot::FileController::Photo.new(@params)
       end
 
+      def contact
+        Teachbase::Bot::ContactController.new(@params)
+      end
+
       def reload_commands
         @command_list = Teachbase::Bot::CommandList.new
       end
@@ -99,7 +104,9 @@ module Teachbase
 
       def define_msg_type
         msg_type = MSG_TYPES.each do |type|
-          break type if @message.respond_to?(type) && @message.public_send(type) # && !@message.public_send(type).empty?
+          if @message.respond_to?(type) && @message.public_send(type) && ![*@message.public_send(type)].empty?
+            break type
+          end
         end
         raise "Don't know such message type: '#{@message.class}'. Avaliable: #{MSG_TYPES}" unless msg_type
 

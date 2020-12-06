@@ -3,7 +3,7 @@
 module Validator
   EMAIL_MASK = /\A[\w+\-.]+@[a-z\d\-]+(\.[a-z\d\-]+)*\.[a-z]+\z/i.freeze
   PASSWORD_MASK = /[\w|._#*^!+=@-]{6,40}$/.freeze
-  PHONE_MASK = /^((8|\+7)[\- ]?)?(\(?\d{3}\)?[\- ]?)?[\d\- ]{7,10}$/.freeze
+  PHONE_MASK = /^(8|\+7|7|\+3|3)(\d*)/.freeze
 
   attr_reader :value
 
@@ -16,23 +16,25 @@ module Validator
   end
 
   def login
-    value =~ EMAIL_MASK || PHONE_MASK
-    Regexp.last_match
+    email || phone
   end
 
   def email
-    value =~ EMAIL_MASK
-    Regexp.last_match
+    return unless value.match(EMAIL_MASK)
+
+    value
   end
 
   def phone
-    value =~ PHONE_MASK
-    Regexp.last_match
+    return unless value.match(PHONE_MASK)
+
+    value
   end
 
   def password
-    value =~ PASSWORD_MASK
-    Regexp.last_match
+    return unless value.match(PASSWORD_MASK)
+
+    value
   end
 
   def string

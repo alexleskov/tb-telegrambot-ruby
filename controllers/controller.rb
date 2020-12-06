@@ -5,6 +5,7 @@ module Teachbase
     class Controller
       include Formatter
       include Decorators
+      include Teachbase::Bot::Scenarios::Base
 
       attr_reader :respond,
                   :appshell,
@@ -27,7 +28,7 @@ module Teachbase
         fetch_respond_data
         @message_params = {}
         @interface = Teachbase::Bot::Interfaces
-        interface.configure(build_interface_config_params, @dest)
+        interface.configure(build_interface_config_params, dest)
         @filer = Teachbase::Bot::Filer.new(bot)
         @router = Teachbase::Bot::Routers.new
         @appshell = Teachbase::Bot::AppShell.new(self)

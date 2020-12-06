@@ -8,7 +8,7 @@ class TextCommandKeyboard < Keyboard
     raise "Can't find keyboard value" unless value
 
     value.map! do |button|
-      button.first.value
+      button.value
     end
   end
 

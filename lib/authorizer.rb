@@ -47,7 +47,36 @@ module Teachbase
         @authsession = @tg_user.auth_sessions.find_by(active: true)
       end
 
+      def call_tb_api_endpoint_client(client_params = {})
+        client_params[:client_id] ||= $app_config.client_id
+        client_params[:client_secret] ||= $app_config.client_secret
+        client_params[:account_id] ||= $app_config.account_id
+        @account = Teachbase::Bot::Account.find_by!(tb_id: client_params[:account_id])
+        raise unless account
+
+        @authsession = @tg_user.auth_sessions.find_or_create_by!(active: true)
+        @authsession.update!(user_id: user.id, account_id: account.id)
+        authsession.api_auth(:endpoint, 1, client_id: client_params[:client_id], client_secret: client_params[:client_secret],
+                                           account_id: client_params[:account_id])
+      end
+
+      def registration(contact, labels = {})
+        build_user_by_contact(contact)
+        call_tb_api_endpoint_client
+        result = authsession.add_user_to_account(user, labels)
+        raise "Can't add user to account" unless result
+
+        result
+      end
+
       private
+
+      def build_user_by_contact(contact)
+        @user = Teachbase::Bot::User.find_or_create_by!(phone: contact.phone_number.to_i.to_s)
+        user_attrs = { first_name: contact.first_name, last_name: contact.last_name }
+        user_attrs[:password] = @appshell.encrypt_password(rand(100000..999999).to_s) unless user.password
+        user.update!(user_attrs)
+      end
 
       def auth_checker
         @authsession = @tg_user.auth_sessions.find_or_create_by!(active: true)
@@ -104,6 +133,7 @@ module Teachbase
         @login = data.first
         @crypted_password = data.second
         @login_type = kind_of_login(login)
+        @login = login_type == :phone ? login.to_i.to_s : login
       end
 
       def take_user_account_auth_data

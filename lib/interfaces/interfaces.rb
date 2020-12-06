@@ -12,7 +12,7 @@ module Teachbase
 
         def configure(config_params, dest)
           @answers_controller = Teachbase::Bot::Answers.new(config_params, dest)
-          @sys_class = Teachbase::Bot::Interfaces::Base
+          @sys_class ||= Teachbase::Bot::Interfaces::Base
         end
 
         def cs(entity = nil)
