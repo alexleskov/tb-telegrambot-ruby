@@ -175,8 +175,8 @@ module Teachbase
                                                         password: user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key))
       end
 
-      def current_account
-        authsession.account
+      def current_account(mode = access_mode)
+        authsession(mode).account
       end
 
       def encrypt_password(password)

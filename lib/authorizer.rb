@@ -21,7 +21,8 @@ module Teachbase
       def call_authsession(access_mode)
         if access_mode == :without_api
           authsession?
-          return @user = authsession ? authsession.user : nil
+          @user = authsession ? authsession.user : nil
+          return authsession
         end
         auth_checker unless authsession?
         @apitoken = authsession.api_token unless apitoken

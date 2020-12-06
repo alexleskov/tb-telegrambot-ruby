@@ -302,7 +302,8 @@ module Teachbase
             if @c_data["curator"]
               p "curator"
             elsif @c_data["techsupport"]
-              send_message_to(TEACHSUPPORT_TG_ID)
+              support_tg_id = appshell.current_account(:without_api) ? appshell.current_account.support_tg_id : TEACHSUPPORT_TG_ID
+              send_message_to(support_tg_id)
             elsif @c_data["human"]
               p "human"
             end
