@@ -67,7 +67,7 @@ class Keyboard
     value.compact!
     raise "Can't give keyboard. No buttons here" unless value
 
-    value.map! { |button| button.value }
+    value.map!(&:value)
   end
 
   def build_buttons

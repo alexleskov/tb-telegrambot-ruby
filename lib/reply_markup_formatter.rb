@@ -29,5 +29,4 @@ class ReplyMarkupFormatter
     end
     buttons
   end
-
 end

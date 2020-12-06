@@ -74,7 +74,7 @@ module Teachbase
       def build_user_by_contact(contact)
         @user = Teachbase::Bot::User.find_or_create_by!(phone: contact.phone_number.to_i.to_s)
         user_attrs = { first_name: contact.first_name, last_name: contact.last_name }
-        user_attrs[:password] = @appshell.encrypt_password(rand(100000..999999).to_s) unless user.password
+        user_attrs[:password] = @appshell.encrypt_password(rand(100_000..999_999).to_s) unless user.password
         user.update!(user_attrs)
       end
 

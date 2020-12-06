@@ -48,7 +48,6 @@ module Teachbase
         def match_text_action
           super
         end
-
       end
     end
   end

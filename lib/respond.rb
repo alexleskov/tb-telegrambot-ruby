@@ -45,7 +45,7 @@ module Teachbase
             define_msg_type
           end
         else @message.is_a?(Teachbase::Bot::Webhook)
-          define_msg_type
+             define_msg_type
         end
       end
 

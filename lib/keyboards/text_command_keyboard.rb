@@ -7,9 +7,7 @@ class TextCommandKeyboard < Keyboard
   def raw
     raise "Can't find keyboard value" unless value
 
-    value.map! do |button|
-      button.value
-    end
+    value.map!(&:value)
   end
 
   def button_class
