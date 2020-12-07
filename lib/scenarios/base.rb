@@ -20,7 +20,6 @@ module Teachbase
         include Teachbase::Bot::Scenarios::Base::Document
 
         TEACHSUPPORT_TG_ID = 439_802_952
-        DEMO_MODE_SCENARIO_NAME = "demo_mode"
 
         def starting
           interface.sys.menu.about_bot.show
@@ -29,12 +28,12 @@ module Teachbase
 
         def demo_mode
           appshell.logout
-          appshell.change_scenario(DEMO_MODE_SCENARIO_NAME)
+          appshell.change_scenario(Teachbase::Bot::Scenarios::DEMO_MODE_NAME)
           starting
         end
 
         def sign_in
-          appshell.reset_to_default_scenario if user_settings.scenario == DEMO_MODE_SCENARIO_NAME
+          appshell.reset_to_default_scenario if user_settings.scenario == Teachbase::Bot::Scenarios::DEMO_MODE_NAME
           interface.sys.text.on_enter(appshell.account_name).show
           auth = appshell.authorization
           raise unless auth
@@ -53,7 +52,7 @@ module Teachbase
 
         def sign_out
           interface.sys.menu.farewell(appshell.user_fullname).show
-          appshell.reset_to_default_scenario if user_settings.scenario == DEMO_MODE_SCENARIO_NAME
+          appshell.reset_to_default_scenario if user_settings.scenario == Teachbase::Bot::Scenarios::DEMO_MODE_NAME
           appshell.logout
           interface.sys.menu.starting.show
         rescue RuntimeError => e

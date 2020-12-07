@@ -56,7 +56,7 @@ module Teachbase
         raise unless account
 
         @authsession = @tg_user.auth_sessions.find_or_create_by!(active: true)
-        @authsession.update!(user_id: user.id, account_id: account.id)
+        authsession.update!(user_id: user.id, account_id: account.id)
         authsession.api_auth(:endpoint, 1, client_id: client_params[:client_id], client_secret: client_params[:client_secret],
                                            account_id: client_params[:account_id])
       end
@@ -104,6 +104,10 @@ module Teachbase
         @user = Teachbase::Bot::User.find_or_create_by!(login_type => login)
         user.update!(password: crypted_password)
         authsession.activate_by(user.id, apitoken.id)
+        if @appshell.user_settings.scenario == Teachbase::Bot::Scenarios::DEMO_MODE_NAME
+          @account = Teachbase::Bot::Account.find_by!(tb_id: client_params[:account_id])
+          authsession.update!(account_id: account.id)
+        end
         take_user_account_auth_data
       rescue RuntimeError => e
         $logger.debug e.to_s

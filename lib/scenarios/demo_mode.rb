@@ -15,6 +15,7 @@ module Teachbase
           interface.sys.menu.take_contact.show
           contact = appshell.request_data(:none)
           raise unless contact.is_a?(Teachbase::Bot::ContactController)
+          raise if contact.tg_user != tg_user.id
 
           appshell.authorizer.registration(contact, "193850" => "193851")
         rescue RuntimeError, TeachbaseBotException => e

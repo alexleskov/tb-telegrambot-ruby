@@ -9,6 +9,7 @@ require './lib/scenarios/demo_mode'
 module Teachbase
   module Bot
     module Scenarios
+      DEMO_MODE_NAME = "demo_mode"
       LIST = %w[standart_learning marathon battle demo_mode].freeze
     end
   end
