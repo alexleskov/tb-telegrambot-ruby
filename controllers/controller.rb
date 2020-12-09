@@ -7,6 +7,8 @@ module Teachbase
       include Decorators
       include Teachbase::Bot::Scenarios::Base
 
+      TIMEOUT_TIME = 30
+
       attr_reader :respond,
                   :appshell,
                   :tg_user,
@@ -36,16 +38,90 @@ module Teachbase
         $logger.debug "Initialization Controller error: #{e}"
       end
 
+
       def take_data
-        bot.listen do |taking_message|
-          options = { bot: bot, message: taking_message }
-          break MessageResponder.new(options).detect_type(ai_mode: :off) if taking_message
+        loop do
+          p @tg_user.id
+          p "HERE"
         end
       end
+=begin
+      def take_data
+        msg_controller = nil
+        msg = nil
+        taked_message = nil
+        bot.listen do |rqst|
+          p "HERE TAKE DATA"
+          thread = Thread.new(rqst) do |taking_message|
+            msg = taking_message
+            if msg.from.id == @tg_user.id
+              p "SAME USER"
+              taked_message = MessageResponder.new(bot: bot, message: msg).build_respond.go(ai_mode: :off)
+            else
+              p "NOT SAME USER"
+              MessageResponder.new(bot: bot, message: msg).build_respond.go
+            end
+            p "msg.from.id: #{msg.from.id}, @tg_user.id: #{@tg_user.id}"
+          end
+          thread.join
+          break taked_message if msg.from.id == @tg_user.id
+        end
+      end
+=end
+
+=begin
+ 
+      def take_data
+        msg_controller = nil
+        msg = nil
+        taked_message = nil
+        bot.listen do |rqst|
+          p "HERE TAKE DATA"
+          thread = Thread.new(rqst) do |taking_message|
+            msg = taking_message
+            if msg.from.id == @tg_user.id
+              p "SAME USER"
+              taked_message = MessageResponder.new(bot: bot, message: msg).build_respond.go(ai_mode: :off)
+            else
+              p "NOT SAME USER"
+              MessageResponder.new(bot: bot, message: msg).build_respond.go
+            end
+            p "msg.from.id: #{msg.from.id}, @tg_user.id: #{@tg_user.id}"
+          end
+          thread.join
+          break taked_message if msg.from.id == @tg_user.id
+        end
+      end 
+
+  
+=end
+
+=begin
+      def take_data
+        p "HEREEEEE"
+        msg_controller = nil
+        msg = nil
+        respond_controller = nil
+        bot.listen do |rqst|
+          p "HERE TAKE DATA"
+          thread = Thread.new(rqst) do |taking_message|
+            msg = taking_message
+            ai_option = msg.from.id == @tg_user.id ? :off : $app_config.ai_mode.to_sym
+            p "msg.from.id: #{msg.from.id}, @tg_user.id: #{@tg_user.id}, ai_option: #{ai_option}"
+            respond_controller = MessageResponder.new(bot: bot, message: msg).build_respond
+            p "respond_controller: #{respond_controller}"
+            msg_controller = respond_controller.go(ai_mode: ai_option)
+          end
+          thread.join
+          break if respond_controller.command? && msg.from.id == @tg_user.id
+          break msg_controller if msg.from.id == @tg_user.id
+        end
+      end
+=end
 
       def save_message(mode)
         return unless tg_user || message
-        return if message_params.empty?
+        return if message_params.empty?  
 
         message_params.merge!(message_id: message_id)
         case mode

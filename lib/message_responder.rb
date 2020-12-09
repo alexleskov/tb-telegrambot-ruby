@@ -12,16 +12,9 @@ class MessageResponder
                     username: message.from.username)
   end
 
-  def detect_type(options = {})
-    options[:ai_mode] ||= ai_default_mode
+  def build_respond
     I18n.with_locale settings.localization.to_sym do
-      Teachbase::Bot::Respond.new(self).detect_type(options)
+      Teachbase::Bot::Respond.new(self)
     end
-  end
-
-  private
-
-  def ai_default_mode
-    $app_config.ai_mode.to_sym
   end
 end

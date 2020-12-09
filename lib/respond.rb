@@ -27,8 +27,9 @@ module Teachbase
         @command_list = Teachbase::Bot::CommandList.new
       end
 
-      def detect_type(options)
+      def go(options = {})
         @options = options
+        options[:ai_mode] ||= $app_config.ai_mode.to_sym
         @params = { respond: self }
 
         case @message
@@ -92,14 +93,14 @@ module Teachbase
         @command_list = Teachbase::Bot::CommandList.new
       end
 
+      def command?
+        command_list.command_by?(:value, @message)
+      end
+
       private
 
       def ai_controller
         Teachbase::Bot::AIController.new(@params)
-      end
-
-      def command?
-        command_list.command_by?(:value, @message)
       end
 
       def define_msg_type

@@ -9,6 +9,7 @@ require 'English'
 require 'open-uri'
 require 'singleton'
 require 'sapcai'
+require 'timeout'
 
 require './lib/app_configurator'
 require './lib/emoji'

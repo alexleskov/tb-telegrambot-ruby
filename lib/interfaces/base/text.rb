@@ -34,6 +34,11 @@ module Teachbase
             self
           end
 
+          def on_timeout
+            @text ||= "#{Emoji.t(:alarm_clock)} #{I18n.t('timeout')}"
+            self
+          end
+
           def ask_enter_the_number(object_type)
             @text ||= "#{Emoji.t(:pencil2)} <b>#{I18n.t('enter_the_number')} #{sign_by_object_type(object_type)}:</b>"
             self

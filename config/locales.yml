@@ -167,6 +167,7 @@ en:
   enter_by_auth_data: "Log in by entering your username and password yourself."
   meet_with_bot: "Let's get acquainted!"
   about_bot_demo_mode: "My name is <a href='https://storage.yandexcloud.net/tbpublic/other/teachbaser.jpg'> Teachbaser </a> - I am a Telegram bot. Personal assistant in teaching on the Teachbase platform.\n\nI give the opportunity to study the assigned courses directly in Telegram, view the library of available documents, and when a new course is assigned, I will send a notification about it. In addition, I have many other useful functions.\n\nWe will start getting to know each other closer? Select the item of interest below and get started."
+  timeout: "Timeout of waiting for a response from the user after 30 seconds."
 ru:
   greeting_message: "Привет,"
   farewell_message: "Пока"
@@ -337,3 +338,4 @@ ru:
   meet_with_bot: "Давайте познакомимся!"
   info_about_setted_password: "Похоже, что вы уже были зарегистрированы в системе ранее с таким номером телефона."
   about_bot_demo_mode: "Меня зовут <a href='https://storage.yandexcloud.net/tbpublic/other/teachbaser.jpg'>Teachbaser</a> - я Telegram-бот. Персональный помощник в обучении на платформе Teachbase.\n\nДаю возможность изучать назначенные курсы прямо в Telegram, просматривать библиотеку доступных документов, а когда будет назначен новый курс, то пришлю уведомление об этом. Кроме этого, имею еще много разных полезных функций.\n\nНачнем знакомство по ближе? Выбирай ниже интересующий пункт и приступим."
+  timeout: "Таймаут времени ожидания ответа от пользователя спустя 30 секунд."

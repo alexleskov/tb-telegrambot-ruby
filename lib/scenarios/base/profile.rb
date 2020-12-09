@@ -7,7 +7,7 @@ module Teachbase
         module Profile
           def profile(user_id = nil)
             on_account = appshell.current_account
-            on_user = user_id ? appshell.current_account.users.find_by(id: user_id) : appshell.user
+            on_user = user_id ? appshell.current_account.users.find_by(tb_id: user_id) : appshell.user
             return interface.sys.text.on_empty.show unless on_user&.current_profile(on_account.id)
 
             menu_options = {}

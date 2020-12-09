@@ -126,6 +126,20 @@ module Teachbase
         [user_login.text, encrypt_password(user_password.text)]
       end
 
+=begin
+      def request_user_data
+        controller.interface.sys.text.ask_login.show
+        user_login = request_data(:login)
+        raise "Can't find user login" unless user_login
+
+        controller.interface.sys.text.ask_password.show
+        user_password = request_data(:password)
+        raise "Can't find user password" unless user_password
+
+        [user_login.text, encrypt_password(user_password.text)]
+      end
+=end      
+
       def request_user_account_data
         avaliable_accounts = data_loader.user.accounts.avaliable_list
         raise TeachbaseBotException::Account.new("Access denied", 403) unless avaliable_accounts

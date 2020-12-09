@@ -24,6 +24,7 @@ module Teachbase
         def starting
           interface.sys.menu.about_bot.show
           interface.sys.menu.starting.show
+          #interface.answers_controller.menu.force_reply(text: "FORCE REPLY")
         end
 
         def demo_mode
@@ -227,10 +228,11 @@ module Teachbase
           end
 
           on router.main(path: :send_message, p: %i[u_id]).regexp do
-            user_active_auth_sessions = Teachbase::Bot::AuthSession.active_auth_sessions_by(c_data[1])
-            user_active_auth_sessions.each do |user_active_auth_session|
-              send_message_to(user_active_auth_session.tg_account.id)
-            end
+            user_on_send = Teachbase::Bot::User.find_by(tb_id: c_data[1])
+            tg_account_id = user_on_send.auth_sessions.where.not(auth_at: nil).order(auth_at: :desc).select(:tg_account_id).pluck(:tg_account_id).first
+            raise unless tg_account_id
+
+            send_message_to(tg_account_id)
           end
         end
 

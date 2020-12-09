@@ -8,8 +8,9 @@ module Teachbase
           answer.text.send_out(text, disable_notification)
         end
 
-        def send_to(tg_id, from_user)
-          answer.text.send_to(tg_id, "#{I18n.t('incoming')} #{I18n.t('message').downcase} - #{from_user}:\n\n#{text}")
+        def send_to(tg_id, from_user = "")
+          @text ||= "#{I18n.t('incoming')} #{I18n.t('message').downcase} - #{from_user}:\n\n#{text}"
+          answer.text.send_to(tg_id, text)
         end
 
         def on_undefined
