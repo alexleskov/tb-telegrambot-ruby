@@ -11,7 +11,7 @@ module Teachbase
           super(params)
         end
 
-        def file
+        def source
           message.audio
         end
       end

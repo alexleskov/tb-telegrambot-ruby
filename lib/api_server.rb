@@ -38,10 +38,10 @@ module Teachbase
 
       def call(env)
         @env = env
-        request = init_request_by_webhook
+        request = find_request_by_webhook_path
         return render(403, "403. Forbidden") unless request
 
-        Teachbase::Bot::Webhook::Catcher.new(request).detect_type
+        Teachbase::Bot::Webhook::Catcher.new(request).init_webhook
         render(200, "OK")
       rescue StandardError => e
         render(500, e.message)
@@ -53,7 +53,7 @@ module Teachbase
         [status, {}, [body]]
       end
 
-      def init_request_by_webhook
+      def find_request_by_webhook_path
         on "webhooks_catcher" do
           Teachbase::Bot::ApiServer::Request.new(@env)
         end

@@ -104,7 +104,7 @@ module Teachbase
         @user = Teachbase::Bot::User.find_or_create_by!(login_type => login)
         user.update!(password: crypted_password)
         authsession.activate_by(user.id, apitoken.id)
-        if @appshell.user_settings.scenario == Teachbase::Bot::Scenarios::DEMO_MODE_NAME
+        if @appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
           @account = Teachbase::Bot::Account.find_by!(tb_id: client_params[:account_id])
           authsession.update!(account_id: account.id)
         end
@@ -129,6 +129,7 @@ module Teachbase
                        account.tb_id
                      end
         authsession.api_auth(:mobile, 2, access_token: apitoken.value, account_id: account_id)
+        authsession
       end
 
       def take_user_auth_data

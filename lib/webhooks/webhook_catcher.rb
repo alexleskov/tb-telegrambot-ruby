@@ -2,8 +2,10 @@
 
 module Teachbase
   module Bot
-    module Webhook
+    class Webhook
       class Catcher
+        attr_reader :webhook_type_class
+
         AVALIABLE_EVENT_TYPES = %w[created].freeze
 
         include Formatter
@@ -12,14 +14,17 @@ module Teachbase
           @request = request
         end
 
-        def detect_type
+        def init_webhook
           return unless webhook_avaliable?
 
-          webhook_type_class = find_webhook_type_class(@request.data["BODY"]["type"])
+          find_webhook_type_class(@request.data["BODY"]["type"])
           raise unless webhook_type_class
 
-          WebhookResponder.new(bot: $app_config.tg_bot_client,
-                               message: webhook_type_class.new(@request)).detect_type(ai_mode: :off)
+          context = WebhookResponder.new(bot: $app_config.tg_bot_client, message: webhook_type_class.new(@request))
+          strategy = context.handle
+          I18n.with_locale context.settings.localization.to_sym do
+            strategy.do_action
+          end
         end
 
         private
@@ -29,7 +34,7 @@ module Teachbase
         end
 
         def find_webhook_type_class(webhook_type)
-          to_constantize("Teachbase::Bot::Webhook::#{to_camelize(webhook_type)}")
+          @webhook_type_class = to_constantize("Teachbase::Bot::Webhook::#{to_camelize(webhook_type)}")
         end
       end
     end

@@ -9,20 +9,17 @@ module Teachbase
         super(params, :chat)
       end
 
-      def text
+      def source
         message.text
       end
 
       def save_message(mode)
-        @message_params = { text: message.text, message_type: "text" }
+        @message_params = { text: source, message_type: "text" }
         super(mode)
       end
 
-      private
-
       def on(command, &block)
-        action = super(command, :text, &block)
-        self unless action
+        super(command, :text, &block)
       end
     end
   end

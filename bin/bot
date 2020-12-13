@@ -11,7 +11,6 @@ require './application'
 $logger = $app_config.load_logger
 $logger.debug 'Starting telegram bot'
 
-
 $app_config.tg_bot_client.run do |bot|
   Thread.report_on_exception = true
   bot.listen do |rqst|
@@ -22,29 +21,14 @@ $app_config.tg_bot_client.run do |bot|
       else
         $logger.debug "#{message.from.id} - @#{message.from.username}: #{message}"
       end
-      MessageResponder.new(bot: bot, message: message).build_respond.go
+      context = MessageResponder.new(bot: bot, message: message)
+      strategy = context.handle
+      I18n.with_locale context.settings.localization.to_sym do
+        strategy.do_action
+      end
     end
     thread.join
   rescue => e
     $logger.debug "Error: #{e}."
   end
 end
-
-
-
-=begin
- $app_config.tg_bot_client.run do |bot|
-  bot.listen do |message|
-    # Async do |task|
-    if message.respond_to?(:data)
-      $logger.debug "#{message.from.id} - @#{message.from.username}: #{message.data}"
-    else
-      $logger.debug "#{message.from.id} - @#{message.from.username}: #{message}"
-    end
-    MessageResponder.new(bot: bot, message: message).detect_type
-  rescue => e
-    $logger.debug "Error: #{e}."
-    # end
-  end
-end  
-=end

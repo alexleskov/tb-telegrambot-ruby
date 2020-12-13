@@ -1,41 +1,29 @@
 # frozen_string_literal: true
 
-class WebhookResponder
-  attr_reader :message, :bot, :tg_user, :settings
+class WebhookResponder < MessageResponder
+  attr_reader :user_active_auth_sessions
 
   def initialize(options)
-    @bot = options[:bot]
-    @message = options[:message]
-    @tg_user = Teachbase::Bot::TgAccount.find_by(id: find_all_tg_ids_by_webhook_data.first)
-    return unless tg_user
-
-    @settings = Teachbase::Bot::Setting.find_by(tg_account_id: tg_user.id)
+    super(options)
     @message.tg_account = tg_user
-  end
-
-  def detect_type(options = {})
-    return unless settings
-
-    options[:ai_mode] ||= ai_default_mode
-    I18n.with_locale settings.localization.to_sym do
-      Teachbase::Bot::Respond.new(self).detect_type(options)
-    end
   end
 
   private
 
-  def find_all_tg_ids_by_webhook_data
+  def find_tg_user
     tg_account_ids = []
-    user_active_auth_sessions = Teachbase::Bot::AuthSession.active_auth_sessions_by(message.request_body["user_id"])
+    find_user_active_auth_sessions
+    return if !user_active_auth_sessions && user_active_auth_sessions.empty?
+
     user_active_auth_sessions.each do |auth_session|
       next unless auth_session.account.tb_id == message.account_tb_id
 
       tg_account_ids << auth_session.tg_account_id
     end
-    tg_account_ids
+    @tg_user = Teachbase::Bot::TgAccount.find_by(id: tg_account_ids.first)
   end
 
-  def ai_default_mode
-    $app_config.ai_mode.to_sym
+  def find_user_active_auth_sessions
+    @user_active_auth_sessions = Teachbase::Bot::AuthSession.active_auth_sessions_by(message.request_body["user_id"])
   end
 end

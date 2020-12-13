@@ -10,12 +10,14 @@ module Teachbase
         save_message
       end
 
-      def save_message
-        @message_params = { data: message.data, message_type: "callback_data" }
-        super(:perm)
+      def source
+        message.data
       end
 
-      private
+      def save_message
+        @message_params = { data: source, message_type: "callback_data" }
+        super(:perm)
+      end
 
       def on(command, &block)
         super(command, :data, &block)

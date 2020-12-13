@@ -17,7 +17,7 @@ module Teachbase
             @type = :menu
             @slices_count = 2
             @text ||= I18n.t('start_menu_message').to_s
-            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[demo_mode sign_in settings]).raw
+            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[demo_mode sign_in settings_list]).raw
             self
           end
 

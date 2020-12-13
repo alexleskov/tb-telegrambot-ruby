@@ -5,10 +5,9 @@ module Teachbase
     class CommandList
       @sign_and_emoji = { sign_in: Emoji.t(:rocket),
                           sign_out: Emoji.t(:door),
-                          settings: Emoji.t(:wrench),
-                          profile: Emoji.t(:tiger),
+                          settings_list: Emoji.t(:wrench),
+                          user_profile: Emoji.t(:tiger),
                           cs_list: Emoji.t(:books),
-                          update_profile_data: Emoji.t(:arrows_counterclockwise),
                           ready: Emoji.t(:hand),
                           more_actions: Emoji.t(:link),
                           accounts: Emoji.t(:school),

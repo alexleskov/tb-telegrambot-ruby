@@ -1,0 +1,110 @@
+module Teachbase
+  module Bot
+    class Strategies
+      class Base < Teachbase::Bot::Strategies
+
+        def setting
+          Teachbase::Bot::Strategies::Setting.new(controller)
+        end
+
+        def content
+          Teachbase::Bot::Strategies::Content.new(controller)
+        end
+
+        def cs
+          Teachbase::Bot::Strategies::CourseSession.new(controller)
+        end
+
+        def profile
+          Teachbase::Bot::Strategies::Profile.new(controller)
+        end
+
+        def section
+          Teachbase::Bot::Strategies::Section.new(controller)
+        end
+
+        def document
+          Teachbase::Bot::Strategies::Document.new(controller)
+        end
+
+        def find(options = {})
+          Teachbase::Bot::Strategies::Find.new(controller, options)
+        end
+
+        def notify(options = {})
+          Teachbase::Bot::Strategies::Notify.new(controller, options)
+        end
+
+        def sign_out
+          interface.sys.menu.farewell(appshell.user_fullname).show
+          appshell.reset_to_default_scenario if demo_mode_on?
+          appshell.logout
+          interface.sys.menu.starting.show
+        rescue RuntimeError => e
+          interface.sys.text.on_error(e).show
+        end
+
+        alias closing sign_out
+
+        def change_account
+          appshell.logout_account
+          sign_in
+        rescue RuntimeError, TeachbaseBotException => e
+          $logger.debug "On auth error: #{e.class}. #{e.inspect}"
+          title = to_text_by_exceiption_code(e)
+          title = "#{I18n.t('accounts')}: #{title}" if e.is_a?(TeachbaseBotException::Account)
+          appshell.logout if access_denied?(e) || e.is_a?(TeachbaseBotException::Account)
+          interface.sys.menu.starting.show
+          interface.sys.menu(text: title).sign_in_again.show
+        end
+
+        alias accounts change_account
+
+        def ready; end
+
+        def send_contact; end
+
+        def send_message_to(tg_id, options_sender = {})
+          options_sender[:from_user] ||= appshell.user_fullname.to_s
+          interface.sys.text.ask_answer.show
+          appshell.ask_answer(mode: :bulk, saving: :cache)
+          interface.sys.menu(disable_web_page_preview: true, mode: :none)
+                   .confirm_answer(:message, appshell.user_cached_answer).show
+          user_reaction = appshell.controller.take_data
+          answer_data = build_answer_data(files_mode: :download_url)
+          on_answer_confirmation(reaction: user_reaction) do
+            interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
+                     .send_to(tg_id, options_sender[:from_user])
+          end
+          appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
+        end
+
+        #TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
+        def settings_list
+          setting.list
+        end
+
+        def cs_list
+          cs.states
+        end
+
+        def studying
+          cs.states
+        end
+
+        def more_actions
+          profile.links
+        end
+
+        def user_profile
+          profile.me
+        end
+
+        def documents
+          document.list_by
+        end
+
+      end
+    end
+  end
+end

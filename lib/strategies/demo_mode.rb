@@ -1,9 +1,9 @@
-# frozen_string_literal: true
-
 module Teachbase
   module Bot
-    module Scenarios
-      module DemoMode
+    class Strategies
+      class DemoMode < Teachbase::Bot::Strategies::Base
+        include Teachbase::Bot::Strategies::ActionsList
+
         def starting
           result = registration
           return interface.sys.menu(text: I18n.t('declined')).starting.show unless result
@@ -15,7 +15,7 @@ module Teachbase
           interface.sys.menu.take_contact.show
           contact = appshell.request_data(:none)
           raise unless contact.is_a?(Teachbase::Bot::ContactController)
-          raise if contact.tg_user != tg_user.id
+          raise if contact.tg_user.id != controller.tg_user.id
 
           appshell.authorizer.registration(contact, "193850" => "193851")
         rescue RuntimeError, TeachbaseBotException => e
@@ -37,18 +37,10 @@ module Teachbase
           if access_denied?(e) || e.is_a?(TeachbaseBotException::Account)
             appshell.logout
             title = "#{title} #{I18n.t('enter_by_auth_data').downcase} #{I18n.t('info_about_setted_password')}" if e.http_code == 401
-            appshell.reset_to_default_scenario if user_settings.scenario == Teachbase::Bot::Scenarios::DEMO_MODE_NAME
+            appshell.reset_to_default_scenario if user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
             interface.sys.menu(text: title).sign_in_again.show
           end
           interface.sys.menu.starting.show
-        end
-
-        def match_data
-          super
-        end
-
-        def match_text_action
-          super
         end
       end
     end

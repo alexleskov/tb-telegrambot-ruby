@@ -5,12 +5,8 @@ module Teachbase
     class Controller
       include Formatter
       include Decorators
-      include Teachbase::Bot::Scenarios::Base
-
-      TIMEOUT_TIME = 30
 
       attr_reader :respond,
-                  :appshell,
                   :tg_user,
                   :user_settings,
                   :bot,
@@ -19,11 +15,13 @@ module Teachbase
                   :message_params,
                   :filer,
                   :interface,
-                  :router,
-                  :c_data
+                  :c_data,
+                  :ai_mode,
+                  :action_result
 
       def initialize(params, dest)
         @respond = params[:respond]
+        @ai_mode = params[:ai_mode]
         @dest = dest
         raise "Respond not found" unless respond
 
@@ -32,34 +30,33 @@ module Teachbase
         @interface = Teachbase::Bot::Interfaces
         interface.configure(build_interface_config_params, dest)
         @filer = Teachbase::Bot::Filer.new(bot)
-        @router = Teachbase::Bot::Routers.new
-        @appshell = Teachbase::Bot::AppShell.new(self)
       rescue RuntimeError => e
         $logger.debug "Initialization Controller error: #{e}"
       end
 
-
+=begin
       def take_data
         loop do
           p @tg_user.id
           p "HERE"
         end
       end
-=begin
+=end
+
       def take_data
         msg_controller = nil
         msg = nil
         taked_message = nil
         bot.listen do |rqst|
-          p "HERE TAKE DATA"
           thread = Thread.new(rqst) do |taking_message|
             msg = taking_message
             if msg.from.id == @tg_user.id
               p "SAME USER"
-              taked_message = MessageResponder.new(bot: bot, message: msg).build_respond.go(ai_mode: :off)
+              strategy = MessageResponder.new(bot: bot, message: msg).handle
+              taked_message = strategy.controller
             else
               p "NOT SAME USER"
-              MessageResponder.new(bot: bot, message: msg).build_respond.go
+              MessageResponder.new(bot: bot, message: msg).handle.do_action
             end
             p "msg.from.id: #{msg.from.id}, @tg_user.id: #{@tg_user.id}"
           end
@@ -67,7 +64,6 @@ module Teachbase
           break taked_message if msg.from.id == @tg_user.id
         end
       end
-=end
 
 =begin
  
@@ -140,6 +136,14 @@ module Teachbase
         interface.configure(build_interface_config_params, @dest)
       end
 
+      def on(command, msg_type)
+        command =~ find_msg_value(msg_type)
+        return unless $LAST_MATCH_INFO
+
+        @c_data ||= $LAST_MATCH_INFO
+        @action_result = yield
+      end
+
       protected
 
       def build_interface_config_params
@@ -156,14 +160,6 @@ module Teachbase
 
       def find_msg_value(msg_type)
         message.public_send(msg_type) if message.respond_to?(msg_type)
-      end
-
-      def on(command, msg_type)
-        command =~ find_msg_value(msg_type)
-        return unless $LAST_MATCH_INFO
-
-        @c_data = $LAST_MATCH_INFO
-        yield
       end
 
       def message_id

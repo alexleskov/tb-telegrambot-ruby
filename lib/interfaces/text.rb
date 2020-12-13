@@ -18,6 +18,11 @@ module Teachbase
           self
         end
 
+        def on_undefined_action
+          @text = I18n.t('undefined_action').to_s
+          self
+        end
+
         def on_forbidden
           @text = "#{Emoji.t(:x)} #{I18n.t('forbidden')}"
           self

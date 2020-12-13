@@ -15,6 +15,11 @@ module Teachbase
         @tg_user = message.contact.user_id
         @vcard = message.contact.vcard
       end
+
+      def source
+        self
+      end
+
     end
   end
 end
