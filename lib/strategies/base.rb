@@ -39,9 +39,35 @@ module Teachbase
           interface.sys.menu.farewell(appshell.user_fullname).show
           appshell.reset_to_default_scenario if demo_mode_on?
           appshell.logout
-          interface.sys.menu.starting.show
+          current_strategy = appshell.context.handle
+          current_strategy.starting
         rescue RuntimeError => e
           interface.sys.text.on_error(e).show
+        end
+
+        def reset_password
+          # Reset password only for demo mode
+          appshell.change_scenario(Teachbase::Bot::Strategies::DEMO_MODE_NAME)
+          interface.sys.menu(text: "#{Emoji.t(:point_down)} #{I18n.t('click_to_send_contact')}").take_contact.show
+          contact = appshell.request_data(:none)
+          unless contact.is_a?(Teachbase::Bot::ContactController)
+            appshell.reset_to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
+            return interface.sys.menu(text: I18n.t('declined')).starting.show
+          end
+          raise if contact.tg_user.id != controller.tg_user.id
+
+          result = appshell.authorizer.reset_password(contact)
+          raise "User password not changed" unless result
+
+          interface.sys.text.password_changed.show
+          current_strategy = appshell.context.handle
+          current_strategy.sign_in
+        rescue RuntimeError, TeachbaseBotException => e
+          appshell.logout
+          interface.sys.menu(text: I18n.t('declined')).starting.show
+          title = to_text_by_exceiption_code(e)
+          interface.sys.menu(text: title).sign_in_again.show
+          appshell.reset_to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
         end
 
         alias closing sign_out
@@ -70,9 +96,8 @@ module Teachbase
           appshell.ask_answer(mode: :bulk, saving: :cache)
           interface.sys.menu(disable_web_page_preview: true, mode: :none)
                    .confirm_answer(:message, appshell.user_cached_answer).show
-          user_reaction = appshell.controller.take_data
           answer_data = build_answer_data(files_mode: :download_url)
-          on_answer_confirmation(reaction: user_reaction) do
+          on_answer_confirmation(reaction: user_reaction.source) do
             interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
                      .send_to(tg_id, options_sender[:from_user])
           end

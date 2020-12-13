@@ -5,6 +5,7 @@ module Teachbase
 
         def do_action
           return if push_command
+          return if push_file
 
           controller.on router.main(path: :start).regexp do
             starting
@@ -44,6 +45,10 @@ module Teachbase
 
           controller.on router.main(path: :login).regexp do
             sign_in
+          end
+
+          controller.on router.main(path: :password, p: %i[param]).regexp do
+            reset_password if data[1].to_sym == :reset
           end
 
           controller.on router.setting(path: :edit).regexp do
@@ -184,6 +189,12 @@ module Teachbase
           ai_controller = controller.respond.ai
           controller.respond.msg_responder.strategy.new(ai_controller).do_action
           interface.sys.text.on_undefined.show unless ai_controller.action
+        end
+
+        def push_file
+          return unless controller.is_a?(Teachbase::Bot::FileController)
+
+          interface.sys.text.on_undefined_file.show
         end
 
         def data

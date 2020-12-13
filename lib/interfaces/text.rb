@@ -23,6 +23,11 @@ module Teachbase
           self
         end
 
+        def on_undefined_file
+          @text = I18n.t('undefined_file').to_s
+          self
+        end
+
         def on_forbidden
           @text = "#{Emoji.t(:x)} #{I18n.t('forbidden')}"
           self
@@ -62,6 +67,12 @@ module Teachbase
           @text = "#{Emoji.t(:boom)} <i>#{I18n.t('unexpected_error')}</i>"
           self
         end
+
+        def password_changed
+          @text = "#{Emoji.t(:thumbsup)} #{I18n.t('password_changed')}"
+          self
+        end
+
       end
     end
   end

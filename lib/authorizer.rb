@@ -62,21 +62,46 @@ module Teachbase
       end
 
       def registration(contact, labels = {})
-        build_user_by_contact(contact)
+        @user = Teachbase::Bot::User.find_or_create_by!(phone: contact.phone_number.to_i.to_s)
         call_tb_api_endpoint_client
-        result = authsession.add_user_to_account(user, labels)
+        user_attrs = user_by_contact(contact, :generate_pass)
+        result = authsession.add_user_to_account(user_attrs, labels)
+        user_attrs[:tb_id] = result.first["id"] unless user.tb_id
         raise "Can't add user to account" unless result
 
+        user.update!(user_attrs)
+        result
+      end
+
+      def reset_password(contact)
+        @user = Teachbase::Bot::User.find_by!(phone: contact.phone_number.to_i.to_s)
+        call_tb_api_endpoint_client
+        raise "Don't know tb_id by user" unless user.tb_id
+
+        user_attrs = user_by_contact(contact, :take_new_pass)
+        result = authsession.reset_user_password(user_attrs)
+        raise "Password not changed" unless result.empty?
+
+        user.update!(user_attrs)
         result
       end
 
       private
 
-      def build_user_by_contact(contact)
-        @user = Teachbase::Bot::User.find_or_create_by!(phone: contact.phone_number.to_i.to_s)
-        user_attrs = { first_name: contact.first_name, last_name: contact.last_name }
-        user_attrs[:password] = @appshell.encrypt_password(rand(100_000..999_999).to_s) unless user.password
-        user.update!(user_attrs)
+      def user_by_contact(contact, password_mode = :take_new_pass)
+        user_attrs = { first_name: contact.first_name, last_name: contact.last_name, phone: contact.phone_number.to_i.to_s,
+                       tb_id: user.tb_id}
+        password =
+        if password_mode == :generate_pass
+          user.password ? user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key) : rand(100_000..999_999).to_s
+        elsif password_mode == :take_new_pass
+          taked_password = @appshell.request_user_password
+          taked_password.source if taked_password
+        end
+        raise unless password
+
+        user_attrs[:password] = @appshell.encrypt_password(password)
+        user_attrs
       end
 
       def auth_checker

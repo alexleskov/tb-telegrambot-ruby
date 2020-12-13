@@ -18,7 +18,7 @@ module Teachbase
           interface.sys.menu(disable_web_page_preview: true, mode: :none)
                    .confirm_answer(:message, appshell.user_cached_answer).show
           answer_data = build_answer_data(files_mode: :download_url)
-          on_answer_confirmation(reaction: user_reaction) do
+          on_answer_confirmation(reaction: user_reaction.source) do
             interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
                      .send_to(tg_id, from_user)
           end
@@ -41,15 +41,6 @@ module Teachbase
         def default_greetings
           "#{I18n.t('greeting_message')} #{from_user}!\n\n#{I18n.t('notify_about_new')}"
         end
-
-        def user_reaction
-          appshell.controller.take_data
-        end
-
-        def body
-          answer_data = build_answer_data(files_mode: :download_url)
-        end
-
       end
     end
   end

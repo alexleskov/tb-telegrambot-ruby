@@ -17,6 +17,10 @@ module Teachbase
 
       protected
 
+      def user_reaction
+        appshell.controller.take_data
+      end
+
       def build_back_button_data
         { mode: :basic, sent_messages: controller.tg_user.tg_account_messages }
       end

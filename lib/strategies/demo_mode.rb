@@ -37,8 +37,8 @@ module Teachbase
           if access_denied?(e) || e.is_a?(TeachbaseBotException::Account)
             appshell.logout
             title = "#{title} #{I18n.t('enter_by_auth_data').downcase} #{I18n.t('info_about_setted_password')}" if e.http_code == 401
-            appshell.reset_to_default_scenario if user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
             interface.sys.menu(text: title).sign_in_again.show
+            appshell.reset_to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
           end
           interface.sys.menu.starting.show
         end

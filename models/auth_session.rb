@@ -105,18 +105,26 @@ module Teachbase
         tb_api.request(:users, :users_create, payload: build_user_registration_data(user_data, labels)).post
       end
 
+      def reset_user_password(user_data)
+        tb_api.request(:users, :users_passwords, payload: { "users" => { user_data[:tb_id].to_s => decrypt_user_password(user_data[:password]) } }).post
+      end
+
       private
+
+      def decrypt_user_password(password)
+        password.decrypt(:symmetric, password: $app_config.load_encrypt_key)
+      end
 
       def build_user_registration_data(user_data, labels)
         payload_data = { "users" => [
-          { "name" => user_data.first_name,
-            "last_name" => user_data.last_name,
-            "phone" => user_data.phone,
-            "role_id" => 1,
-            "auth_type" => 0,
-            "password" => user_data.password.decrypt(:symmetric, password: $app_config.load_encrypt_key),
-            "lang" => "ru" }
-        ],
+                                      { "name" => user_data[:first_name],
+                                        "last_name" => user_data[:last_name],
+                                        "phone" => user_data[:phone],
+                                        "role_id" => 1,
+                                        "auth_type" => 0,
+                                        "password" => decrypt_user_password(user_data[:password]),
+                                        "lang" => "ru" }
+                                    ],
                          "options" => { "activate" => true, "skip_notify_new_users" => true, "skip_notify_active_users" => true } }
         raise unless labels.is_a?(Hash)
 

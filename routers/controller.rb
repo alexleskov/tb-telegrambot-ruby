@@ -32,6 +32,10 @@ module Teachbase
           [root_class::LOGOUT]
         end
 
+        def password
+          [root_class::PASSWORD]
+        end
+
         def login
           [root_class::LOGIN]
         end

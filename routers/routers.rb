@@ -20,6 +20,7 @@ module Teachbase
       START = "start"
       LOGOUT = "close"
       LOGIN = "sign_in"
+      PASSWORD = "password"
       ACCOUNTS = "accounts"
       DOCUMENTS = "documents"
       SEND_MESSAGE = "send_message"

@@ -5,20 +5,21 @@ module Teachbase
     class Interfaces
       class DemoMode
         class Menu < Teachbase::Bot::Interfaces::Base::Menu
+          def sign_in_again
+            @type = :menu_inline
+            @buttons = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.main(path: :login).link),
+                                                                InlineCallbackButton.reset_password(router.main(path: :password, p: [param: :reset]).link)]).raw
+            @mode ||= :none
+            @text ||= "#{I18n.t('error')}. #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+            self
+          end
+          
           def after_auth
             @type = :menu
             @slices_count = 2
             @text ||= I18n.t('start_menu_message').to_s
             @buttons = TextCommandKeyboard.g(commands: init_commands,
                                              buttons_signs: %i[studying user_profile documents more_actions settings_list sign_out]).raw
-            self
-          end
-
-          def take_contact
-            @type = :menu
-            @mode ||= :none
-            @text ||= "#{I18n.t('meet_with_bot')}\n\n#{Emoji.t(:point_down)} #{I18n.t('click_to_send_contact')}"
-            @buttons = TextCommandKeyboard.collect(buttons: [TextCommandButton.take_contact(init_commands)]).raw
             self
           end
 

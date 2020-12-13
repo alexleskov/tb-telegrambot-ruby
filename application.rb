@@ -9,7 +9,6 @@ require 'English'
 require 'open-uri'
 require 'singleton'
 require 'sapcai'
-require 'timeout'
 
 require './lib/app_configurator'
 require './lib/emoji'
@@ -71,6 +70,8 @@ require './models/cache_message'
 require './models/category'
 require './models/course_category'
 require './models/command'
+
+require './lib/cache'
 
 $app_config = AppConfigurator.instance
 $app_config.configure

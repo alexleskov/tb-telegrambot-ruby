@@ -5,6 +5,14 @@ module Teachbase
     class Interfaces
       class StandartLearning
         class Menu < Teachbase::Bot::Interfaces::Base::Menu
+          def sign_in_again
+            @type = :menu_inline
+            @buttons = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.main(path: :login).link)]).raw
+            @mode ||= :none
+            @text ||= "#{I18n.t('error')}. #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+            self
+          end
+
           def after_auth
             @type = :menu
             @slices_count = 2

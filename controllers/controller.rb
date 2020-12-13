@@ -34,86 +34,14 @@ module Teachbase
         $logger.debug "Initialization Controller error: #{e}"
       end
 
-=begin
       def take_data
+        tg_user.update!(context_state: "taking_data")
         loop do
-          p @tg_user.id
-          p "HERE"
+          tg_user.reload
+          taking_state = tg_user.context_state
+          break Teachbase::Bot::Cache.extract_by(tg_user) if taking_state != "taking_data"
         end
       end
-=end
-
-      def take_data
-        msg_controller = nil
-        msg = nil
-        taked_message = nil
-        bot.listen do |rqst|
-          thread = Thread.new(rqst) do |taking_message|
-            msg = taking_message
-            if msg.from.id == @tg_user.id
-              p "SAME USER"
-              strategy = MessageResponder.new(bot: bot, message: msg).handle
-              taked_message = strategy.controller
-            else
-              p "NOT SAME USER"
-              MessageResponder.new(bot: bot, message: msg).handle.do_action
-            end
-            p "msg.from.id: #{msg.from.id}, @tg_user.id: #{@tg_user.id}"
-          end
-          thread.join
-          break taked_message if msg.from.id == @tg_user.id
-        end
-      end
-
-=begin
- 
-      def take_data
-        msg_controller = nil
-        msg = nil
-        taked_message = nil
-        bot.listen do |rqst|
-          p "HERE TAKE DATA"
-          thread = Thread.new(rqst) do |taking_message|
-            msg = taking_message
-            if msg.from.id == @tg_user.id
-              p "SAME USER"
-              taked_message = MessageResponder.new(bot: bot, message: msg).build_respond.go(ai_mode: :off)
-            else
-              p "NOT SAME USER"
-              MessageResponder.new(bot: bot, message: msg).build_respond.go
-            end
-            p "msg.from.id: #{msg.from.id}, @tg_user.id: #{@tg_user.id}"
-          end
-          thread.join
-          break taked_message if msg.from.id == @tg_user.id
-        end
-      end 
-
-  
-=end
-
-=begin
-      def take_data
-        p "HEREEEEE"
-        msg_controller = nil
-        msg = nil
-        respond_controller = nil
-        bot.listen do |rqst|
-          p "HERE TAKE DATA"
-          thread = Thread.new(rqst) do |taking_message|
-            msg = taking_message
-            ai_option = msg.from.id == @tg_user.id ? :off : $app_config.ai_mode.to_sym
-            p "msg.from.id: #{msg.from.id}, @tg_user.id: #{@tg_user.id}, ai_option: #{ai_option}"
-            respond_controller = MessageResponder.new(bot: bot, message: msg).build_respond
-            p "respond_controller: #{respond_controller}"
-            msg_controller = respond_controller.go(ai_mode: ai_option)
-          end
-          thread.join
-          break if respond_controller.command? && msg.from.id == @tg_user.id
-          break msg_controller if msg.from.id == @tg_user.id
-        end
-      end
-=end
 
       def save_message(mode)
         return unless tg_user || message

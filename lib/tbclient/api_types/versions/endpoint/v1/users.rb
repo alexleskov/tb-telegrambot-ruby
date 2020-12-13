@@ -9,6 +9,10 @@ module Teachbase
             def users_create
               "#{SOURCE}/create"
             end
+
+            def users_passwords
+              "#{SOURCE}/passwords"
+            end
           end
         end
       end

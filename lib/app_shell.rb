@@ -112,15 +112,23 @@ module Teachbase
       end
 
       def request_user_data
-        controller.interface.sys.text.ask_login.show
-        user_login = request_data(:login)
+        user_login = request_user_login
         raise "Can't find user login" unless user_login
 
-        controller.interface.sys.text.ask_password.show
-        user_password = request_data(:password)
+        user_password = request_user_password
         raise "Can't find user password" unless user_password
 
         [user_login.source, encrypt_password(user_password.source)]
+      end
+
+      def request_user_password
+        controller.interface.sys.text.ask_password.show
+        request_data(:password)
+      end
+
+      def request_user_login
+        controller.interface.sys.text.ask_login.show
+        request_data(:login)
       end
 
       def request_user_account_data
