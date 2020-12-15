@@ -86,6 +86,12 @@ module Formatter
     "#{I18n.t('error')}. #{result}"
   end
 
+  def to_full_name(option = :string)
+    user_name = [first_name, last_name]
+    user_name.join(" ") if option == :string
+    user_name
+  end
+
   def chomp_file_name(url, mode = :with_extension)
     file_name = url.to_s.split('/')[-1]
     return file_name if mode == :with_extension

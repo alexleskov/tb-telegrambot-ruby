@@ -2,6 +2,7 @@ module Teachbase
   module Bot
     class Strategies
       class Base < Teachbase::Bot::Strategies
+        TEACHSUPPORT_TG_ID = 439_802_952
 
         def setting
           Teachbase::Bot::Strategies::Setting.new(controller)
@@ -33,6 +34,25 @@ module Teachbase
 
         def notify(options = {})
           Teachbase::Bot::Strategies::Notify.new(controller, options)
+        end
+
+        def support_tg_id
+          if appshell.current_account(:without_api) && appshell.current_account.support_tg_id
+            appshell.current_account.support_tg_id
+          else
+            TEACHSUPPORT_TG_ID
+          end
+        end
+
+        def curator_tg_id
+          return unless appshell.current_account(:without_api) && appshell.current_account.support_tg_id
+          
+          appshell.current_account.curator_tg_id
+        end
+
+        def user_tg_id_by(tb_id)
+          Teachbase::Bot::User.find_by(tb_id: tb_id).auth_sessions.where.not(auth_at: nil)
+                              .order(auth_at: :desc).select(:tg_account_id).pluck(:tg_account_id).first
         end
 
         def sign_out
@@ -89,20 +109,6 @@ module Teachbase
         def ready; end
 
         def send_contact; end
-
-        def send_message_to(tg_id, options_sender = {})
-          options_sender[:from_user] ||= appshell.user_fullname.to_s
-          interface.sys.text.ask_answer.show
-          appshell.ask_answer(mode: :bulk, saving: :cache)
-          interface.sys.menu(disable_web_page_preview: true, mode: :none)
-                   .confirm_answer(:message, appshell.user_cached_answer).show
-          answer_data = build_answer_data(files_mode: :download_url)
-          on_answer_confirmation(reaction: user_reaction.source) do
-            interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
-                     .send_to(tg_id, options_sender[:from_user])
-          end
-          appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
-        end
 
         #TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
         def settings_list

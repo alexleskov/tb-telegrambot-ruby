@@ -8,7 +8,7 @@ module Teachbase
 
         def initialize(controller, options)
           super(controller)
-          @from_user = options[:from_user] || appshell.user_fullname.to_s
+          @from_user = options[:from_user] || appshell.user_with_full_name
           @type = options[:type]
         end
 

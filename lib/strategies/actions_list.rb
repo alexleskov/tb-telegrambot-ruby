@@ -112,8 +112,7 @@ module Teachbase
           end
 
           controller.on router.main(path: :send_message, p: %i[u_id]).regexp do
-            user_on_send = Teachbase::Bot::User.find_by(tb_id: data[1])
-            tg_account_id = user_on_send.auth_sessions.where.not(auth_at: nil).order(auth_at: :desc).select(:tg_account_id).pluck(:tg_account_id).first
+            tg_account_id = user_tg_id_by(data[1])
             raise unless tg_account_id
 
             notify.send_to(tg_account_id)
@@ -155,10 +154,11 @@ module Teachbase
 
           controller.on %r{^/ai:to_human} do
             if data["curator"]
-              interface.sys.text.on_undefined_action.show
+              return interface.sys.text.on_undefined_action.show unless curator_tg_id
+
+              notify(from_user: appshell.user).send_to(curator_tg_id)
             elsif data["techsupport"]
-              support_tg_id = appshell.current_account(:without_api) ? appshell.current_account.support_tg_id : TEACHSUPPORT_TG_ID
-              notify.send_to(support_tg_id)
+              notify(from_user: appshell.user).send_to(support_tg_id)
             elsif data["human"]
               interface.sys.text.on_undefined_action.show
             end
