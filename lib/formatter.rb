@@ -88,8 +88,7 @@ module Formatter
 
   def to_full_name(option = :string)
     user_name = [first_name, last_name]
-    user_name.join(" ") if option == :string
-    user_name
+    user_name = option == :string ? user_name.join(" ") : user_name
   end
 
   def chomp_file_name(url, mode = :with_extension)
