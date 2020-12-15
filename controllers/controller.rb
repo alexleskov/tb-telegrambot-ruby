@@ -7,7 +7,6 @@ module Teachbase
       include Decorators
 
       attr_reader :respond,
-                  :appshell,
                   :tg_user,
                   :user_settings,
                   :bot,
@@ -16,35 +15,37 @@ module Teachbase
                   :message_params,
                   :filer,
                   :interface,
-                  :router,
-                  :c_data
+                  :c_data,
+                  :ai_mode,
+                  :action_result
 
       def initialize(params, dest)
         @respond = params[:respond]
+        @ai_mode = params[:ai_mode]
         @dest = dest
         raise "Respond not found" unless respond
 
         fetch_respond_data
         @message_params = {}
         @interface = Teachbase::Bot::Interfaces
-        interface.configure(build_interface_config_params, @dest)
+        interface.configure(build_interface_config_params, dest)
         @filer = Teachbase::Bot::Filer.new(bot)
-        @router = Teachbase::Bot::Routers.new
-        @appshell = Teachbase::Bot::AppShell.new(self)
       rescue RuntimeError => e
         $logger.debug "Initialization Controller error: #{e}"
       end
 
       def take_data
-        bot.listen do |taking_message|
-          options = { bot: bot, message: taking_message }
-          break MessageResponder.new(options).detect_type(ai_mode: :off) if taking_message
+        tg_user.update!(context_state: "taking_data")
+        loop do
+          tg_user.reload
+          taking_state = tg_user.context_state
+          break Teachbase::Bot::Cache.extract_by(tg_user) if taking_state != "taking_data"
         end
       end
 
       def save_message(mode)
         return unless tg_user || message
-        return if message_params.empty?
+        return if message_params.empty?  
 
         message_params.merge!(message_id: message_id)
         case mode
@@ -63,6 +64,14 @@ module Teachbase
         interface.configure(build_interface_config_params, @dest)
       end
 
+      def on(command, msg_type)
+        command =~ find_msg_value(msg_type)
+        return unless $LAST_MATCH_INFO
+
+        @c_data ||= $LAST_MATCH_INFO
+        @action_result = yield
+      end
+
       protected
 
       def build_interface_config_params
@@ -79,14 +88,6 @@ module Teachbase
 
       def find_msg_value(msg_type)
         message.public_send(msg_type) if message.respond_to?(msg_type)
-      end
-
-      def on(command, msg_type)
-        command =~ find_msg_value(msg_type)
-        return unless $LAST_MATCH_INFO
-
-        @c_data = $LAST_MATCH_INFO
-        yield
       end
 
       def message_id

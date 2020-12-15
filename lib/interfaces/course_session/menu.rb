@@ -49,7 +49,7 @@ module Teachbase
             end
             return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
-            result.join("\n")
+            result.join("\n\n")
           end
 
           def state_buttons

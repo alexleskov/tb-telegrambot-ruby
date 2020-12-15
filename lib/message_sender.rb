@@ -150,7 +150,7 @@ class MessageSender
   end
 
   def reply_markup
-    ReplyMarkupFormatter.new(menu_data).build_markup if menu_data.include?(:buttons)
+    ReplyMarkupFormatter.new(menu_data).build_markup
   end
 
   def hide_markup
@@ -158,7 +158,7 @@ class MessageSender
   end
 
   def inline_markup
-    ReplyMarkupFormatter.new(menu_data).build_inline_markup if menu_data.include?(:buttons)
+    ReplyMarkupFormatter.new(menu_data).build_inline_markup
   end
 
   def force_reply_markup

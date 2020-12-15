@@ -9,8 +9,17 @@ module Teachbase
         super(params, :tg_account)
       end
 
+      def source
+        message
+      end
+
       def on(command, &block)
+        @c_data = source
         super(command, :event_type, &block)
+      end
+
+      def find_msg_value(msg_type)
+        "/webhook:#{source.public_send(msg_type)}" if source.respond_to?(msg_type)
       end
     end
   end

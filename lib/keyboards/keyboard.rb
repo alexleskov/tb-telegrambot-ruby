@@ -45,13 +45,13 @@ class Keyboard
 
     @value = []
     buttons.each do |button|
-      value << [button]
+      value << button
     end
 
     if back_button
       back_button[:order] ||= :starting
       back = init_back_button(back_button)
-      back_button[:order] == :starting ? value.unshift([back]) : value << [back]
+      back_button[:order] == :starting ? value.unshift(back) : value << back
     end
     value
   end
@@ -64,10 +64,10 @@ class Keyboard
   def raw
     raise "Can't find keyboard value" unless value
 
-    clear_trash(value)
-    raise "Can't give keyboard. No buttons here" if value.empty?
+    value.compact!
+    raise "Can't give keyboard. No buttons here" unless value
 
-    value.map! { |button| [button.first.value] }
+    value.map!(&:value)
   end
 
   def build_buttons
@@ -85,10 +85,6 @@ class Keyboard
   end
 
   protected
-
-  def clear_trash(keyboard)
-    keyboard.reject! { |button| button.first.nil? }
-  end
 
   def button_action_type
     button_class::ACTION_TYPE

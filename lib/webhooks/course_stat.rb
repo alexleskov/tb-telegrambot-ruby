@@ -2,8 +2,8 @@
 
 module Teachbase
   module Bot
-    module Webhook
-      class CourseStat < Teachbase::Bot::Webhook::Base
+    class Webhook
+      class CourseStat < Teachbase::Bot::Webhook
         attr_reader :c_tb_id, :cs_tb_id
 
         def initialize(request)

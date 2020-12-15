@@ -9,12 +9,11 @@ module Teachbase
         super(params, :chat)
       end
 
-      def push_command
-        command = command_list.find_by(:value, message.text).key
-        raise "Can't respond on such command: #{command}." unless respond_to? command
-
-        public_send(command)
+      def find_command
+        @c_data = command_list.find_by(:value, message.text).key
       end
+
+      alias source find_command
     end
   end
 end

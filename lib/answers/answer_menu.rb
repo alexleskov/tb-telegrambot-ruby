@@ -5,7 +5,7 @@ require './lib/keyboards/inline_callback_keyboard'
 require './lib/keyboards/inline_url_keyboard'
 
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
-  MENU_TYPES = %i[menu menu_inline hide_kb].freeze
+  MENU_TYPES = %i[menu menu_inline hide_kb force_reply].freeze
 
   def create(options)
     super(options)
@@ -16,7 +16,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     @msg_params[:mode] = options[:mode]
     slices_count = options[:slices_count] || nil
 
-    if options[:type] != :hide_kb
+    if !%i[hide_kb force_reply].include?(options[:type])
       raise "Buttons must be an Array class. Given '#{buttons.class}'" unless buttons.is_a?(Array)
 
       @msg_params[:menu_data] = init_menu_params(buttons, slices_count)
@@ -26,6 +26,10 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
 
   def hide(options)
     create(text: options[:text], type: :hide_kb)
+  end
+
+  def force_reply(options)
+    create(text: options[:text], type: :force_reply)
   end
 
   private

@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require './lib/scenarios/scenarios'
 require './lib/authorizer'
 require './lib/data_loaders/data_loaders'
 
@@ -40,6 +39,10 @@ module Teachbase
 
       def authsession(mode = access_mode)
         @current_authsession ||= authorizer.call_authsession(mode)
+        if @current_authsession && mode != :without_api && !@current_authsession.tb_api
+          @current_authsession = authorizer.call_authsession(:with_api)
+        end
+        @current_authsession
       end
 
       def user_fullname(option = :string)
@@ -72,11 +75,17 @@ module Teachbase
       end
 
       def change_scenario(scenario_name)
-        raise "No such scenario: '#{scenario_name}'" unless Teachbase::Bot::Scenarios::LIST.include?(scenario_name)
+        raise "No such scenario: '#{scenario_name}'" unless Teachbase::Bot::Strategies::LIST.include?(scenario_name)
 
-        controller.class.send(:include, to_constantize("Teachbase::Bot::Scenarios::#{to_camelize(scenario_name)}"))
-        controller.interface.sys_class = to_constantize("Teachbase::Bot::Interfaces::#{to_camelize(scenario_name)}")
         user_settings.update!(scenario: scenario_name)
+
+        context.strategy = context.current_user_strategy_class
+        controller.interface.sys_class = context.current_user_interface_class
+        controller.reload_commands_list
+      end
+
+      def reset_to_default_scenario
+        change_scenario("standart_learning")
       end
 
       def change_localization(lang)
@@ -96,27 +105,30 @@ module Teachbase
       end
 
       def request_data(validate_type)
-        data = controller.take_data
-        return if break_taking_data?(data)
+        msg_controller = controller.take_data
+        return if break_taking_data?(msg_controller)
 
-        value = if data.respond_to?(:text)
-                  data.text
-                elsif data.respond_to?(:file)
-                  data.file
-                end
-        data if validation(validate_type, value)
+        msg_controller if validation(validate_type, msg_controller.source)
       end
 
       def request_user_data
-        controller.interface.sys.text.ask_login.show
-        user_login = request_data(:login)
-        raise unless user_login
+        user_login = request_user_login
+        raise "Can't find user login" unless user_login
 
+        user_password = request_user_password
+        raise "Can't find user password" unless user_password
+
+        [user_login.source, encrypt_password(user_password.source)]
+      end
+
+      def request_user_password
         controller.interface.sys.text.ask_password.show
-        user_password = request_data(:password)
-        raise unless user_password
+        request_data(:password)
+      end
 
-        [user_login.text, encrypt_password(user_password.text)]
+      def request_user_login
+        controller.interface.sys.text.ask_login.show
+        request_data(:login)
       end
 
       def request_user_account_data
@@ -126,9 +138,9 @@ module Teachbase
         controller.interface.sys.menu.accounts(avaliable_accounts).show
         user_answer = controller.take_data
         controller.interface.destroy(delete_bot_message: { mode: :last })
-        raise TeachbaseBotException::Account.new("Access denied", 403) unless user_answer.is_a?(String)
+        raise TeachbaseBotException::Account.new("Access denied", 403) unless user_answer.source.is_a?(String)
 
-        user_answer
+        user_answer.source
       end
 
       def ask_answer(params = {})
@@ -162,21 +174,19 @@ module Teachbase
         { text: cached_answers_texts, files: cached_answers_files }
       end
 
-      def call_tbapi(type, version)
-        login = user.email? ? user.email : user.phone
-        authsession.api_auth(type.to_sym, version.to_i, user_login: login,
-                                                        password: user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key))
+      def current_account(mode = access_mode)
+        authsession(mode).account
       end
-
-      def current_account
-        authsession.account
-      end
-
-      private
 
       def encrypt_password(password)
         password.encrypt(:symmetric, password: $app_config.load_encrypt_key)
       end
+
+      def context
+        controller.respond.msg_responder
+      end
+
+      private
 
       def request_answer_bulk(params)
         loop do
@@ -188,14 +198,17 @@ module Teachbase
         end
       end
 
-      def break_taking_data?(msg)
-        if msg.respond_to?(:text)
-          result = !(msg.text =~ ABORT_ACTION_COMMAND).nil? || controller.command_list.command_by?(:value, msg.text)
-          !!result
-        elsif msg.nil?
-          !msg
+      def break_taking_data?(msg_controller)
+        return !msg_controller unless msg_controller
+
+        result =
+        case msg_controller
+        when Teachbase::Bot::TextController
+          msg_controller.source =~ ABORT_ACTION_COMMAND
+        when Teachbase::Bot::CommandController
+          msg_controller.source
         end
-        # TO DO: Will be add something for files on else
+        !!result
       end
 
       def set_scenario

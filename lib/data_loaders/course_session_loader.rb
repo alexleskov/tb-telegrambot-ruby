@@ -9,6 +9,8 @@ module Teachbase
 
       def initialize(appshell, params)
         @tb_id = params[:tb_id]
+        @status = params[:state].to_s
+        @category = params[:category]
         super(appshell)
       end
 
@@ -17,13 +19,11 @@ module Teachbase
       end
 
       def list(params)
-        @status = params[:state].to_s
         @limit = params[:limit].to_i
         @offset = params[:offset].to_i
         @page = params[:page].to_i
         @per_page = params[:per_page].to_i
         @mode = params[:mode] || :normal
-        @category = params[:category]
         raise "No such option for update course sessions list" unless model_class::STATES.include?(status)
 
         delete_all_by(status: status) if mode == :with_reload
@@ -43,18 +43,15 @@ module Teachbase
       def update_all_states(params = {})
         courses = {}
         mode = params[:mode] || :none
-        model_class::STATES.each do |status|
-          courses[status] = list(state: status, mode: mode)
+        model_class::STATES.each do |course_state|
+          @status = course_state
+          courses[course_state] = list(mode: mode)
         end
         courses
       end
 
-      def total_cs_count(params)
-        params[:params] ||= {}
-        if params[:category] && params[:category] != "standart_learning"
-          params[:params][:course_types] = [Teachbase::Bot::Category.find_by_name(params[:category]).tb_id]
-        end
-        lms_load(data: :total_cs_count, state: params[:state], params: params[:params])
+      def total_cs_count
+        lms_load(data: :total_cs_count, state: status, params: build_list_load_params)
       end
 
       def info
@@ -90,7 +87,7 @@ module Teachbase
 
       def build_list_load_params
         list_load_params = { per_page: per_page, page: page }
-        if category && category != "standart_learning"
+        if category && category != "standart_learning" && Teachbase::Bot::Category.find_by_name(category)
           list_load_params[:course_types] = [Teachbase::Bot::Category.find_by_name(category).tb_id]
         end
         list_load_params

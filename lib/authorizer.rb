@@ -21,7 +21,8 @@ module Teachbase
       def call_authsession(access_mode)
         if access_mode == :without_api
           authsession?
-          return @user = authsession ? authsession.user : nil
+          @user = authsession ? authsession.user : nil
+          return authsession
         end
         auth_checker unless authsession?
         @apitoken = authsession.api_token unless apitoken
@@ -47,7 +48,61 @@ module Teachbase
         @authsession = @tg_user.auth_sessions.find_by(active: true)
       end
 
+      def call_tb_api_endpoint_client(client_params = {})
+        client_params[:client_id] ||= $app_config.client_id
+        client_params[:client_secret] ||= $app_config.client_secret
+        client_params[:account_id] ||= $app_config.account_id
+        @account = Teachbase::Bot::Account.find_by!(tb_id: client_params[:account_id])
+        raise unless account
+
+        @authsession = @tg_user.auth_sessions.find_or_create_by!(active: true)
+        authsession.update!(user_id: user.id, account_id: account.id)
+        authsession.api_auth(:endpoint, 1, client_id: client_params[:client_id], client_secret: client_params[:client_secret],
+                                           account_id: client_params[:account_id])
+      end
+
+      def registration(contact, labels = {})
+        @user = Teachbase::Bot::User.find_or_create_by!(phone: contact.phone_number.to_i.to_s)
+        call_tb_api_endpoint_client
+        user_attrs = user_by_contact(contact, :generate_pass)
+        result = authsession.add_user_to_account(user_attrs, labels)
+        user_attrs[:tb_id] = result.first["id"] unless user.tb_id
+        raise "Can't add user to account" unless result
+
+        user.update!(user_attrs)
+        result
+      end
+
+      def reset_password(contact)
+        @user = Teachbase::Bot::User.find_by!(phone: contact.phone_number.to_i.to_s)
+        call_tb_api_endpoint_client
+        raise "Don't know tb_id by user" unless user.tb_id
+
+        user_attrs = user_by_contact(contact, :take_new_pass)
+        result = authsession.reset_user_password(user_attrs)
+        raise "Password not changed" unless result.empty?
+
+        user.update!(user_attrs)
+        result
+      end
+
       private
+
+      def user_by_contact(contact, password_mode = :take_new_pass)
+        user_attrs = { first_name: contact.first_name, last_name: contact.last_name, phone: contact.phone_number.to_i.to_s,
+                       tb_id: user.tb_id}
+        password =
+        if password_mode == :generate_pass
+          user.password ? user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key) : rand(100_000..999_999).to_s
+        elsif password_mode == :take_new_pass
+          taked_password = @appshell.request_user_password
+          taked_password.source if taked_password
+        end
+        raise unless password
+
+        user_attrs[:password] = @appshell.encrypt_password(password)
+        user_attrs
+      end
 
       def auth_checker
         @authsession = @tg_user.auth_sessions.find_or_create_by!(active: true)
@@ -74,6 +129,10 @@ module Teachbase
         @user = Teachbase::Bot::User.find_or_create_by!(login_type => login)
         user.update!(password: crypted_password)
         authsession.activate_by(user.id, apitoken.id)
+        if @appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
+          @account = Teachbase::Bot::Account.find_by!(tb_id: client_params[:account_id])
+          authsession.update!(account_id: account.id)
+        end
         take_user_account_auth_data
       rescue RuntimeError => e
         $logger.debug e.to_s
@@ -95,6 +154,7 @@ module Teachbase
                        account.tb_id
                      end
         authsession.api_auth(:mobile, 2, access_token: apitoken.value, account_id: account_id)
+        authsession
       end
 
       def take_user_auth_data
@@ -104,6 +164,7 @@ module Teachbase
         @login = data.first
         @crypted_password = data.second
         @login_type = kind_of_login(login)
+        @login = login_type == :phone ? login.to_i.to_s : login
       end
 
       def take_user_account_auth_data

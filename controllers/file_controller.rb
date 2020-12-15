@@ -12,9 +12,9 @@ module Teachbase
       end
 
       def save_message(mode)
-        return unless file
+        return unless source
 
-        @message_params = { file_id: file.file_id, file_size: file.file_size, file_type: type, message_type: "file" }
+        @message_params = { file_id: source.file_id, file_size: source.file_size, file_type: type, message_type: "file" }
         super(mode)
       end
     end

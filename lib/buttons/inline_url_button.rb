@@ -24,4 +24,9 @@ class InlineUrlButton < Button
       url !~ Formatter::NOT_VAILD_URL_REGEXP
     end
   end
+
+  def create
+    super
+    @value[type.to_sym] = find_param.to_s
+  end
 end

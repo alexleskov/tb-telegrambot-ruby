@@ -21,7 +21,7 @@ module Teachbase
         @router = Teachbase::Bot::Routers.new
         @text = params[:text]
         @mode = params[:mode]
-        @disable_web_page_preview = params[:disable_web_page_preview] || true
+        @disable_web_page_preview = params[:disable_web_page_preview]
         @disable_notification = params[:disable_notification] || false
         @title_params = params[:title_params]
         @path_params = params[:path_params]

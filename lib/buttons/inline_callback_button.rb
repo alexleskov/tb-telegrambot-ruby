@@ -48,6 +48,10 @@ class InlineCallbackButton < Button
       g(callback_data: callback_data, button_sign: I18n.t('sign_in').to_s, emoji: :rocket)
     end
 
+    def reset_password(callback_data)
+      g(callback_data: callback_data, button_sign: I18n.t('reset_password').to_s, emoji: :closed_lock_with_key)
+    end
+
     private
 
     def back_button_default_params
@@ -68,6 +72,11 @@ class InlineCallbackButton < Button
       end
       result&.data
     end
+  end
+
+  def create
+    super
+    @value[type.to_sym] = find_param.to_s
   end
 
   def find_param

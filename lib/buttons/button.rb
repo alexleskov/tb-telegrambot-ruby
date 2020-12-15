@@ -32,7 +32,7 @@ class Button
   def create
     raise "Can't find button sign" unless button_sign
 
-    @value = create_button_name.merge(create_action)
+    @value = create_button_name
   end
 
   protected
@@ -41,12 +41,11 @@ class Button
     @options[type.to_sym] || button_sign
   end
 
-  def create_action
-    { type.to_sym => find_param.to_s }
+  def create_button_name
+    { text: text_on_button.to_s }
   end
 
-  def create_button_name
-    text_on_button = emoji ? "#{Emoji.t(emoji)}#{button_sign}" : button_sign
-    { text: text_on_button.to_s }
+  def text_on_button
+    emoji ? "#{Emoji.t(emoji)}#{button_sign}" : button_sign
   end
 end

@@ -8,12 +8,23 @@ module Teachbase
           answer.text.send_out(text, disable_notification)
         end
 
-        def send_to(tg_id, from_user)
-          answer.text.send_to(tg_id, "#{I18n.t('incoming')} #{I18n.t('message').downcase} - #{from_user}:\n\n#{text}")
+        def send_to(tg_id, from_user = "")
+          @text ||= "#{I18n.t('incoming')} #{I18n.t('message').downcase} - #{from_user}:\n\n#{text}"
+          answer.text.send_to(tg_id, text)
         end
 
         def on_undefined
           @text = I18n.t('undefined_text').to_s
+          self
+        end
+
+        def on_undefined_action
+          @text = I18n.t('undefined_action').to_s
+          self
+        end
+
+        def on_undefined_file
+          @text = I18n.t('undefined_file').to_s
           self
         end
 
@@ -56,6 +67,12 @@ module Teachbase
           @text = "#{Emoji.t(:boom)} <i>#{I18n.t('unexpected_error')}</i>"
           self
         end
+
+        def password_changed
+          @text = "#{Emoji.t(:thumbsup)} #{I18n.t('password_changed')}"
+          self
+        end
+
       end
     end
   end

@@ -66,7 +66,7 @@ module Teachbase
       end
 
       def find_category_cname_by(name)
-        Teachbase::Bot::Scenarios::LIST.include?(name) ? I18n.t(name.to_s) : name
+        Teachbase::Bot::Strategies::LIST.include?(name) ? I18n.t(name.to_s) : name
       end
     end
   end
