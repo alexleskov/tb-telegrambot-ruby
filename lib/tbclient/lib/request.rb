@@ -86,7 +86,7 @@ module Teachbase
         { content_type: content_type,
           "X-Account-Id" => account_id.to_s,
           "Authorization" => "Bearer #{@token.value}",
-          "User-Agent" => "telegram-bot"}
+          "User-Agent" => "telegram-bot" }
       end
 
       def push_request

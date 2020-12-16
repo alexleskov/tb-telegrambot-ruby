@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Teachbase
   module Bot
     class Strategies
@@ -89,7 +91,6 @@ module Teachbase
         end
         { text: appshell.cached_answers_texts, attachments: attachments }
       end
-
     end
   end
 end

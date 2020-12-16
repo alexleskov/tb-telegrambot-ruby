@@ -23,7 +23,7 @@ module Teachbase
         return unless $LAST_MATCH_INFO
 
         yield
-      end    
+      end
 
       private
 
@@ -34,8 +34,6 @@ module Teachbase
         elsif skill?
           @c_data = entities_by_skill
           reaction.intent.slug
-        else
-          return
         end
       end
 

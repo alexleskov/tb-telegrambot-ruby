@@ -50,7 +50,7 @@ module Teachbase
       end
 
       def user_with_full_name
-        user(:without_api) ? user(:without_api) : controller.tg_user
+        user(:without_api) || controller.tg_user
       end
 
       def account_name
@@ -202,12 +202,12 @@ module Teachbase
         return !msg_controller unless msg_controller
 
         result =
-        case msg_controller
-        when Teachbase::Bot::TextController
-          msg_controller.source =~ ABORT_ACTION_COMMAND
-        when Teachbase::Bot::CommandController
-          msg_controller.source
-        end
+          case msg_controller
+          when Teachbase::Bot::TextController
+            msg_controller.source =~ ABORT_ACTION_COMMAND
+          when Teachbase::Bot::CommandController
+            msg_controller.source
+          end
         !!result
       end
 

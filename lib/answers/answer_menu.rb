@@ -16,7 +16,7 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     @msg_params[:mode] = options[:mode]
     slices_count = options[:slices_count] || nil
 
-    if !%i[hide_kb force_reply].include?(options[:type])
+    unless %i[hide_kb force_reply].include?(options[:type])
       raise "Buttons must be an Array class. Given '#{buttons.class}'" unless buttons.is_a?(Array)
 
       @msg_params[:menu_data] = init_menu_params(buttons, slices_count)

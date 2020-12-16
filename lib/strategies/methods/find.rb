@@ -39,7 +39,6 @@ module Teachbase
           { mode: :custom, action: router.main(path: :find, p: [type: finder_type]).link,
             button_sign: I18n.t('find_again'), emoji: :mag }
         end
-
       end
     end
   end

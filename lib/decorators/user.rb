@@ -18,7 +18,7 @@ module Decorators
 
     def link_on
       return unless tb_id
-      
+
       "/u#{tb_id}"
     end
   end

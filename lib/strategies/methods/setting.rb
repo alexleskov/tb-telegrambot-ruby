@@ -6,7 +6,7 @@ module Teachbase
       class Setting < Teachbase::Bot::Strategies
         def list
           interface.sys.menu.settings(scenario: appshell.user_settings.scenario,
-                                      localization: appshell.user_settings.localization).show  
+                                      localization: appshell.user_settings.localization).show
         end
 
         def edit

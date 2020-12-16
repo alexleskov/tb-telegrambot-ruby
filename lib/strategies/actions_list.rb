@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 module Teachbase
   module Bot
     class Strategies
       module ActionsList
-
         def do_action
           return if push_command
           return if push_file
@@ -135,7 +136,7 @@ module Teachbase
               elsif data["on"] && !data["active"] && !data["archived"]
                 cs.states
               else
-                interface.sys.text.on_undefined.show 
+                interface.sys.text.on_undefined.show
               end
             end
           end
@@ -173,7 +174,7 @@ module Teachbase
 
           return push_ai if respond_by_ai?
         end
-        
+
         private
 
         def push_command

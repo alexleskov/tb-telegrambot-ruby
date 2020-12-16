@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Teachbase
   module Bot
     class Strategies
@@ -46,7 +48,7 @@ module Teachbase
 
         def curator_tg_id
           return unless appshell.current_account(:without_api) && appshell.current_account.support_tg_id
-          
+
           appshell.current_account.curator_tg_id
         end
 
@@ -110,7 +112,7 @@ module Teachbase
 
         def send_contact; end
 
-        #TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
+        # TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
         def settings_list
           setting.list
         end
@@ -134,7 +136,6 @@ module Teachbase
         def documents
           document.list_by
         end
-
       end
     end
   end
