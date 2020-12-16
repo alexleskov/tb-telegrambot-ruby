@@ -95,7 +95,7 @@ module Teachbase
         if password_mode == :generate_pass
           user.password ? user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key) : rand(100_000..999_999).to_s
         elsif password_mode == :take_new_pass
-          taked_password = @appshell.request_user_password
+          taked_password = @appshell.request_user_password(:new)
           taked_password.source if taked_password
         end
         raise unless password

@@ -119,8 +119,8 @@ module Teachbase
         [user_login.source, encrypt_password(user_password.source)]
       end
 
-      def request_user_password
-        controller.interface.sys.text.ask_password.show
+      def request_user_password(state = :current)
+        controller.interface.sys.text.ask_password(state).show
         request_data(:password)
       end
 

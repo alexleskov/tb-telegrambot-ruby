@@ -60,8 +60,9 @@ module Teachbase
           self
         end
 
-        def ask_password
+        def ask_password(state)
           @text = "#{Emoji.t(:pencil2)} #{I18n.t('add_user_password')}:"
+          @text = "#{text} #{I18n.t('new_password_condition').downcase}:" if state == :new
           self
         end
 
