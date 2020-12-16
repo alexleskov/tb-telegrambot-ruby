@@ -27,7 +27,7 @@ module Teachbase
 
         def about(entity_tb_id)
           appshell.authsession(:with_api)
-          entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id)
+          entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id, state: "active")
           entity_interface = interface.public_send(type, entity_loader.info)
           case type
           when :cs
@@ -39,7 +39,7 @@ module Teachbase
         private
 
         def default_greetings
-          "#{I18n.t('greeting_message')} #{from_user}!\n\n#{I18n.t('notify_about_new')}"
+          "#{I18n.t('greeting_message')} #{from_user.to_full_name(:string)}!\n\n#{I18n.t('notify_about_new')}"
         end
       end
     end

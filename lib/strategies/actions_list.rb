@@ -156,9 +156,9 @@ module Teachbase
             if data["curator"]
               return interface.sys.text.on_undefined_action.show unless curator_tg_id
 
-              notify(from_user: appshell.user).send_to(curator_tg_id)
+              notify(from_user: appshell.user(:without_api)).send_to(curator_tg_id)
             elsif data["techsupport"]
-              notify(from_user: appshell.user).send_to(support_tg_id)
+              notify(from_user: appshell.user(:without_api)).send_to(support_tg_id)
             elsif data["human"]
               interface.sys.text.on_undefined_action.show
             end

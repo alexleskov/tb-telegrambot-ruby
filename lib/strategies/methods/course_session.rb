@@ -11,7 +11,9 @@ module Teachbase
         end
 
         def list_by(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0, category = nil)
-          return update(:with_reload) if state.to_sym == :update
+          if state.to_sym == :update
+            return check_status(:default) { update_all(:with_reload) }
+          end
 
           limit = limit.to_i
           offset = offset.to_i
@@ -21,6 +23,7 @@ module Teachbase
           per_page = limit
           page = (offset / per_page) + 1
           course_sessions = cs_loader.list(limit: limit, offset: offset, per_page: per_page, page: page)
+          p "course_sessions: #{course_sessions.select(:tb_id).pluck(:tb_id)}"
           return interface.sys.text.on_empty.show if course_sessions.empty?
 
           interface.cs.menu(title_params: { text: course_sessions.first.sign_course_state },
@@ -29,8 +32,8 @@ module Teachbase
                    .main(course_sessions, limit: limit, offset: offset, all_count: total_cs_count).show
         end
 
-        def update(mode = :none)
-          check_status(:default) { appshell.data_loader.cs.update_all_states(mode: mode) }
+        def update_all(mode = :none)
+          appshell.data_loader.cs.update_all_states(mode: mode)
         end
       end
     end
