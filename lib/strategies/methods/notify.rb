@@ -49,8 +49,8 @@ module Teachbase
         private
 
         def build_user_message
-           answer_data = build_answer_data(files_mode: :download_url)
-           "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}"
+          answer_data = build_answer_data(files_mode: :download_url)
+          "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}"
         end
 
         def link_on_tg_user
@@ -79,7 +79,6 @@ module Teachbase
 
           appshell.current_account.curator_tg_id
         end
-
       end
     end
   end

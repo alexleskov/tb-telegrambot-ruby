@@ -99,7 +99,7 @@ class MessageSender
 
   def save_message(result)
     return if same_inline_keyboard?(result) || !@tg_user
-    return unless [:text, :menu].include?(msg_type.to_sym)
+    return unless %i[text menu].include?(msg_type.to_sym)
 
     bot_messages.create!(fetch_msg_result_data(result))
   end

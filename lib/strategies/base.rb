@@ -4,7 +4,6 @@ module Teachbase
   module Bot
     class Strategies
       class Base < Teachbase::Bot::Strategies
-
         def setting
           Teachbase::Bot::Strategies::Setting.new(controller)
         end
