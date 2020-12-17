@@ -27,8 +27,10 @@ module Teachbase
 
         def about(entity_tb_id)
           appshell.authsession(:with_api)
-          entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id, state: "active")
-          entity_interface = interface.public_send(type, entity_loader.info)
+          entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id)
+          cs_info = entity_loader.info
+          entity_loader.progress
+          entity_interface = interface.public_send(type, cs_info)
           case type
           when :cs
             entity_interface.text(text: "#{default_greetings} #{I18n.t('course').downcase}:\n")
