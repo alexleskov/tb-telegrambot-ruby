@@ -4,7 +4,6 @@ module Teachbase
   module Bot
     class Strategies
       class Base < Teachbase::Bot::Strategies
-        TEACHSUPPORT_TG_ID = 439_802_952
 
         def setting
           Teachbase::Bot::Strategies::Setting.new(controller)
@@ -38,23 +37,8 @@ module Teachbase
           Teachbase::Bot::Strategies::Notify.new(controller, options)
         end
 
-        def support_tg_id
-          if appshell.current_account(:without_api) && appshell.current_account.support_tg_id
-            appshell.current_account.support_tg_id
-          else
-            TEACHSUPPORT_TG_ID
-          end
-        end
-
-        def curator_tg_id
-          return unless appshell.current_account(:without_api) && appshell.current_account.support_tg_id
-
-          appshell.current_account.curator_tg_id
-        end
-
-        def user_tg_id_by(tb_id)
-          Teachbase::Bot::User.find_by(tb_id: tb_id).auth_sessions.where.not(auth_at: nil)
-                              .order(auth_at: :desc).select(:tg_account_id).pluck(:tg_account_id).first
+        def help
+          interface.sys.text.help_info.show
         end
 
         def sign_out

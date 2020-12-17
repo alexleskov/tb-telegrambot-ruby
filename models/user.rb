@@ -13,6 +13,12 @@ module Teachbase
       has_many :course_sessions, dependent: :destroy
       has_many :documents, dependent: :destroy
 
+      class << self
+        def last_tg_account(tb_id)
+          find_by(tb_id: tb_id).auth_sessions.where.not(auth_at: nil).order(auth_at: :desc)
+        end
+      end
+
       def course_sessions_by(params)
         params[:scenario] ||= "standart_learning"
         sessions_list = course_sessions

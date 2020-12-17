@@ -48,6 +48,10 @@ module Teachbase
             sign_in
           end
 
+          controller.on router.main(path: :help).regexp do
+            help
+          end
+
           controller.on router.main(path: :password, p: %i[param]).regexp do
             reset_password if data[1].to_sym == :reset
           end
@@ -113,7 +117,7 @@ module Teachbase
           end
 
           controller.on router.main(path: :send_message, p: %i[u_id]).regexp do
-            tg_account_id = user_tg_id_by(data[1])
+            tg_account_id = Teachbase::Bot::User.last_tg_account(data[1]).select(:tg_account_id).pluck(:tg_account_id).first
             raise unless tg_account_id
 
             notify.send_to(tg_account_id)
@@ -154,12 +158,11 @@ module Teachbase
           end
 
           controller.on %r{^/ai:to_human} do
+            notification_sender = notify(from_user: appshell.user(:without_api))
             if data["curator"]
-              return interface.sys.text.on_undefined_action.show unless curator_tg_id
-
-              notify(from_user: appshell.user(:without_api)).send_to(curator_tg_id)
+              notification_sender.to_curator
             elsif data["techsupport"]
-              notify(from_user: appshell.user(:without_api)).send_to(support_tg_id)
+              notification_sender.to_support
             elsif data["human"]
               interface.sys.text.on_undefined_action.show
             end

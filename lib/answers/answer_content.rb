@@ -7,19 +7,19 @@ class Teachbase::Bot::AnswerContent < Teachbase::Bot::AnswerController
   end
 
   def photo(param)
-    create(photo: param)
+    create(param)
   end
 
   def video(param)
-    create(video: param)
+    create(param)
   end
 
   def document(param)
-    create(document: param)
+    create(param)
   end
 
   def audio(param)
-    create(audio: param)
+    create(param)
   end
 
   def url(param)
