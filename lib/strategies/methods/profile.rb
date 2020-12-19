@@ -14,7 +14,7 @@ module Teachbase
 
         def links
           links_list = appshell.data_loader.user.profile.links
-          return interface.sys.text.on_empty.show if links_list.empty?
+          return interface.sys.text.on_empty.show if links_list&.empty?
 
           interface.sys.menu(text: "#{Emoji.t(:link)}#{I18n.t('more_actions')}", mode: :none).links(links_list).show
         end
