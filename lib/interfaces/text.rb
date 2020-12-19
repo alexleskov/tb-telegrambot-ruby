@@ -20,6 +20,11 @@ module Teachbase
           answer.text.send_to(tg_id, message_to_user)
         end
 
+        def on_undefined_contact
+          @text = I18n.t('undefined_contact').to_s
+          self
+        end
+
         def on_undefined
           @text = I18n.t('undefined_text').to_s
           self

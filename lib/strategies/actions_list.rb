@@ -140,7 +140,7 @@ module Teachbase
               elsif data["on"] && !data["active"] && !data["archived"]
                 cs.states
               else
-                interface.sys.text.on_undefined.show
+                interface.sys.text.on_undefined_action.show
               end
             end
           end
@@ -153,7 +153,7 @@ module Teachbase
                 find.cs
               end
             else
-              interface.sys.text.on_undefined.show
+              interface.sys.text.on_undefined_action.show
             end
           end
 

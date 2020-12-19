@@ -29,7 +29,7 @@ module Teachbase
         end
 
         def to_curator
-          return interface.sys.text.on_undefined_action.show unless curator_tg_id
+          return interface.sys.text.on_undefined_contact.show unless curator_tg_id
 
           send_to(curator_tg_id)
         end
