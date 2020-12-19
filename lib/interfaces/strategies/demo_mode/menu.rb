@@ -13,7 +13,7 @@ module Teachbase
             @text ||= "#{I18n.t('error')}. #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
             self
           end
-          
+
           def after_auth
             @type = :menu
             @slices_count = 2

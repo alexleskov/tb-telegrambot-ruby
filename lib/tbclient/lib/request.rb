@@ -85,7 +85,8 @@ module Teachbase
       def default_headers
         { content_type: content_type,
           "X-Account-Id" => account_id.to_s,
-          "Authorization" => "Bearer #{@token.value}" }
+          "Authorization" => "Bearer #{@token.value}",
+          "User-Agent" => "telegram-bot" }
       end
 
       def push_request

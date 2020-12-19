@@ -45,7 +45,7 @@ module Teachbase
 
       def save_message(mode)
         return unless tg_user || message
-        return if message_params.empty?  
+        return if message_params.empty?
 
         message_params.merge!(message_id: message_id)
         case mode

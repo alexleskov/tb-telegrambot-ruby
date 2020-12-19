@@ -28,7 +28,6 @@ module Teachbase
       end
 
       @all = []
-
     end
   end
 end

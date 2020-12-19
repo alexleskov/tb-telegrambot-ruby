@@ -40,6 +40,10 @@ module Teachbase
           [root_class::LOGIN]
         end
 
+        def help
+          [root_class::HELP]
+        end
+
         def accounts
           [root_class::ACCOUNTS]
         end

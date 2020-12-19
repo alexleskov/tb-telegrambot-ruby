@@ -21,8 +21,8 @@ module Teachbase
       def list(params)
         @limit = params[:limit].to_i
         @offset = params[:offset].to_i
-        @page = params[:page].to_i
-        @per_page = params[:per_page].to_i
+        @page = params[:page]
+        @per_page = params[:per_page]
         @mode = params[:mode] || :normal
         raise "No such option for update course sessions list" unless model_class::STATES.include?(status)
 
@@ -86,7 +86,11 @@ module Teachbase
       private
 
       def build_list_load_params
-        list_load_params = { per_page: per_page, page: page }
+        list_load_params = {}
+        if page && per_page
+          list_load_params[:page] = page.to_i
+          list_load_params[:per_page] = per_page.to_i
+        end
         if category && category != "standart_learning" && Teachbase::Bot::Category.find_by_name(category)
           list_load_params[:course_types] = [Teachbase::Bot::Category.find_by_name(category).tb_id]
         end

@@ -18,7 +18,7 @@ module Teachbase
 
       def links
         me
-        lms_info["links"]
+        lms_info["links"].reject! { |hash| hash.values.any?(&:empty?) }
       end
 
       def db_entity(mode = :with_create)

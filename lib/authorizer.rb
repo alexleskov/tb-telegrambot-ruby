@@ -90,14 +90,14 @@ module Teachbase
 
       def user_by_contact(contact, password_mode = :take_new_pass)
         user_attrs = { first_name: contact.first_name, last_name: contact.last_name, phone: contact.phone_number.to_i.to_s,
-                       tb_id: user.tb_id}
+                       tb_id: user.tb_id }
         password =
-        if password_mode == :generate_pass
-          user.password ? user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key) : rand(100_000..999_999).to_s
-        elsif password_mode == :take_new_pass
-          taked_password = @appshell.request_user_password
-          taked_password.source if taked_password
-        end
+          if password_mode == :generate_pass
+            user.password ? user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key) : rand(100_000..999_999).to_s
+          elsif password_mode == :take_new_pass
+            taked_password = @appshell.request_user_password(:new)
+            taked_password&.source
+          end
         raise unless password
 
         user_attrs[:password] = @appshell.encrypt_password(password)

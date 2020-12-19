@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 module Teachbase
   module Bot
     class Strategies
       module ActionsList
-
         def do_action
           return if push_command
           return if push_file
@@ -45,6 +46,10 @@ module Teachbase
 
           controller.on router.main(path: :login).regexp do
             sign_in
+          end
+
+          controller.on router.main(path: :help).regexp do
+            help
           end
 
           controller.on router.main(path: :password, p: %i[param]).regexp do
@@ -112,8 +117,7 @@ module Teachbase
           end
 
           controller.on router.main(path: :send_message, p: %i[u_id]).regexp do
-            user_on_send = Teachbase::Bot::User.find_by(tb_id: data[1])
-            tg_account_id = user_on_send.auth_sessions.where.not(auth_at: nil).order(auth_at: :desc).select(:tg_account_id).pluck(:tg_account_id).first
+            tg_account_id = Teachbase::Bot::User.last_tg_account(data[1]).select(:tg_account_id).pluck(:tg_account_id).first
             raise unless tg_account_id
 
             notify.send_to(tg_account_id)
@@ -136,7 +140,7 @@ module Teachbase
               elsif data["on"] && !data["active"] && !data["archived"]
                 cs.states
               else
-                interface.sys.text.on_undefined.show 
+                interface.sys.text.on_undefined_action.show
               end
             end
           end
@@ -149,16 +153,16 @@ module Teachbase
                 find.cs
               end
             else
-              interface.sys.text.on_undefined.show
+              interface.sys.text.on_undefined_action.show
             end
           end
 
           controller.on %r{^/ai:to_human} do
+            notification_sender = notify(from_user: appshell.user(:without_api))
             if data["curator"]
-              interface.sys.text.on_undefined_action.show
+              notification_sender.to_curator
             elsif data["techsupport"]
-              support_tg_id = appshell.current_account(:without_api) ? appshell.current_account.support_tg_id : TEACHSUPPORT_TG_ID
-              notify.send_to(support_tg_id)
+              notification_sender.to_support
             elsif data["human"]
               interface.sys.text.on_undefined_action.show
             end
@@ -173,7 +177,7 @@ module Teachbase
 
           return push_ai if respond_by_ai?
         end
-        
+
         private
 
         def push_command

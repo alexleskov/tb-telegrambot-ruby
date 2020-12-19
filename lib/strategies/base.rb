@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 module Teachbase
   module Bot
     class Strategies
       class Base < Teachbase::Bot::Strategies
-
         def setting
           Teachbase::Bot::Strategies::Setting.new(controller)
         end
@@ -35,8 +36,12 @@ module Teachbase
           Teachbase::Bot::Strategies::Notify.new(controller, options)
         end
 
+        def help
+          interface.sys.text.help_info.show
+        end
+
         def sign_out
-          interface.sys.menu.farewell(appshell.user_fullname).show
+          interface.sys.menu.farewell(appshell.user_fullname(:string)).show
           appshell.reset_to_default_scenario if demo_mode_on?
           appshell.logout
           current_strategy = appshell.context.handle
@@ -90,21 +95,7 @@ module Teachbase
 
         def send_contact; end
 
-        def send_message_to(tg_id, options_sender = {})
-          options_sender[:from_user] ||= appshell.user_fullname.to_s
-          interface.sys.text.ask_answer.show
-          appshell.ask_answer(mode: :bulk, saving: :cache)
-          interface.sys.menu(disable_web_page_preview: true, mode: :none)
-                   .confirm_answer(:message, appshell.user_cached_answer).show
-          answer_data = build_answer_data(files_mode: :download_url)
-          on_answer_confirmation(reaction: user_reaction.source) do
-            interface.sys.text(text: "#{answer_data[:text]}\n\n#{build_attachments_list(answer_data[:attachments])}")
-                     .send_to(tg_id, options_sender[:from_user])
-          end
-          appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
-        end
-
-        #TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
+        # TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
         def settings_list
           setting.list
         end
@@ -128,7 +119,6 @@ module Teachbase
         def documents
           document.list_by
         end
-
       end
     end
   end

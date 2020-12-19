@@ -5,13 +5,13 @@ module Teachbase
     class Strategies
       class CourseSession < Teachbase::Bot::Strategies
         DEFAULT_COUNT_PAGINAION = 5
-        
+
         def states
           interface.cs.menu.states.show
         end
 
         def list_by(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0, category = nil)
-          return update(:with_reload) if state.to_sym == :update
+          return check_status(:default) { update_all(:with_reload) } if state.to_sym == :update
 
           limit = limit.to_i
           offset = offset.to_i
@@ -29,8 +29,8 @@ module Teachbase
                    .main(course_sessions, limit: limit, offset: offset, all_count: total_cs_count).show
         end
 
-        def update(mode = :none)
-          check_status(:default) { appshell.data_loader.cs.update_all_states(mode: mode) }
+        def update_all(mode = :none)
+          appshell.data_loader.cs.update_all_states(mode: mode)
         end
       end
     end

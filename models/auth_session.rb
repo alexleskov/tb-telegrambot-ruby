@@ -117,14 +117,14 @@ module Teachbase
 
       def build_user_registration_data(user_data, labels)
         payload_data = { "users" => [
-                                      { "name" => user_data[:first_name],
-                                        "last_name" => user_data[:last_name],
-                                        "phone" => user_data[:phone],
-                                        "role_id" => 1,
-                                        "auth_type" => 0,
-                                        "password" => decrypt_user_password(user_data[:password]),
-                                        "lang" => "ru" }
-                                    ],
+          { "name" => user_data[:first_name],
+            "last_name" => user_data[:last_name],
+            "phone" => user_data[:phone],
+            "role_id" => 1,
+            "auth_type" => 0,
+            "password" => decrypt_user_password(user_data[:password]),
+            "lang" => "ru" }
+        ],
                          "options" => { "activate" => true, "skip_notify_new_users" => true, "skip_notify_active_users" => true } }
         raise unless labels.is_a?(Hash)
 

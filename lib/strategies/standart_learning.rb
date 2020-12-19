@@ -1,10 +1,10 @@
+# frozen_string_literal: true
+
 module Teachbase
   module Bot
     class Strategies
       class StandartLearning < Teachbase::Bot::Strategies::Base
         include Teachbase::Bot::Strategies::ActionsList
-
-        TEACHSUPPORT_TG_ID = 439_802_952
 
         def starting
           interface.sys.menu.about_bot.show

@@ -14,6 +14,11 @@ module Teachbase
             self
           end
 
+          def help_info
+            @text = "#{Emoji.t(:information_source)} #{I18n.t('help_info')}"
+            self
+          end
+
           def on_enter(account_name)
             @text ||= "#{Emoji.t(:rocket)}<b>#{I18n.t('enter')} #{I18n.t('in')} #{account_name}</b>"
             self

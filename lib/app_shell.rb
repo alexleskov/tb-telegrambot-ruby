@@ -46,13 +46,11 @@ module Teachbase
       end
 
       def user_fullname(option = :string)
-        user_db = authorizer.authsession? ? user(:without_api) : nil
-        user_name = if user_db && [user_db.first_name, user_db.last_name].none?(nil)
-                      [user_db.first_name, user_db.last_name]
-                    else
-                      controller.tg_user.user_fullname
-                    end
-        option == :string ? user_name.join(" ") : user_name
+        user_with_full_name.to_full_name(option)
+      end
+
+      def user_with_full_name
+        user(:without_api) || controller.tg_user
       end
 
       def account_name
@@ -121,8 +119,8 @@ module Teachbase
         [user_login.source, encrypt_password(user_password.source)]
       end
 
-      def request_user_password
-        controller.interface.sys.text.ask_password.show
+      def request_user_password(state = :current)
+        controller.interface.sys.text.ask_password(state).show
         request_data(:password)
       end
 
@@ -175,6 +173,8 @@ module Teachbase
       end
 
       def current_account(mode = access_mode)
+        return unless authsession(mode)
+
         authsession(mode).account
       end
 
@@ -202,12 +202,12 @@ module Teachbase
         return !msg_controller unless msg_controller
 
         result =
-        case msg_controller
-        when Teachbase::Bot::TextController
-          msg_controller.source =~ ABORT_ACTION_COMMAND
-        when Teachbase::Bot::CommandController
-          msg_controller.source
-        end
+          case msg_controller
+          when Teachbase::Bot::TextController
+            msg_controller.source =~ ABORT_ACTION_COMMAND
+          when Teachbase::Bot::CommandController
+            msg_controller.source
+          end
         !!result
       end
 

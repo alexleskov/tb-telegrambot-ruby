@@ -19,7 +19,6 @@ module Teachbase
       def source
         self
       end
-
     end
   end
 end

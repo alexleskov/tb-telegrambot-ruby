@@ -16,6 +16,7 @@ class MessageSender
               :disable_web_page_preview,
               :delete_bot_message,
               :bot_messages,
+              :caption,
               :mode,
               :text,
               :menu_data,
@@ -35,6 +36,7 @@ class MessageSender
     @reply_to_tg_id = msg_params[:reply_to_tg_id]
     @menu_data = msg_params[:menu_data]
     @delete_bot_message = msg_params[:delete_bot_message]
+    @caption = msg_params[:caption]
     @mode = msg_params[:mode] || find_menu_mode
     @msg_type = find_msg_type(msg_params)
     @msg_data = find_msg_data(msg_params)
@@ -48,6 +50,7 @@ class MessageSender
     params[:disable_web_page_preview] = disable_web_page_preview
     params[:chat_id] = @chat_id
     params[:reply_to_message_id] = reply_to_message_id if reply_to_message_id
+    params[:caption] = caption if caption
     sending_message = create_message(params)
     save_message(sending_message["result"])
   end
@@ -56,7 +59,6 @@ class MessageSender
     return if delete_bot_message.nil? || bot_messages.empty?
 
     msg_on_destroy = find_msg_on_destroy
-
     return if @tg_user.id.to_i != msg_on_destroy.chat_id.to_i # Messages deletion only for current tg user
 
     bot.api.delete_message(message_id: msg_on_destroy.message_id, chat_id: msg_on_destroy.chat_id)
@@ -96,7 +98,8 @@ class MessageSender
   end
 
   def save_message(result)
-    return if same_inline_keyboard?(result) && !@tg_user
+    return if same_inline_keyboard?(result) || !@tg_user
+    return unless %i[text menu].include?(msg_type.to_sym)
 
     bot_messages.create!(fetch_msg_result_data(result))
   end
