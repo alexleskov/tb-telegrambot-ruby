@@ -5,35 +5,35 @@ module Teachbase
     class Strategies
       class Base < Teachbase::Bot::Strategies
         def setting
-          Teachbase::Bot::Strategies::Setting.new(controller)
+          strategies_methods_class::Setting.new(controller)
         end
 
         def content
-          Teachbase::Bot::Strategies::Content.new(controller)
+          strategies_methods_class::Content.new(controller)
         end
 
         def cs
-          Teachbase::Bot::Strategies::CourseSession.new(controller)
+          strategies_methods_class::CourseSession.new(controller)
         end
 
         def profile
-          Teachbase::Bot::Strategies::Profile.new(controller)
+          strategies_methods_class::Profile.new(controller)
         end
 
         def section
-          Teachbase::Bot::Strategies::Section.new(controller)
+          strategies_methods_class::Section.new(controller)
         end
 
         def document
-          Teachbase::Bot::Strategies::Document.new(controller)
+          strategies_methods_class::Document.new(controller)
         end
 
         def find(options = {})
-          Teachbase::Bot::Strategies::Find.new(controller, options)
+          strategies_methods_class::Find.new(controller, options)
         end
 
         def notify(options = {})
-          Teachbase::Bot::Strategies::Notify.new(controller, options)
+          strategies_methods_class::Notify.new(controller, options)
         end
 
         def help
@@ -44,7 +44,6 @@ module Teachbase
           interface.sys.menu.farewell(appshell.user_fullname(:string)).show
           appshell.reset_to_default_scenario if demo_mode_on?
           appshell.logout
-          current_strategy = appshell.context.handle
           current_strategy.starting
         rescue RuntimeError => e
           interface.sys.text.on_error(e).show
@@ -65,7 +64,6 @@ module Teachbase
           raise "User password not changed" unless result
 
           interface.sys.text.password_changed.show
-          current_strategy = appshell.context.handle
           current_strategy.sign_in
         rescue RuntimeError, TeachbaseBotException => e
           appshell.logout
@@ -118,6 +116,12 @@ module Teachbase
 
         def documents
           document.list_by
+        end
+
+        private
+
+        def strategies_methods_class
+          current_strategy ? current_strategy.class : default_strategies_methods_class
         end
       end
     end

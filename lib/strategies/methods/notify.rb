@@ -17,11 +17,11 @@ module Teachbase
         def send_to(tg_id, addit_text = "")
           interface.sys.text.ask_answer.show
           appshell.ask_answer(mode: :bulk, saving: :cache)
+          appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
           interface.sys.menu(disable_web_page_preview: true, mode: :none).confirm_answer(:message, appshell.user_cached_answer).show
           on_answer_confirmation(reaction: user_reaction.source) do
             interface.sys.text(text: "#{build_user_message}#{addit_text}").send_to(tg_id, from_user)
           end
-          appshell.authsession(:without_api) ? interface.sys.menu.after_auth.show : interface.sys.menu.starting.show
         end
 
         def to_support

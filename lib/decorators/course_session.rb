@@ -29,11 +29,14 @@ module Decorators
     end
 
     def statistics
-      ["#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}",
-       "#{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}",
-       "#{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{progress}%",
-       "#{Formatter::DELIMETER}#{I18n.t('started_at')}: #{time_by(:started_at)}",
-       "#{I18n.t('deadline')}: #{time_by(:deadline)}"].join(Formatter::DELIMETER)
+      result =
+        ["#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}",
+         "#{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}",
+         "#{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{progress}%",
+         "#{Formatter::DELIMETER}#{I18n.t('started_at')}: #{time_by(:started_at)}",
+         "#{I18n.t('deadline')}: #{time_by(:deadline)}"]
+      result = started_out? ? result : result.unshift("#{Emoji.t(:bangbang)}#{I18n.t('start_time_has_not_come')}\n")
+      result.join(Formatter::DELIMETER)
     end
 
     def categories_name

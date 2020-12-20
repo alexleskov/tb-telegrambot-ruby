@@ -2,9 +2,9 @@
 
 module Teachbase
   module Bot
-    class Interfaces
+    class Strategies
       class StandartLearning
-        class Menu < Teachbase::Bot::Interfaces::Base::Menu
+        class Content < Teachbase::Bot::Strategies::Content
         end
       end
     end

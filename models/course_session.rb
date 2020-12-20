@@ -26,6 +26,10 @@ module Teachbase
       def active?
         status == "active"
       end
+
+      def started_out?
+        Time.now >= Time.at(started_at)
+      end
     end
   end
 end

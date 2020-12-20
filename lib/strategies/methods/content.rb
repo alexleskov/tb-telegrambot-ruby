@@ -26,9 +26,9 @@ module Teachbase
 
           interface.sys.text.ask_answer.show
           appshell.ask_answer(mode: :bulk, saving: :cache)
+          interface.sys.menu.after_auth.show
           interface.sys(content).menu(disable_web_page_preview: true, mode: :none)
                    .confirm_answer(answer_type, appshell.user_cached_answer).show
-          interface.sys.menu.after_auth.show
         end
 
         def track_time(cs_tb_id, sec_id, time_spent, content_tb_id)
