@@ -17,9 +17,11 @@ module Teachbase
       end
 
       def description
-        return if show_introduction
-
-        introduction
+        if !can_submit? && show_final_message
+          final_message
+        elsif can_submit? && show_introduction
+          introduction
+        end
       end
     end
   end

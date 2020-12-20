@@ -35,7 +35,8 @@ module Teachbase
           def build_file_button
             return unless entity.url
 
-            InlineUrlButton.g(button_sign: entity.title, emoji: entity.sign_emoji_by_type, url: to_default_protocol(entity.url))
+            InlineUrlButton.g(button_sign: "#{entity.title} (#{entity.file_name})",
+                              emoji: entity.sign_emoji_by_type, url: to_default_protocol(entity.url))
           end
         end
       end

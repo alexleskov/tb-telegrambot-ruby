@@ -9,9 +9,8 @@ module Decorators
     end
 
     def statistics
-      result = ["#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}#{Formatter::DELIMETER}"]
-      result << "#{I18n.t('final_message')}: #{final_message}" if show_final_message
-      result.join(Formatter::DELIMETER)
+      result = ["#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}#{Formatter::DELIMETER}",
+                description].join(Formatter::DELIMETER)
     end
   end
 end

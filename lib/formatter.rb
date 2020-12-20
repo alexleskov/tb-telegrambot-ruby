@@ -132,7 +132,7 @@ module Formatter
     when "image"
       url = data["file"]["url"]
       image_name = data["caption"].empty? ? chomp_file_name(url, :only_name) : data["caption"]
-      attach_emoji(:image) + to_url_link("#{HOST}#{url}", image_name)
+      "#{attach_emoji(:image)} #{to_url_link("#{HOST}#{url}", image_name)}"
     when "list"
       result = []
       data["items"].each_with_index do |item, ind|
@@ -144,8 +144,12 @@ module Formatter
       "<pre>#{data['code']}</pre>"
     when "quote"
       data["caption"].empty? ? data["text"] : "#{data['text']}\n#{to_italic(data['caption'])}"
+    when "embed"
+      url = data["source"]
+      embed_name = data["caption"].empty? ? data["source"] : data["caption"]
+      "#{attach_emoji(:video)} #{to_url_link(url, embed_name)}"
     else
-      "Undefined content"
+      "Undefined content."
     end
   end
 
