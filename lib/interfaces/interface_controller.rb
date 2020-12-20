@@ -100,12 +100,12 @@ module Teachbase
       end
 
       def description
-        result = 
-        if entity.respond_to?(:content) && entity.content && !entity.content.empty?
-          to_text_by_editorjs(entity.content)
-        elsif entity.description && !sanitize_html(entity.description).strip.empty?
-          "\n#{sanitize_html(entity.description)}"
-        end
+        result =
+          if entity.respond_to?(:content) && entity.content && !entity.content.empty?
+            to_text_by_editorjs(entity.content)
+          elsif entity.description && !sanitize_html(entity.description).strip.empty?
+            "\n#{sanitize_html(entity.description)}"
+          end
         return result unless entity.respond_to?("attachments?") && entity.attachments?
 
         "#{result}\n\n#{attachments(entity)}"
