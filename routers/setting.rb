@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Routers
       class Setting < Teachbase::Bot::Routers::Controller
-        SOURCE = "setting"
+        SOURCE = "settings"
 
         def edit
           [SOURCE, root_class::EDIT]
