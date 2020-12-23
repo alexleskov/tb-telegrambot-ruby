@@ -15,11 +15,6 @@ $app_config.tg_bot_client.run do |bot|
   Thread.report_on_exception = true
   bot.listen do |rqst|
     thread = Thread.new(rqst) do |message|
-      if message.respond_to?(:data)
-        $logger.debug "#{message.from.id} - @#{message.from.username}: #{message.data}"
-      else
-        $logger.debug "#{message.from.id} - @#{message.from.username}: #{message}"
-      end
       context = MessageResponder.new(bot: bot, message: message)
       strategy = context.handle
       if context.tg_user.context_state == "taking_data"
