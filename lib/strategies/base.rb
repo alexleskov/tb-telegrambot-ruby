@@ -79,7 +79,7 @@ module Teachbase
           appshell.logout_account
           sign_in
         rescue RuntimeError, TeachbaseBotException => e
-          $logger.debug "On auth error: #{e.class}. #{e.inspect}"
+          # $logger.debug "On auth error: #{e.class}. #{e.inspect}"
           title = to_text_by_exceiption_code(e)
           title = "#{I18n.t('accounts')}: #{title}" if e.is_a?(TeachbaseBotException::Account)
           appshell.logout if access_denied?(e) || e.is_a?(TeachbaseBotException::Account)

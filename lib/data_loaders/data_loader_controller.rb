@@ -50,7 +50,7 @@ module Teachbase
         yield
       rescue RuntimeError, TeachbaseBotException => e
         if e.respond_to?(:http_code) && !(400..404).include?(e.http_code)
-          $logger.debug "Unexpected error: #{e}. Data: #{e.response}"
+          # $logger.debug "Unexpected error: #{e}. Data: #{e.response}"
           raise e
         else
           raise e
