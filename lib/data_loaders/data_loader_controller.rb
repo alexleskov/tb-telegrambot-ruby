@@ -24,7 +24,7 @@ module Teachbase
       end
 
       def attrs_with_lms_data(data)
-        raise "Cant find lms data. Given: '#{data}'." unless data
+        raise "Can't find lms data. Given: '#{data}'." unless data
 
         Attribute.create(model_class.attribute_names, data, self.class::CUSTOM_ATTRS)
       end

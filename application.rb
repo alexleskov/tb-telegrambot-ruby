@@ -93,3 +93,4 @@ require './lib/cache'
 
 $app_config = AppConfigurator.instance
 $app_config.configure
+$logger = $app_config.load_logger

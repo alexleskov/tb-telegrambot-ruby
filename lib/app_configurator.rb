@@ -28,7 +28,7 @@ class AppConfigurator
   end
 
   def load_logger
-    Logger.new(STDOUT, Logger::DEBUG)
+    Logger.new("log/debug.log", Logger::DEBUG)
   end
 
   def load_encrypt_key

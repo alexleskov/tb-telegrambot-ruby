@@ -8,16 +8,16 @@ end
 
 require './application'
 
-$logger = $app_config.load_logger
-# $logger.debug 'Starting telegram bot'
+Thread.report_on_exception = true
+TAKING_DATA_CONTEXT_STATE = "taking_data"
 
 $app_config.tg_bot_client.run do |bot|
-  Thread.report_on_exception = true
+  $logger.info 'Starting telegram bot'  
   bot.listen do |rqst|
-    thread = Thread.new(rqst) do |message|
+    Thread.new(rqst) do |message|
       context = MessageResponder.new(bot: bot, message: message)
       strategy = context.handle
-      if context.tg_user.context_state == "taking_data"
+      if context.tg_user.context_state == TAKING_DATA_CONTEXT_STATE
         Teachbase::Bot::Cache.save(strategy.controller)
         context.tg_user.update!(context_state: nil)
       else
@@ -27,6 +27,6 @@ $app_config.tg_bot_client.run do |bot|
       end
     end
   rescue => e
-    # $logger.debug "Error: #{e}."
+    $logger.debug "Error: #{e}."
   end
 end
