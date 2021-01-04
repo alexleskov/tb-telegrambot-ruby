@@ -8,17 +8,15 @@ end
 
 require './application'
 
-Thread.report_on_exception = true
-TAKING_DATA_CONTEXT_STATE = "taking_data"
+$logger.info 'Starting telegram bot'
 
 $app_config.tg_bot_client.run do |bot|
-  $logger.info 'Starting telegram bot'  
   bot.listen do |rqst|
     Thread.new(rqst) do |message|
       context = MessageResponder.new(bot: bot, message: message)
       strategy = context.handle
-      if context.tg_user.context_state == TAKING_DATA_CONTEXT_STATE
-        Teachbase::Bot::Cache.save(strategy.controller)
+      if context.tg_user.context_state == Teachbase::Bot::Controller::TAKING_DATA_CONTEXT_STATE
+        Teachbase::Bot::Cache.save(context, context.class)
         context.tg_user.update!(context_state: nil)
       else
         I18n.with_locale context.settings.localization.to_sym do

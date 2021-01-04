@@ -17,6 +17,7 @@ class AppConfigurator
   def configure
     setup_i18n
     setup_database
+    Thread.report_on_exception = true
   end
 
   def load_ai_token

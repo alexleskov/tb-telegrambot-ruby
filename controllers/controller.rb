@@ -6,6 +6,8 @@ module Teachbase
       include Formatter
       include Decorators
 
+      TAKING_DATA_CONTEXT_STATE = "taking_data"
+
       attr_reader :respond,
                   :tg_user,
                   :user_settings,
@@ -35,11 +37,12 @@ module Teachbase
       end
 
       def take_data
-        tg_user.update!(context_state: "taking_data")
+        tg_user.update!(context_state: TAKING_DATA_CONTEXT_STATE)
         loop do
           tg_user.reload
-          taking_state = tg_user.context_state
-          break Teachbase::Bot::Cache.extract_by(tg_user) if taking_state != "taking_data"
+          if tg_user.context_state != TAKING_DATA_CONTEXT_STATE
+            break Teachbase::Bot::Cache.extract_by(tg_user, "MessageResponder").first.message.handle.controller
+          end
         end
       end
 

@@ -35,7 +35,8 @@ module Teachbase
           def build_file_button
             return unless entity.url
 
-            InlineUrlButton.g(button_sign: "#{entity.title} (#{entity.file_name})",
+            file_extension = "(#{entity.file_type.upcase})" if entity.file_type
+            InlineUrlButton.g(button_sign: "#{entity.title} #{file_extension}",
                               emoji: entity.sign_emoji_by_type, url: to_default_protocol(entity.url))
           end
         end
