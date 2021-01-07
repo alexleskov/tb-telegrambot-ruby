@@ -85,7 +85,7 @@ module Teachbase
 
       def render(status, message = "")
         message = "Code: #{status}. #{message}"
-        message = "#{message}<br>Debug mode is on. Cache Messages: #{Teachbase::Bot::Cache.all.join('<br><br>')}<br><br>#{self.class.debug_info.join('<br><br>')}" if self.class.debug_mode
+        message = "#{message}<br>Debug mode is on.<br><br>Cache Messages size: #{Teachbase::Bot::Cache.all.size}<br><br>#{self.class.debug_info.join('<br><br>')}" if self.class.debug_mode
         [status, { 'Content-Type' => 'text/html; charset=UTF-8' }, [message]]
       end
 
