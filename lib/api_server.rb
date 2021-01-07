@@ -46,6 +46,7 @@ module Teachbase
       @debug_mode = false
 
       def call(env)
+        save_input_request_payload(env)
         Thread.new do
           @env = env
           debug_mode?
@@ -54,7 +55,6 @@ module Teachbase
 
           catcher = Teachbase::Bot::Webhook::Catcher.new(request)
           context = catcher.init_webhook
-          save_input_request_payload
           Teachbase::Bot::Cache.save(context, catcher.type_class)
         end
         render(200)
@@ -76,8 +76,10 @@ module Teachbase
         end
       end
 
-      def save_input_request_payload
-        self.class.debug_info << "Time: #{Time.now}.<br>Data: #{@env['rack.input'].respond_to?(:string) ? @env['rack.input'].string : 'No payload'}"
+      def save_input_request_payload(request_data)
+        return unless request_data["REQUEST_METHOD"] == "POST"
+
+        self.class.debug_info << "Time: #{Time.now}.<br>Data: #{request_data['rack.input'].respond_to?(:string) ? request_data['rack.input'].string : 'No payload'}"
       end
 
       def render(status, message = "")
