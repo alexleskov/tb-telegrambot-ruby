@@ -10,6 +10,7 @@ require 'open-uri'
 require 'singleton'
 require 'sapcai'
 require 'ostruct'
+require 'rufus-scheduler'
 
 require './lib/app_configurator'
 require './lib/emoji'
@@ -26,6 +27,8 @@ require './lib/app_shell'
 require './lib/filer'
 require './lib/breadcrumb'
 require './lib/ai'
+require './lib/cache'
+require './lib/helpers/notification'
 require './lib/interfaces/interfaces'
 require './routers/routers/'
 require './lib/webhooks/webhook_catcher'
@@ -90,7 +93,7 @@ require './models/category'
 require './models/course_category'
 require './models/command'
 
-require './lib/cache'
+require './config/schedule'
 
 $app_config = AppConfigurator.instance
 $app_config.configure

@@ -10,8 +10,8 @@ class MessageResponder
     @bot = options[:bot]
     @message = options[:message]
     @ai_mode = options[:ai_mode] || $app_config.ai_mode
-    find_tg_user
-    raise unless tg_user
+    @tg_user = find_tg_user
+    raise "Can't find tg_user" unless tg_user
 
     @settings = Teachbase::Bot::Setting.find_or_create_by!(tg_account_id: tg_user.id)
     @strategy = options[:strategy] || current_user_strategy_class
@@ -48,17 +48,15 @@ class MessageResponder
   private
 
   def find_tg_user
-    @tg_user = Teachbase::Bot::TgAccount.find_or_create_by!(id: message.from.id)
-    return unless tg_user
-
-    update_tg_user_info
-    tg_user
+    finded_tg_user = Teachbase::Bot::TgAccount.find_or_create_by!(id: message.from.id)
+    update_tg_user_info(finded_tg_user)
+    finded_tg_user
   end
 
-  def update_tg_user_info
+  def update_tg_user_info(tg_user_on_update)
     return unless message&.from
 
-    tg_user.update!(first_name: message.from.first_name, last_name: message.from.last_name,
-                    username: message.from.username)
+    tg_user_on_update.update!(first_name: message.from.first_name, last_name: message.from.last_name,
+                              username: message.from.username)
   end
 end

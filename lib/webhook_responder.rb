@@ -16,11 +16,11 @@ class WebhookResponder < MessageResponder
     return if !user_active_auth_sessions || user_active_auth_sessions.empty?
 
     user_active_auth_sessions.each do |auth_session|
-      next unless auth_session.account.tb_id == message.account_tb_id
+      next unless auth_session.account && auth_session.account.tb_id == message.account_tb_id
 
       tg_account_ids << auth_session.tg_account_id
     end
-    @tg_user = Teachbase::Bot::TgAccount.find_by(id: tg_account_ids.first)
+    Teachbase::Bot::TgAccount.find_by(id: tg_account_ids.first)
   end
 
   def find_user_active_auth_sessions

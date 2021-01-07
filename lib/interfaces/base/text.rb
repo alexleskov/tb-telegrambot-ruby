@@ -50,7 +50,7 @@ module Teachbase
           end
 
           def rare_message(text)
-            @text = text.to_s
+            @text = text
             self
           end
         end

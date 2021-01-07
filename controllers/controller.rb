@@ -41,7 +41,7 @@ module Teachbase
         loop do
           tg_user.reload
           if tg_user.context_state != TAKING_DATA_CONTEXT_STATE
-            break Teachbase::Bot::Cache.extract_by(tg_user, "MessageResponder").first.message.handle.controller
+            break Teachbase::Bot::Cache.extract_by(tg_user: tg_user, type: "MessageResponder").first.body.handle.controller
           end
         end
       end

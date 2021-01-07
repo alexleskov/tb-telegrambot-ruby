@@ -34,16 +34,15 @@ module Teachbase
           send_to(curator_tg_id)
         end
 
-        def about(entity_tb_id)
+        def about(*entities_tb_id)
           appshell.authsession(:with_api)
-          entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id)
-          cs_info = entity_loader.info
-          entity_loader.progress
-          entity_interface = interface.public_send(type, cs_info)
-          case type
-          when :cs
-            entity_interface.text(text: "#{default_message_about_new} #{I18n.t('course').downcase}:\n").course.show
+          notification_data = []
+          entities_tb_id.flatten.each do |entity_tb_id|
+            entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id)
+            entity_loader.progress
+            notification_data << interface.public_send(type, entity_loader.info).text.public_send(type).text
           end
+          interface.sys.text(text: "#{default_message_about_new} #{I18n.t('studying').downcase}:\n#{notification_data.join("\n")}").show
         end
 
         private

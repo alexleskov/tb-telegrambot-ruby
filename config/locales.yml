@@ -37,6 +37,7 @@ en:
   cs_list: "Courses list"
   show_course_list: "Show course list"
   course: "Course"
+  cs: "Course"
   open: "Open"
   course_results: "Results"
   deadline: "Deadline"
@@ -218,6 +219,7 @@ ru:
   cs_list: "Список курсов"
   show_course_list: "Показать список курсов"
   course: 'Курс'
+  cs: 'Курс'
   open: "Перейти"
   course_results: "Результаты"
   deadline: "Дата окончания"
@@ -345,7 +347,7 @@ ru:
   incoming: "Входящее"
   creation_info: "Меня создал <a href='https://sun1-93.userapi.com/c639318/v639318312/33bab/rbFlIllggaM.jpg'>Александр Лесков</a> - @alexleskov из <a href='https://teachbase.ru'>Teachbase</a> в 2020 году. А идея моего появления возникла как эксперимент - создать помощника в онлайн-обучении.\n\nОтдельная благодарность Александру Швайкину - @shuriksh, за помощь с настройкой деплоя и инфраструктуры."
   enter_what_find: "Уточните, что нужно. Ключевое слово или словосочетание"
-  notify_about_new: "Тебя уже ждет новый"
+  notify_about_new: "Тебя уже ждет новое"
   find_again: "Поискать еще"
   demo_mode: "Демо-режим"
   send_contact: "Отправить контакты"

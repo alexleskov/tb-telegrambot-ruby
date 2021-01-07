@@ -50,7 +50,7 @@ module Teachbase
         end
 
         def reset_password
-          # Reset password only for demo mode
+          # Reset password is only for demo mode
           appshell.change_scenario(Teachbase::Bot::Strategies::DEMO_MODE_NAME)
           interface.sys.menu(text: "#{Emoji.t(:point_down)} #{I18n.t('click_to_send_contact')}").take_contact.show
           contact = appshell.request_data(:none)

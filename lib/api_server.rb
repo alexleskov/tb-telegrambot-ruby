@@ -18,7 +18,7 @@ module Teachbase
         def body
           return unless @env["REQUEST_METHOD"] == "POST"
 
-          payload = @env["rack.input"].read
+          payload = @env["rack.input"].string
           JSON.parse(payload)
         end
 
@@ -41,16 +41,14 @@ module Teachbase
       end
 
       def call(env)
-        @env = env
-        request = find_request_by_webhook_path
-        return render(403, "403. Forbidden") unless request
+        Thread.new do
+          @env = env
+          request = find_request_by_webhook_path
+          return render(403, "403. Forbidden") unless request
 
-        catcher = Teachbase::Bot::Webhook::Catcher.new(request)
-        context = catcher.init_webhook
-        strategy = context.handle
-        Teachbase::Bot::Cache.save(context, catcher.type_class)
-        I18n.with_locale context.settings.localization.to_sym do
-          strategy.do_action
+          catcher = Teachbase::Bot::Webhook::Catcher.new(request)
+          context = catcher.init_webhook
+          Teachbase::Bot::Cache.save(context, catcher.type_class)
         end
         render(200, "OK")
       rescue StandardError => e

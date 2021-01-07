@@ -59,8 +59,13 @@ GEM
     encrypted_strings (0.3.3)
     equalizer (0.0.11)
     erubi (1.9.0)
+    et-orbi (1.2.4)
+      tzinfo
     faraday (0.17.0)
       multipart-post (>= 1.2, < 3)
+    fugit (1.4.1)
+      et-orbi (~> 1.1, >= 1.1.8)
+      raabro (~> 1.4)
     gemoji (3.0.1)
     httmultiparty (0.3.16)
       httparty (>= 0.7.3)
@@ -101,6 +106,7 @@ GEM
     pg (1.1.4)
     puma (5.0.4)
       nio4r (~> 2.0)
+    raabro (1.4.0)
     rack (2.0.7)
     rack-test (1.1.0)
       rack (>= 1.0, < 3)
@@ -121,6 +127,8 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    rufus-scheduler (3.7.0)
+      fugit (~> 1.1, >= 1.1.6)
     sanitize (5.1.0)
       crass (~> 1.0.2)
       nokogiri (>= 1.8.0)
@@ -167,6 +175,7 @@ DEPENDENCIES
   puma
   rake (>= 10.0)
   rest-client
+  rufus-scheduler
   sanitize
   standalone_migrations (~> 5.2, >= 5.2.7)
   telegram-bot-ruby
