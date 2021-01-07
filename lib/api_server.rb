@@ -35,32 +35,54 @@ module Teachbase
       end
 
       class << self
+        attr_accessor :debug_mode, :debug_info
+
         def location_regexp(path = "\\w*")
           %r{^#{$app_config.default_location_webhooks_endpoint}\/(#{path})\/(\d*)}
         end
       end
 
-      @catched = []
+      @debug_info = []
+      @debug_mode = false
 
       def call(env)
         Thread.new do
           @env = env
+          debug_mode?
           request = find_request_by_webhook_path
-          return render(403, "403. Forbidden") unless request
+          return render(403) unless request
 
           catcher = Teachbase::Bot::Webhook::Catcher.new(request)
           context = catcher.init_webhook
-          @catched << body
+          save_input_request_payload
           Teachbase::Bot::Cache.save(context, catcher.type_class)
         end
-        render(200, "OK. #{@catched.join("\n")}")
+        render(200)
       rescue StandardError => e
         render(500, e.message)
       end
 
       private
 
-      def render(status, message)
+      def debug_mode?
+        return unless @env["REQUEST_METHOD"] == "GET" && @env["REQUEST_URI"].include?("debug_mode")
+
+        if @env["REQUEST_URI"].include?("debug_mode=on")
+          self.class.debug_mode = true
+        elsif @env["REQUEST_URI"].include?("debug_mode=off")
+          self.class.debug_mode = false
+        elsif @env["REQUEST_URI"].include?("debug_mode=clear_all")
+          self.class.debug_info = []
+        end
+      end
+
+      def save_input_request_payload
+        self.class.debug_info << "Time: #{Time.now}.\nData: #{@env['rack.input'].respond_to?(:string) ? @env['rack.input'].string : 'No payload'}"
+      end
+
+      def render(status, message = "")
+        message = "Code: #{status}. #{message}"
+        message = "#{message}\nDebug mode on.\n\n#{self.class.debug_info.join("\n\n")}" if self.class.debug_mode
         [status, {}, [message]]
       end
 
