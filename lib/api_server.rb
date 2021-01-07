@@ -77,13 +77,13 @@ module Teachbase
       end
 
       def save_input_request_payload
-        self.class.debug_info << "Time: #{Time.now}.\nData: #{@env['rack.input'].respond_to?(:string) ? @env['rack.input'].string : 'No payload'}"
+        self.class.debug_info << "Time: #{Time.now}.<br>Data: #{@env['rack.input'].respond_to?(:string) ? @env['rack.input'].string : 'No payload'}"
       end
 
       def render(status, message = "")
         message = "Code: #{status}. #{message}"
-        message = "#{message}\nDebug mode on.\n\n#{self.class.debug_info.join("\n\n")}" if self.class.debug_mode
-        [status, {}, [message]]
+        message = "#{message}<br>Debug mode is on.<br><br>#{self.class.debug_info.join('<br><br>')}" if self.class.debug_mode
+        [status, { 'Content-Type' => 'text/html; charset=UTF-8' }, [message]]
       end
 
       def find_request_by_webhook_path
