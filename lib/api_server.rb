@@ -40,6 +40,8 @@ module Teachbase
         end
       end
 
+      @catched = []
+
       def call(env)
         Thread.new do
           @env = env
@@ -48,17 +50,18 @@ module Teachbase
 
           catcher = Teachbase::Bot::Webhook::Catcher.new(request)
           context = catcher.init_webhook
+          @catched << body
           Teachbase::Bot::Cache.save(context, catcher.type_class)
         end
-        render(200, "OK")
+        render(200, "OK. #{@catched.join("\n")}")
       rescue StandardError => e
         render(500, e.message)
       end
 
       private
 
-      def render(status, body)
-        [status, {}, [body]]
+      def render(status, message)
+        [status, {}, [message]]
       end
 
       def find_request_by_webhook_path
