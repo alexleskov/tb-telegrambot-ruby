@@ -35,7 +35,6 @@ module Teachbase
             :cs_tb_id
           end
         end
-
       end
     end
   end

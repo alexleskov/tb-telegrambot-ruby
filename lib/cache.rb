@@ -15,7 +15,7 @@ module Teachbase
         end
 
         def extract_by(options)
-          return if all.empty? || ([:tg_user, :type] & options.keys).empty?
+          return if all.empty? || (%i[tg_user type] & options.keys).empty?
 
           result = []
           all.reject! do |cached_message|
