@@ -124,11 +124,11 @@ module Teachbase
           end
 
           controller.on %r{^/ai:small_talks} do
-            interface.sys.text.rare_message(data).show
+            interface.sys.text(text: data).show
           end
 
           controller.on %r{^/ai:bot-creator-info} do
-            interface.sys.text.rare_message(I18n.t('creation_info').to_s).show
+            interface.sys.text(text: I18n.t('creation_info')).show
           end
 
           controller.on %r{^/ai:show} do
