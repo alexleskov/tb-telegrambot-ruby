@@ -42,14 +42,14 @@ module Teachbase
         end
       end
 
-      @debug_info = []
+      @debug_info = ["Initial answer"]
       @debug_mode = false
 
       def call(env)
-        save_input_request_payload(env)
         Thread.new do
           @env = env
-          debug_mode?
+          call_debug_mode_option
+          save_input_request_payload if self.class.debug_mode
           request = find_request_by_webhook_path
           return render(403) unless request
 
@@ -64,22 +64,23 @@ module Teachbase
 
       private
 
-      def debug_mode?
+      def call_debug_mode_option
         return unless @env["REQUEST_METHOD"] == "GET" && @env["REQUEST_URI"].include?("debug_mode")
 
         if @env["REQUEST_URI"].include?("debug_mode=on")
           self.class.debug_mode = true
         elsif @env["REQUEST_URI"].include?("debug_mode=off")
+          self.class.debug_info = []
           self.class.debug_mode = false
-        elsif @env["REQUEST_URI"].include?("debug_mode=clear_all")
+        elsif @env["REQUEST_URI"].include?("debug_mode=reload")
           self.class.debug_info = []
         end
       end
 
-      def save_input_request_payload(request_data)
-        return unless request_data["REQUEST_METHOD"] == "POST"
+      def save_input_request_payload
+        return unless @env["REQUEST_METHOD"] == "POST"
 
-        self.class.debug_info << "Time: #{Time.now}.<br>Data: #{request_data['rack.input'].respond_to?(:string) ? request_data['rack.input'].string : 'No payload'}"
+        self.class.debug_info << "Time: #{Time.now}.<br>Data: #{@env['rack.input'].respond_to?(:string) ? @env['rack.input'].string : 'No payload'}"
       end
 
       def render(status, message = "")
