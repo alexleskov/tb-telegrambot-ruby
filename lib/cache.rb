@@ -11,7 +11,7 @@ module Teachbase
         def save(entity, type)
           return unless entity.tg_user
 
-          all << OpenStruct.new(body: entity, tg_user_id: entity.tg_user.id, type: type.to_s, saved_at: Time.now.utc)
+          all << self::Data.new(body: entity, type: type)
         end
 
         def extract_by(options)
@@ -37,6 +37,17 @@ module Teachbase
 
         def same_type?(type, cached_message)
           cached_message.type == type.to_s
+        end
+      end
+
+      class Data
+        attr_reader :body, :tg_user_id, :type, :saved_at
+
+        def initialize(params)
+          @body = params[:body]
+          @type = params[:type].to_s
+          @tg_user_id = body.tg_user.id
+          @saved_at = Time.now.utc
         end
       end
     end

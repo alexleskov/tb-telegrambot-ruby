@@ -3,36 +3,8 @@
 module Teachbase
   module Bot
     class ApiServer
-      class Request
-        CATCHING_PARAMS = %w[HTTP_HOST REQUEST_PATH REQUEST_METHOD CONTENT_TYPE].freeze
-
-        attr_reader :data
-
-        def initialize(env)
-          @env = env
-          @data = fetch_data
-        end
-
-        private
-
-        def body
-          return unless @env["REQUEST_METHOD"] == "POST"
-
-          payload = @env["rack.input"].string
-          JSON.parse(payload)
-        end
-
-        def account_id
-          location = @env["REQUEST_PATH"].match(Teachbase::Bot::ApiServer.location_regexp)
-          return unless location
-
-          location[2].to_i
-        end
-
-        def fetch_data
-          { "BODY" => body, "ACCOUNT_ID" => account_id }.compact.merge(@env.slice(*CATCHING_PARAMS))
-        end
-      end
+      @debug_info = ["Debug info history:"]
+      @debug_mode = false
 
       class << self
         attr_accessor :debug_mode, :debug_info
@@ -41,9 +13,6 @@ module Teachbase
           %r{^#{$app_config.default_location_webhooks_endpoint}\/(#{path})\/(\d*)}
         end
       end
-
-      @debug_info = ["Debug info history:"]
-      @debug_mode = false
 
       def call(env)
         Thread.new do
@@ -85,7 +54,7 @@ module Teachbase
 
       def render(status, message = "")
         message = "Code: #{status}. #{message}"
-        message = "#{message}<br>Debug mode is on. API Server: #{self}<br><br>Cache Messages size: #{Teachbase::Bot::Cache.all.size}<br><br>#{self.class.debug_info.join('<br><br>')}" if self.class.debug_mode
+        message = "#{message}<br>Debug mode is on.<br><br>Cache Messages size: #{Teachbase::Bot::Cache.all.size}<br><br>#{self.class.debug_info.join('<br><br>')}" if self.class.debug_mode
         [status, { 'Content-Type' => 'text/html; charset=UTF-8' }, [message]]
       end
 
@@ -101,6 +70,37 @@ module Teachbase
 
         location[1]
         yield
+      end
+
+      class Request
+        CATCHING_PARAMS = %w[HTTP_HOST REQUEST_PATH REQUEST_METHOD CONTENT_TYPE].freeze
+
+        attr_reader :data
+
+        def initialize(env)
+          @env = env
+          @data = fetch_data
+        end
+
+        private
+
+        def body
+          return unless @env["REQUEST_METHOD"] == "POST"
+
+          payload = @env["rack.input"].string
+          JSON.parse(payload)
+        end
+
+        def account_id
+          location = @env["REQUEST_PATH"].match(Teachbase::Bot::ApiServer.location_regexp)
+          return unless location
+
+          location[2].to_i
+        end
+
+        def fetch_data
+          { "BODY" => body, "ACCOUNT_ID" => account_id }.compact.merge(@env.slice(*CATCHING_PARAMS))
+        end
       end
     end
   end
