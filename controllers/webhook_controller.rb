@@ -13,6 +13,10 @@ module Teachbase
         message
       end
 
+      def message_type
+        "webhook"
+      end
+
       def on(command, &block)
         @c_data = source
         super(command, :event_type, &block)

@@ -44,7 +44,8 @@ module Teachbase
           interface.sys.menu.farewell(appshell.user_fullname(:string)).show
           appshell.reset_to_default_scenario if demo_mode_on?
           appshell.logout
-          current_strategy.starting
+          appshell.context.handle
+          appshell.context.current_strategy.starting
         rescue RuntimeError => e
           interface.sys.text.on_error(e).show
         end
@@ -64,7 +65,7 @@ module Teachbase
           raise "User password not changed" unless result
 
           interface.sys.text.password_changed.show
-          current_strategy.sign_in
+          appshell.context.current_strategy.sign_in
         rescue RuntimeError, TeachbaseBotException => e
           appshell.logout
           interface.sys.menu(text: I18n.t('declined')).starting.show
@@ -121,7 +122,7 @@ module Teachbase
         private
 
         def strategies_methods_class
-          current_strategy ? current_strategy.class : default_strategies_methods_class
+          appshell.context.current_strategy ? appshell.context.current_strategy.class : default_strategies_methods_class
         end
       end
     end

@@ -5,6 +5,7 @@ require './controllers/controller'
 module Teachbase
   module Bot
     class CallbackController < Teachbase::Bot::Controller
+
       def initialize(params)
         super(params, :from)
         save_message
@@ -15,8 +16,12 @@ module Teachbase
       end
 
       def save_message
-        @message_params = { data: source, message_type: "callback_data" }
+        @message_params[:data] = source
         super(:perm)
+      end
+
+      def message_type
+        "callback_data"
       end
 
       def on(command, &block)

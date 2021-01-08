@@ -191,7 +191,7 @@ module Teachbase
           return unless controller.is_a?(Teachbase::Bot::TextController)
 
           ai_controller = controller.respond.ai
-          controller.respond.msg_responder.strategy.new(ai_controller).do_action
+          controller.respond.msg_responder.strategy_class.new(ai_controller).do_action
           interface.sys.text.on_undefined.show unless ai_controller.action
         end
 

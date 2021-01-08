@@ -14,8 +14,14 @@ module Teachbase
       def save_message(mode)
         return unless source
 
-        @message_params = { file_id: source.file_id, file_size: source.file_size, file_type: type, message_type: "file" }
+        @message_params[:file_id] = source.file_id
+        @message_params[:file_size] = source.file_size
+        @message_params[:file_type] = type
         super(mode)
+      end
+
+      def message_type
+        "file"
       end
     end
   end

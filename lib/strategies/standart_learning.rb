@@ -14,8 +14,7 @@ module Teachbase
         def demo_mode
           appshell.logout
           appshell.change_scenario(Teachbase::Bot::Strategies::DEMO_MODE_NAME)
-          demo_mode_strategy = appshell.context.handle
-          demo_mode_strategy.starting
+          appshell.context.handle.starting
         end
 
         def sign_in

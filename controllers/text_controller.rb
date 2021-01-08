@@ -5,6 +5,7 @@ require './controllers/controller'
 module Teachbase
   module Bot
     class TextController < Teachbase::Bot::Controller
+
       def initialize(params)
         super(params, :chat)
       end
@@ -14,8 +15,12 @@ module Teachbase
       end
 
       def save_message(mode)
-        @message_params = { text: source, message_type: "text" }
+        @message_params[:text] = source
         super(mode)
+      end
+
+      def message_type
+        "text"
       end
 
       def on(command, &block)

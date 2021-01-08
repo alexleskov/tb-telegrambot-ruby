@@ -28,7 +28,7 @@ module Teachbase
         raise "Respond not found" unless respond
 
         fetch_respond_data
-        @message_params = {}
+        @message_params = { message_controller_class: self.class.to_s}
         @interface = Teachbase::Bot::Interfaces
         interface.configure(build_interface_config_params, dest)
         @filer = Teachbase::Bot::Filer.new(bot)
@@ -48,9 +48,9 @@ module Teachbase
 
       def save_message(mode)
         return unless tg_user || message
-        return if message_params.empty?
 
-        message_params.merge!(message_id: message_id)
+        message_params[:message_id] = message_id
+        message_params[:message_type] = message_type
         case mode
         when :perm
           tg_user.tg_account_messages.create!(message_params)

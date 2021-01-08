@@ -17,10 +17,6 @@ module Teachbase
         @router = Teachbase::Bot::Routers.new
       end
 
-      def current_strategy
-        appshell.context.handle
-      end
-
       def default_strategies_methods_class
         Teachbase::Bot::Strategies
       end

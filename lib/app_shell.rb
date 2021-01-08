@@ -77,7 +77,7 @@ module Teachbase
 
         user_settings.update!(scenario: scenario_name)
 
-        context.strategy = context.current_user_strategy_class
+        context.strategy_class = context.current_user_strategy_class
         controller.interface.sys_class = context.current_user_interface_class
         controller.reload_commands_list
       end
