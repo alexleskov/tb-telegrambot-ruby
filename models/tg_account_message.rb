@@ -21,7 +21,7 @@ module Teachbase
         private
 
         def raise_message(message, tg_account)
-          source_name = message.file_type ? message.file_type : message.message_type
+          source_name = message.file_type || message.message_type
           OpenStruct.new(source_name => build_source_data(message.data, :entity), message_id: message.message_id,
                          tg_account: tg_account)
         end

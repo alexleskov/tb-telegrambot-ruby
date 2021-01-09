@@ -13,7 +13,7 @@ class MessageResponder
     fetching_tg_user_data_by(options)
     @tg_user = call_tg_user
     raise "Can't find tg_user" unless tg_user
-    
+
     @settings = Teachbase::Bot::Setting.find_or_create_by!(tg_account_id: tg_user.id)
     @strategy_class = options[:strategy_class] || current_user_strategy_class
   end
@@ -25,7 +25,7 @@ class MessageResponder
   end
 
   def current_strategy
-     @strategy ||= handle
+    @strategy ||= handle
   end
 
   def handle
@@ -55,7 +55,7 @@ class MessageResponder
   private
 
   def fetching_tg_user_data_by(options)
-    message_from = options[:message].from if options[:message] && options[:message].from
+    message_from = options[:message].from if options[:message]&.from
     @first_name  = message_from ? message_from.first_name : options[:first_name]
     @last_name   = message_from ? message_from.last_name  : options[:last_name]
     @username    = message_from ? message_from.username   : options[:username]

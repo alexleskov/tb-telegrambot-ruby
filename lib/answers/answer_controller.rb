@@ -36,11 +36,11 @@ module Teachbase
         return unless message
 
         @dest =
-        if message.respond_to?(@dest)
-          @dest
-        else
-          MSG_DESTS.select { |msg_dest| message.respond_to?(msg_dest) }.first
-        end
+          if message.respond_to?(@dest)
+            @dest
+          else
+            MSG_DESTS.select { |msg_dest| message.respond_to?(msg_dest) }.first
+          end
         message.public_send(@dest)
       end
 

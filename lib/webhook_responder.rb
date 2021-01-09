@@ -11,7 +11,7 @@ class WebhookResponder < MessageResponder
 
   private
 
-  def fetching_tg_user_data_by(options = {})
+  def fetching_tg_user_data_by(_options = {})
     return unless tg_user
 
     @first_name  = tg_user.first_name

@@ -21,7 +21,7 @@ module Teachbase
         @dest = dest
         raise "Respond not found" unless respond
 
-        @message_params = { message_controller_class: self.class.to_s}
+        @message_params = { message_controller_class: self.class.to_s }
         @interface = Teachbase::Bot::Interfaces
         interface.configure(build_interface_config_params, dest)
         @filer = Teachbase::Bot::Filer.new($app_config.tg_bot_client)
@@ -37,13 +37,13 @@ module Teachbase
         context.tg_user.update!(context_state: TAKING_DATA_CONTEXT_STATE)
         loop do
           context.tg_user.reload
-          if context.tg_user.context_state != TAKING_DATA_CONTEXT_STATE
-            message = Teachbase::Bot::CacheMessage.raise_last_message_by(context.tg_user)
-            taked_context = MessageResponder.new(bot: $app_config.tg_bot_client, tg_id: context.tg_user.id, message: message)
-            taked_strategy = taked_context.handle
-            
-            break taked_strategy.controller
-          end
+          next unless context.tg_user.context_state != TAKING_DATA_CONTEXT_STATE
+
+          message = Teachbase::Bot::CacheMessage.raise_last_message_by(context.tg_user)
+          taked_context = MessageResponder.new(bot: $app_config.tg_bot_client, tg_id: context.tg_user.id, message: message)
+          taked_strategy = taked_context.handle
+
+          break taked_strategy.controller
         end
       end
 

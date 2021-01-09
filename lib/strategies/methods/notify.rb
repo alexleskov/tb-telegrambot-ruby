@@ -47,10 +47,10 @@ module Teachbase
 
         private
 
-      def build_notification_data(entity_tb_id)
+        def build_notification_data(entity_tb_id)
           entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id)
 
-          if type == :cs 
+          if type == :cs
             entity_loader.progress
             interface.public_send(type, entity_loader.info).text.public_send(type).text
           else
@@ -58,7 +58,7 @@ module Teachbase
           end
         rescue RestClient::NotFound => e
           nil
-        end
+          end
 
         def build_user_message
           answer_data = build_answer_data(files_mode: :download_url)

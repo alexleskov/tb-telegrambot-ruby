@@ -105,9 +105,9 @@ module Teachbase
 
       def define_msg_type
         msg_type =
-        MSG_TYPES.select do |type|
-          responder.message.respond_to?(type) && responder.message.public_send(type) && ![*responder.message.public_send(type)].empty?
-        end
+          MSG_TYPES.select do |type|
+            responder.message.respond_to?(type) && responder.message.public_send(type) && ![*responder.message.public_send(type)].empty?
+          end
         msg_type = msg_type.first
         raise "Can't find message type for class: '#{responder.message.class}'. Avaliable: #{MSG_TYPES}" unless msg_type
 

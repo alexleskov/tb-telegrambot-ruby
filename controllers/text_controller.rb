@@ -5,7 +5,6 @@ require './controllers/controller'
 module Teachbase
   module Bot
     class TextController < Teachbase::Bot::Controller
-
       def initialize(params)
         @type = "text"
         super(params, :chat)

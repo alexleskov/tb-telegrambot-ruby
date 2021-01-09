@@ -5,7 +5,6 @@ require './controllers/controller'
 module Teachbase
   module Bot
     class CallbackController < Teachbase::Bot::Controller
-
       def initialize(params)
         @type = "data"
         super(params, :from)

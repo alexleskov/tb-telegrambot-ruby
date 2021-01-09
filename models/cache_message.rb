@@ -27,7 +27,7 @@ module Teachbase
 
         def raise_last_message_by(tg_account)
           last_created = where(tg_account_id: tg_account.id).order(created_at: :desc).first
-          source_name = last_created.file_type ? last_created.file_type : last_created.message_type
+          source_name = last_created.file_type || last_created.message_type
           result = OpenStruct.new(source_name => build_source_data(last_created.data, :entity),
                                   message_id: last_created.message_id, tg_account: tg_account)
           last_created.destroy
