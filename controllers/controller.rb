@@ -26,7 +26,7 @@ module Teachbase
         interface.configure(build_interface_config_params, dest)
         @filer = Teachbase::Bot::Filer.new($app_config.tg_bot_client)
       rescue RuntimeError => e
-        # $logger.debug "Initialization Controller error: #{e}"
+        $logger.debug "Initialization Controller error: #{e}"
       end
 
       def context

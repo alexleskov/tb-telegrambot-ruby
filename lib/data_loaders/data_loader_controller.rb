@@ -50,7 +50,7 @@ module Teachbase
         yield
       rescue RuntimeError, TeachbaseBotException, RestClient::NotFound => e
         if (e.respond_to?(:http_code) && !(400..404).include?(e.http_code)) || e.is_a?(RestClient::NotFound)
-          # $logger.debug "Unexpected error: #{e}. Data: #{e.response}"
+          $logger.debug "Unexpected error: #{e}. Data: #{e.response}"
           raise e
         else
           raise e

@@ -8,9 +8,8 @@ end
 
 require './application'
 
-$logger.info 'Starting telegram bot'
-
 $app_config.tg_bot_client.run do |bot|
+  $logger.debug 'Starting telegram bot'
   bot.listen do |rqst|
     Thread.new(rqst) do |message|
       context = MessageResponder.new(bot: bot, message: message)
