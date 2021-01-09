@@ -15,7 +15,7 @@ module Teachbase
         raise "'#{appshell}' is not Teachbase::Bot::AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
 
         @appshell = appshell
-        @tg_user = appshell.controller.tg_user
+        @tg_user = appshell.controller.context.tg_user
       end
 
       def call_authsession(access_mode)
@@ -64,7 +64,7 @@ module Teachbase
       def registration(contact, labels = {})
         @user = Teachbase::Bot::User.find_or_create_by!(phone: contact.phone_number.to_i.to_s)
         call_tb_api_endpoint_client
-        user_attrs = user_by_contact(contact, :generate_pass)
+        user_attrs = user_attrs_by(contact, :generate_pass)
         result = authsession.add_user_to_account(user_attrs, labels)
         user_attrs[:tb_id] = result.first["id"] unless user.tb_id
         raise "Can't add user to account" unless result
@@ -76,9 +76,9 @@ module Teachbase
       def reset_password(contact)
         @user = Teachbase::Bot::User.find_by!(phone: contact.phone_number.to_i.to_s)
         call_tb_api_endpoint_client
-        raise "Don't know tb_id by user" unless user.tb_id
+        raise "Don't know user's (#{user.id}) tb_id" unless user.tb_id
 
-        user_attrs = user_by_contact(contact, :take_new_pass)
+        user_attrs = user_attrs_by(contact, :take_new_pass)
         result = authsession.reset_user_password(user_attrs)
         raise "Password not changed" unless result.empty?
 
@@ -88,9 +88,9 @@ module Teachbase
 
       private
 
-      def user_by_contact(contact, password_mode = :take_new_pass)
-        user_attrs = { first_name: contact.first_name, last_name: contact.last_name, phone: contact.phone_number.to_i.to_s,
-                       tb_id: user.tb_id }
+      def user_attrs_by(contact, password_mode = :take_new_pass)
+        raise unless contact.is_a?(Teachbase::Bot::ContactController)
+
         password =
           if password_mode == :generate_pass
             user.password ? user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key) : rand(100_000..999_999).to_s
@@ -98,10 +98,10 @@ module Teachbase
             taked_password = @appshell.request_user_password(:new)
             taked_password&.source
           end
-        raise unless password
+        raise "Can't get password" unless password
 
-        user_attrs[:password] = @appshell.encrypt_password(password)
-        user_attrs
+        { first_name: contact.first_name, last_name: contact.last_name, phone: contact.phone_number.to_i.to_s,
+          tb_id: user.tb_id, password: @appshell.encrypt_password(password) }
       end
 
       def auth_checker

@@ -21,7 +21,7 @@ class CreateCourseSessions < ActiveRecord::Migration[5.2]
       t.boolean :success
       t.boolean :full_access
       t.boolean :has_certificate
-      t.float :rating
+      t.float :rating, default: 0.0
       t.references :user, foreign_key: true
 
       t.timestamps

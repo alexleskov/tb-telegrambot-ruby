@@ -17,15 +17,14 @@ require './controllers/file_controller/voice'
 module Teachbase
   module Bot
     class Respond
-      MSG_TYPES = %i[text audio document video video_note voice photo contact].freeze
+      MSG_TYPES = %i[text audio document video video_note voice photo contact command data webhook].freeze
 
-      attr_reader :command_list, :msg_responder
+      attr_reader :command_list, :responder
 
-      def initialize(responder, options = {})
-        @msg_responder = responder
-        @message = msg_responder.message
+      def initialize(responder)
+        @options = {}
+        @responder = responder
         @command_list = Teachbase::Bot::CommandList.new
-        @options = options
         set_default_options
       end
 
@@ -34,18 +33,26 @@ module Teachbase
       end
 
       def init_controller
-        case @message
+        case responder.message
         when Telegram::Bot::Types::CallbackQuery
-          Teachbase::Bot::CallbackController.new(@options)
-        when Telegram::Bot::Types::Message
-          if command?
-            Teachbase::Bot::CommandController.new(@options)
-          else
-            define_msg_type
-          end
+          data
+        when Telegram::Bot::Types::Message, OpenStruct
+          command? ? command : define_msg_type
         when Teachbase::Bot::Webhook
-          Teachbase::Bot::WebhookController.new(@options)
+          webhook
         end
+      end
+
+      def webhook
+        Teachbase::Bot::WebhookController.new(@options)
+      end
+
+      def data
+        Teachbase::Bot::CallbackController.new(@options)
+      end
+
+      def command
+        Teachbase::Bot::CommandController.new(@options)
       end
 
       def text
@@ -85,24 +92,24 @@ module Teachbase
       end
 
       def reload_commands
-        I18n.with_locale msg_responder.settings.localization.to_sym do
+        I18n.with_locale responder.settings.localization.to_sym do
           @command_list = Teachbase::Bot::CommandList.new
         end
       end
 
       def command?
-        command_list.command_by?(:value, @message)
+        command_list.command_by?(:value, responder.message)
       end
 
       private
 
       def define_msg_type
-        msg_type = MSG_TYPES.each do |type|
-          if @message.respond_to?(type) && @message.public_send(type) && ![*@message.public_send(type)].empty?
-            break type
-          end
+        msg_type =
+        MSG_TYPES.select do |type|
+          responder.message.respond_to?(type) && responder.message.public_send(type) && ![*responder.message.public_send(type)].empty?
         end
-        raise "Don't know such message type: '#{@message.class}'. Avaliable: #{MSG_TYPES}" unless msg_type
+        msg_type = msg_type.first
+        raise "Can't find message type for class: '#{responder.message.class}'. Avaliable: #{MSG_TYPES}" unless msg_type
 
         public_send(msg_type)
       end

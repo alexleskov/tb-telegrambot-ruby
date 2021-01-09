@@ -28,7 +28,7 @@ module Teachbase
       end
 
       def build_back_button_data
-        { mode: :basic, sent_messages: controller.tg_user.tg_account_messages }
+        { mode: :basic, sent_messages: controller.context.tg_user.tg_account_messages }
       end
 
       def access_denied?(e)
@@ -36,7 +36,7 @@ module Teachbase
       end
 
       def demo_mode_on?
-        controller.user_settings.scenario == DEMO_MODE_NAME
+        controller.context.settings.scenario == DEMO_MODE_NAME
       end
 
       def check_status(mode = :silence)

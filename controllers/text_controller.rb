@@ -7,24 +7,20 @@ module Teachbase
     class TextController < Teachbase::Bot::Controller
 
       def initialize(params)
+        @type = "text"
         super(params, :chat)
       end
 
       def source
-        message.text
+        context.message.text
       end
 
       def save_message(mode)
-        @message_params[:text] = source
         super(mode)
       end
 
-      def message_type
-        "text"
-      end
-
       def on(command, &block)
-        super(command, :text, &block)
+        super(command, type.to_sym, &block)
       end
     end
   end

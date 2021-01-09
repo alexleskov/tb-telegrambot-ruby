@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 30) do
+ActiveRecord::Schema.define(version: 27) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,10 +21,10 @@ ActiveRecord::Schema.define(version: 30) do
     t.string "client_secret", null: false
     t.string "name"
     t.string "logo_url"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.integer "curator_tg_id"
     t.integer "support_tg_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "answers", force: :cascade do |t|
@@ -93,16 +93,15 @@ ActiveRecord::Schema.define(version: 30) do
 
   create_table "cache_messages", force: :cascade do |t|
     t.integer "message_id"
-    t.string "data"
-    t.string "text"
+    t.jsonb "data"
     t.string "message_type"
     t.string "file_id"
     t.string "file_size"
     t.string "file_type"
+    t.string "message_controller_class"
     t.bigint "tg_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "message_controller_class"
     t.index ["tg_account_id"], name: "index_cache_messages_on_tg_account_id"
   end
 
@@ -333,16 +332,15 @@ ActiveRecord::Schema.define(version: 30) do
 
   create_table "tg_account_messages", force: :cascade do |t|
     t.integer "message_id"
-    t.string "data"
-    t.string "text"
+    t.jsonb "data"
     t.string "message_type"
     t.string "file_id"
     t.string "file_size"
     t.string "file_type"
+    t.string "message_controller_class"
     t.bigint "tg_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "message_controller_class"
     t.index ["tg_account_id"], name: "index_tg_account_messages_on_tg_account_id"
   end
 

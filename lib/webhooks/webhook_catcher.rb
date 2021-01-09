@@ -13,7 +13,7 @@ module Teachbase
 
         def initialize(request)
           @request = request
-          @type_class = find_type_class(request.data["BODY"]["type"])
+          @type_class = find_type_class(request.payload["type"])
         end
 
         def init_webhook
@@ -25,7 +25,7 @@ module Teachbase
         private
 
         def avaliable?
-          @request.data["BODY"] && @request.data["BODY"]["type"] && AVALIABLE_EVENT_TYPES.include?(@request.data["BODY"]["event"])
+          @request.payload && @request.payload["type"] && AVALIABLE_EVENT_TYPES.include?(@request.payload["event"])
         end
 
         def find_type_class(type)

@@ -9,53 +9,55 @@ module Teachbase
       TAKING_DATA_CONTEXT_STATE = "taking_data"
 
       attr_reader :respond,
-                  :tg_user,
-                  :user_settings,
-                  :bot,
-                  :message,
-                  :command_list,
                   :message_params,
                   :filer,
                   :interface,
                   :c_data,
-                  :ai_mode,
-                  :action_result
+                  :action_result,
+                  :type
 
       def initialize(params, dest)
         @respond = params[:respond]
-        @ai_mode = params[:ai_mode]
         @dest = dest
         raise "Respond not found" unless respond
 
-        fetch_respond_data
         @message_params = { message_controller_class: self.class.to_s}
         @interface = Teachbase::Bot::Interfaces
         interface.configure(build_interface_config_params, dest)
-        @filer = Teachbase::Bot::Filer.new(bot)
+        @filer = Teachbase::Bot::Filer.new($app_config.tg_bot_client)
       rescue RuntimeError => e
         # $logger.debug "Initialization Controller error: #{e}"
       end
 
+      def context
+        respond.responder
+      end
+
       def take_data
-        tg_user.update!(context_state: TAKING_DATA_CONTEXT_STATE)
+        context.tg_user.update!(context_state: TAKING_DATA_CONTEXT_STATE)
         loop do
-          tg_user.reload
-          if tg_user.context_state != TAKING_DATA_CONTEXT_STATE
-            break Teachbase::Bot::Cache.extract_by(tg_user: tg_user, type: "MessageResponder").first.body.handle.controller
+          context.tg_user.reload
+          if context.tg_user.context_state != TAKING_DATA_CONTEXT_STATE
+            message = Teachbase::Bot::CacheMessage.raise_last_message_by(context.tg_user)
+            taked_context = MessageResponder.new(bot: $app_config.tg_bot_client, tg_id: context.tg_user.id, message: message)
+            taked_strategy = taked_context.handle
+            
+            break taked_strategy.controller
           end
         end
       end
 
       def save_message(mode)
-        return unless tg_user || message
+        return unless context.tg_user && context.message
 
-        message_params[:message_id] = message_id
-        message_params[:message_type] = message_type
+        @message_params[:message_id] = message_id
+        @message_params[:message_type] ||= type
+        @message_params[:data] ||= source
         case mode
         when :perm
-          tg_user.tg_account_messages.create!(message_params)
+          context.tg_user.tg_account_messages.create!(message_params)
         when :cache
-          tg_user.cache_messages.create!(message_params)
+          context.tg_user.cache_messages.create!(message_params)
         else
           raise "No such mode: '#{mode}' for saving message"
         end
@@ -63,7 +65,6 @@ module Teachbase
 
       def reload_commands_list
         respond.reload_commands
-        fetch_respond_data
         interface.configure(build_interface_config_params, @dest)
       end
 
@@ -78,23 +79,19 @@ module Teachbase
       protected
 
       def build_interface_config_params
-        { tg_user: tg_user, bot: bot, message: message, user_settings: user_settings, command_list: command_list }
-      end
-
-      def fetch_respond_data
-        @tg_user = respond.msg_responder.tg_user
-        @bot = respond.msg_responder.bot
-        @message = respond.msg_responder.message
-        @user_settings = respond.msg_responder.settings
-        @command_list = respond.command_list
+        { tg_user: context.tg_user,
+          bot: $app_config.tg_bot_client,
+          message: context.message,
+          user_settings: context.settings,
+          command_list: respond.command_list }
       end
 
       def find_msg_value(msg_type)
-        message.public_send(msg_type) if message.respond_to?(msg_type)
+        context.message.public_send(msg_type) if context.message.respond_to?(msg_type)
       end
 
       def message_id
-        message.respond_to?(:message_id) ? message.message_id : message.message.message_id
+        context.message.respond_to?(:message_id) ? context.message.message_id : context.message.message.message_id
       end
     end
   end

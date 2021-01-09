@@ -44,8 +44,8 @@ module Teachbase
           interface.sys.menu.farewell(appshell.user_fullname(:string)).show
           appshell.reset_to_default_scenario if demo_mode_on?
           appshell.logout
-          appshell.context.handle
-          appshell.context.current_strategy.starting
+          appshell.controller.context.handle
+          appshell.controller.context.current_strategy.starting
         rescue RuntimeError => e
           interface.sys.text.on_error(e).show
         end
@@ -59,13 +59,13 @@ module Teachbase
             appshell.reset_to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
             return interface.sys.menu(text: I18n.t('declined')).starting.show
           end
-          raise if contact.tg_user.id != controller.tg_user.id
+          raise if contact.user_id != controller.context.tg_user.id
 
           result = appshell.authorizer.reset_password(contact)
           raise "User password not changed" unless result
 
           interface.sys.text.password_changed.show
-          appshell.context.current_strategy.sign_in
+          appshell.controller.context.current_strategy.sign_in
         rescue RuntimeError, TeachbaseBotException => e
           appshell.logout
           interface.sys.menu(text: I18n.t('declined')).starting.show
@@ -122,7 +122,7 @@ module Teachbase
         private
 
         def strategies_methods_class
-          appshell.context.current_strategy ? appshell.context.current_strategy.class : default_strategies_methods_class
+          appshell.controller.context.current_strategy ? appshell.controller.context.current_strategy.class : default_strategies_methods_class
         end
       end
     end

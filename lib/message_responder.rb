@@ -3,23 +3,24 @@
 class MessageResponder
   include Formatter
 
-  attr_reader :message, :bot, :tg_user, :settings
+  attr_reader :bot, :tg_user, :settings, :first_name, :last_name, :username, :tg_id, :message
   attr_accessor :strategy_class, :ai_mode
 
   def initialize(options)
     @bot = options[:bot]
     @message = options[:message]
     @ai_mode = options[:ai_mode] || $app_config.ai_mode
-    @tg_user = find_tg_user
+    fetching_tg_user_data_by(options)
+    @tg_user = call_tg_user
     raise "Can't find tg_user" unless tg_user
-
+    
     @settings = Teachbase::Bot::Setting.find_or_create_by!(tg_account_id: tg_user.id)
     @strategy_class = options[:strategy_class] || current_user_strategy_class
   end
 
   def respond
     I18n.with_locale settings.localization.to_sym do
-      Teachbase::Bot::Respond.new(self, ai_mode: ai_mode)
+      Teachbase::Bot::Respond.new(self)
     end
   end
 
@@ -28,7 +29,6 @@ class MessageResponder
   end
 
   def handle
-    p "HANDLE HERE"
     @strategy = strategy_class.new(respond.init_controller)
   end
 
@@ -54,16 +54,19 @@ class MessageResponder
 
   private
 
-  def find_tg_user
-    finded_tg_user = Teachbase::Bot::TgAccount.find_or_create_by!(id: message.from.id)
-    update_tg_user_info(finded_tg_user)
-    finded_tg_user
+  def fetching_tg_user_data_by(options)
+    message_from = options[:message].from if options[:message] && options[:message].from
+    @first_name  = message_from ? message_from.first_name : options[:first_name]
+    @last_name   = message_from ? message_from.last_name  : options[:last_name]
+    @username    = message_from ? message_from.username   : options[:username]
+    @tg_id       = message_from ? message_from.id         : options[:tg_id]
   end
 
-  def update_tg_user_info(tg_user_on_update)
-    return unless message&.from
+  def call_tg_user
+    finded_tg_user = Teachbase::Bot::TgAccount.find_or_create_by!(id: tg_id)
+    return finded_tg_user unless first_name && last_name && username
 
-    tg_user_on_update.update!(first_name: message.from.first_name, last_name: message.from.last_name,
-                              username: message.from.username)
+    finded_tg_user.update!(first_name: first_name, last_name: last_name, username: username)
+    finded_tg_user
   end
 end

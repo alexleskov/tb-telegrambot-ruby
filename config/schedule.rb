@@ -2,10 +2,12 @@
 
 scheduler = Rufus::Scheduler.new
 
-scheduler.every '2m', name: "New courses notification" do |job|
-  cached_messages_by_tg_users = Teachbase::Bot::Cache.extract_by(type: "Teachbase::Bot::Webhook::CourseStat", group_by: :tg_user_id)
-  notifications_params = Teachbase::Bot::Helper::Notification.new(cached_messages_by_tg_users, :cs).build
+scheduler.every '3m', name: "New courses notification" do |job|
+  result = Teachbase::Bot::TgAccountMessage.raise_webhook_messages_by(type: "course_stat", event: "created")
+  raised_messages_by_tg_users_id = result[:raised].group_by { |raised_message| raised_message.tg_account.id}
+  notifications_params = Teachbase::Bot::Helper::Notification.new(raised_messages_by_tg_users_id, :cs).build
   job.kill unless notifications_params
+  result[:raw].destroy_all
 
   notifications_params.each do |notify_param|
     I18n.with_locale notify_param[:settings].localization.to_sym do
