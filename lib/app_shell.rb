@@ -25,7 +25,7 @@ module Teachbase
 
         @account_name ||= DEFAULT_ACCOUNT_NAME
         @controller = controller
-        @user_settings = controller.user_settings
+        @user_settings = controller.context.settings
         @authorizer = Teachbase::Bot::Authorizer.new(self)
         @data_loader = Teachbase::Bot::DataLoaders.new(self)
         set_scenario
@@ -50,7 +50,7 @@ module Teachbase
       end
 
       def user_with_full_name
-        user(:without_api) || controller.tg_user
+        user(:without_api) || controller.context.tg_user
       end
 
       def account_name
@@ -77,8 +77,8 @@ module Teachbase
 
         user_settings.update!(scenario: scenario_name)
 
-        context.strategy = context.current_user_strategy_class
-        controller.interface.sys_class = context.current_user_interface_class
+        controller.context.strategy_class = controller.context.current_user_strategy_class
+        controller.interface.sys_class = controller.context.current_user_interface_class
         controller.reload_commands_list
       end
 
@@ -102,11 +102,21 @@ module Teachbase
                         account_id: authorizer.account.tb_id)
       end
 
-      def request_data(validate_type)
-        msg_controller = controller.take_data
-        return if break_taking_data?(msg_controller)
+      def request_data(answer_type)
+        user_answer = controller.take_data
+        return if break_taking_data?(user_answer)
 
-        msg_controller if validation(validate_type, msg_controller.source)
+        user_answer if validation(answer_type, user_answer.source)
+      end
+
+      def request_answer_bulk(params)
+        loop do
+          user_answer = request_data(params[:answer_type])
+          break if user_answer.nil?
+
+          user_answer.save_message(params[:saving])
+          controller.interface.sys.menu(params).ready.show
+        end
       end
 
       def request_user_data
@@ -154,15 +164,15 @@ module Teachbase
       end
 
       def clear_cached_answers
-        controller.tg_user.cache_messages.destroy_all
+        controller.context.tg_user.cache_messages.destroy_all
       end
 
       def cached_answers_texts
-        controller.tg_user.cache_messages.texts
+        controller.context.tg_user.cache_messages.texts
       end
 
       def cached_answers_files
-        file_ids = controller.tg_user.cache_messages.files_ids
+        file_ids = controller.context.tg_user.cache_messages.files_ids
         return [] if file_ids.empty?
 
         file_ids
@@ -182,21 +192,7 @@ module Teachbase
         password.encrypt(:symmetric, password: $app_config.load_encrypt_key)
       end
 
-      def context
-        controller.respond.msg_responder
-      end
-
       private
-
-      def request_answer_bulk(params)
-        loop do
-          user_answer = request_data(params[:answer_type])
-          break if user_answer.nil?
-
-          user_answer.save_message(params[:saving])
-          controller.interface.sys.menu(params).ready.show
-        end
-      end
 
       def break_taking_data?(msg_controller)
         return !msg_controller unless msg_controller

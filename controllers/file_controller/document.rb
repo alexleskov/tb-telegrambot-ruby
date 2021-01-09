@@ -12,7 +12,7 @@ module Teachbase
         end
 
         def source
-          message.document
+          context.message.document
         end
       end
     end

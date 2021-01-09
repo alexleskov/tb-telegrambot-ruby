@@ -17,7 +17,7 @@ module Teachbase
           interface.sys.menu.take_contact.show
           contact = appshell.request_data(:none)
           raise unless contact.is_a?(Teachbase::Bot::ContactController)
-          raise if contact.tg_user.id != controller.tg_user.id
+          raise if contact.user_id != controller.context.tg_user.id
 
           appshell.authorizer.registration(contact, "193850" => "193851")
         rescue RuntimeError, TeachbaseBotException => e
@@ -34,7 +34,7 @@ module Teachbase
           interface.sys.content(file: "https://storage.yandexcloud.net/tbpublic/other/2868-300x300.png", caption: "#{Emoji.t(:wave)} #{I18n.t('about_bot_demo_mode')}").photo
           interface.sys.menu.after_auth.show
         rescue RuntimeError, TeachbaseBotException => e
-          # $logger.debug "On auth error: #{e.class}. #{e.inspect}"
+          $logger.debug "On auth error: #{e.class}. #{e.inspect}"
           title = to_text_by_exceiption_code(e)
           title = "#{I18n.t('accounts')}: #{title}" if e.is_a?(TeachbaseBotException::Account)
           if access_denied?(e) || e.is_a?(TeachbaseBotException::Account)

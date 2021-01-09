@@ -6,14 +6,17 @@ module Teachbase
   module Bot
     class CommandController < Teachbase::Bot::Controller
       def initialize(params)
+        @type = "command"
         super(params, :chat)
       end
 
-      def find_command
-        @c_data = command_list.find_by(:value, message.text).key
+      def source
+        context.message.text
       end
 
-      alias source find_command
+      def find_command
+        @c_data = respond.command_list.find_by(:value, source).key
+      end
     end
   end
 end

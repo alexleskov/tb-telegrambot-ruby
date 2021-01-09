@@ -27,7 +27,6 @@ require './lib/app_shell'
 require './lib/filer'
 require './lib/breadcrumb'
 require './lib/ai'
-require './lib/cache'
 require './lib/helpers/notification'
 require './lib/interfaces/interfaces'
 require './routers/routers/'
@@ -92,8 +91,6 @@ require './models/cache_message'
 require './models/category'
 require './models/course_category'
 require './models/command'
-
-require './config/schedule'
 
 $app_config = AppConfigurator.instance
 $app_config.configure

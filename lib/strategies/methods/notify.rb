@@ -36,16 +36,29 @@ module Teachbase
 
         def about(*entities_tb_id)
           appshell.authsession(:with_api)
-          notification_data = []
+          notifications_data = []
           entities_tb_id.flatten.each do |entity_tb_id|
-            entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id)
-            entity_loader.progress
-            notification_data << interface.public_send(type, entity_loader.info).text.public_send(type).text
+            notifications_data << build_notification_data(entity_tb_id)
           end
-          interface.sys.text(text: "#{default_message_about_new} #{I18n.t('studying').downcase}:\n#{notification_data.join("\n")}").show
+          return if notifications_data.compact.empty?
+
+          interface.sys.text(text: "#{default_message_about_new} #{I18n.t('studying').downcase}:\n#{notifications_data.join("\n")}").show
         end
 
         private
+
+      def build_notification_data(entity_tb_id)
+          entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id)
+
+          if type == :cs 
+            entity_loader.progress
+            interface.public_send(type, entity_loader.info).text.public_send(type).text
+          else
+            raise "Don't know how build notification interface for this type: '#{type}'"
+          end
+        rescue RestClient::NotFound => e
+          nil
+        end
 
         def build_user_message
           answer_data = build_answer_data(files_mode: :download_url)
@@ -53,7 +66,7 @@ module Teachbase
         end
 
         def link_on_tg_user
-          by_tg_user = appshell.controller.tg_user
+          by_tg_user = appshell.controller.context.tg_user
           "<a href='tg://user?id=#{by_tg_user.id}'>#{by_tg_user.first_name} #{by_tg_user.last_name}</a>"
         end
 

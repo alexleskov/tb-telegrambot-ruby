@@ -5,22 +5,23 @@ require './controllers/controller'
 module Teachbase
   module Bot
     class CallbackController < Teachbase::Bot::Controller
+
       def initialize(params)
+        @type = "data"
         super(params, :from)
-        save_message
+        save_message(:perm)
       end
 
       def source
-        message.data
+        context.message.data
       end
 
-      def save_message
-        @message_params = { data: source, message_type: "callback_data" }
-        super(:perm)
+      def save_message(mode)
+        super(mode)
       end
 
       def on(command, &block)
-        super(command, :data, &block)
+        super(command, type.to_sym, &block)
       end
     end
   end

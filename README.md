@@ -78,10 +78,10 @@ After installation and configuration you can start the telegram bot:
 bin/bot
 ```
 
-If all is ok on starting in console you will see message:
+IRB console:
 
 ```bush
-`"DEBUG -- : Starting telegram bot"
+bin/console
 ```
 
 

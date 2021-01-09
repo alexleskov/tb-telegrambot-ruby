@@ -35,7 +35,13 @@ module Teachbase
       def destination
         return unless message
 
-        message.public_send(@dest) if message.respond_to? @dest
+        @dest =
+        if message.respond_to?(@dest)
+          @dest
+        else
+          MSG_DESTS.select { |msg_dest| message.respond_to?(msg_dest) }.first
+        end
+        message.public_send(@dest)
       end
 
       def find_chat_id

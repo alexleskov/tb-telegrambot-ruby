@@ -12,7 +12,7 @@ module Teachbase
         end
 
         def source
-          message.video
+          context.message.video
         end
       end
     end

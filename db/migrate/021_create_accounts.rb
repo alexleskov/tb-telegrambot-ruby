@@ -8,6 +8,8 @@ class CreateAccounts < ActiveRecord::Migration[5.2]
       t.string :client_secret, null: false
       t.string :name
       t.string :logo_url
+      t.integer :curator_tg_id
+      t.integer :support_tg_id
 
       t.timestamps
     end

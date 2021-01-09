@@ -12,7 +12,7 @@ module Teachbase
         end
 
         def source
-          message.voice
+          context.message.voice
         end
       end
     end

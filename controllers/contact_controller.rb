@@ -5,19 +5,27 @@ require './controllers/controller'
 module Teachbase
   module Bot
     class ContactController < Teachbase::Bot::Controller
-      attr_reader :phone_number, :first_name, :last_name, :tg_user, :vcard
+      attr_reader :phone_number, :first_name, :last_name, :user_id, :vcard
 
       def initialize(params)
+        @type = "contact"
         super(params, :chat)
-        @phone_number = message.contact.phone_number
-        @first_name = message.contact.first_name
-        @last_name = message.contact.last_name
-        @tg_user = message.contact.user_id
-        @vcard = message.contact.vcard
+        @phone_number = source.phone_number
+        @first_name = source.first_name
+        @last_name = source.last_name
+        @user_id = source.user_id
+        @vcard = source.vcard
       end
 
       def source
-        self
+        context.message.contact
+      end
+
+      def save_message(mode)
+        return unless source
+
+        @message_params[:data] = { phone_number: phone_number, first_name: first_name, last_name: last_name, user_id: user_id }
+        super(mode)
       end
     end
   end

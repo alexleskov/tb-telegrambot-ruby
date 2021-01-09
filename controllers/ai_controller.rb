@@ -11,6 +11,7 @@ module Teachbase
 
       def initialize(params)
         @ai = Teachbase::Bot::AI.new
+        @type = "ai"
         super(params)
         @reaction = ai.find_reaction(source)
       end
