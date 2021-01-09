@@ -12,7 +12,7 @@ module Teachbase
         end
 
         def source
-          context.message.photo.first
+          context.message.photo.is_a?(Array) ? context.message.photo.first : context.message.photo
         end
       end
     end

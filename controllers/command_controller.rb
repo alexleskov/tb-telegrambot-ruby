@@ -10,11 +10,13 @@ module Teachbase
         super(params, :chat)
       end
 
-      def find_command
-        @c_data = respond.command_list.find_by(:value, context.message.text).key
+      def source
+        context.message.text
       end
 
-      alias source find_command
+      def find_command
+        @c_data = respond.command_list.find_by(:value, source).key
+      end
     end
   end
 end
