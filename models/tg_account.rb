@@ -13,6 +13,10 @@ module Teachbase
       has_many :bot_messages, dependent: :destroy
       has_many :tg_account_messages, dependent: :destroy
       has_many :cache_messages, dependent: :destroy
+
+      def on_taking_data?
+        reload.context_state == Teachbase::Bot::Controller::TAKING_DATA_CONTEXT_STATE
+      end
     end
   end
 end

@@ -36,8 +36,7 @@ module Teachbase
       def take_data
         context.tg_user.update!(context_state: TAKING_DATA_CONTEXT_STATE)
         loop do
-          context.tg_user.reload
-          next unless context.tg_user.context_state != TAKING_DATA_CONTEXT_STATE
+          next if context.tg_user.on_taking_data?
 
           message = Teachbase::Bot::CacheMessage.raise_last_message_by(context.tg_user)
           taked_context = MessageResponder.new(bot: $app_config.tg_bot_client, tg_id: context.tg_user.id, message: message)
