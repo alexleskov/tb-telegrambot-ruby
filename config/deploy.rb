@@ -38,18 +38,21 @@ namespace :deploy do
   task :start_bot do
     on roles(:all) do
       execute :sudo, :monit, 'start tb_bot'
+      execute :sudo, :monit, 'start tb_bot_schedule'
     end
   end
 
   task :stop_bot do
     on roles(:all) do
       execute :sudo, :monit, 'stop tb_bot'
+      execute :sudo, :monit, 'stop tb_bot_schedule'
     end
   end
 
   task :restart_bot do
     on roles(:all) do
       execute :sudo, :monit, 'restart tb_bot'
+      execute :sudo, :monit, 'restart tb_bot_schedule'
       invoke "puma:restart"
     end
   end
