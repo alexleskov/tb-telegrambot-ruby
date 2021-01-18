@@ -1,5 +1,12 @@
 # frozen_string_literal: true
 
+Process.setproctitle("tb_bot_schedule")
+File.open("./tmp/bot_schedule.pid", "w") do |f|
+  f << Process.pid
+end
+
+require './application'
+
 scheduler = Rufus::Scheduler.new
 
 scheduler.every '3m', name: "New courses notification" do |job|
@@ -15,3 +22,5 @@ scheduler.every '3m', name: "New courses notification" do |job|
     end
   end
 end
+
+scheduler.join
