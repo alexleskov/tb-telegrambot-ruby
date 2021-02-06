@@ -13,6 +13,10 @@ class TextCommandButton < Button
     def take_contact(commands)
       g(request_contact: true, button_sign: :send_contact, commands: commands)
     end
+
+    def decline(commands)
+      g(button_sign: :decline, commands: commands)
+    end
   end
 
   attr_reader :commands, :request_contact

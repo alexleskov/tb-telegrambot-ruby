@@ -14,7 +14,8 @@ module Teachbase
                           studying: Emoji.t(:mortar_board),
                           documents: Emoji.t(:school_satchel),
                           demo_mode: Emoji.t(:tv),
-                          send_contact: Emoji.t(:pager) }
+                          send_contact: Emoji.t(:pager),
+                          decline: Emoji.t(:x) }
 
       class << self
         attr_reader :sign_and_emoji
