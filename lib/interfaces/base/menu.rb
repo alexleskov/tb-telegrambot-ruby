@@ -16,8 +16,10 @@ module Teachbase
           def take_contact
             @type = :menu
             @mode ||= :none
+            @slices_count = 2
             @text ||= "#{I18n.t('meet_with_bot')}\n\n#{Emoji.t(:point_down)} #{I18n.t('click_to_send_contact')} #{I18n.t('notice_about_safety')}"
-            @buttons = TextCommandKeyboard.collect(buttons: [TextCommandButton.take_contact(init_commands)]).raw
+            @buttons = TextCommandKeyboard.collect(buttons: [TextCommandButton.take_contact(init_commands),
+                                                             TextCommandButton.decline(init_commands)]).raw
             self
           end
 

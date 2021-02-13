@@ -40,6 +40,12 @@ module Teachbase
           interface.sys.text.help_info.show
         end
 
+        def demo_mode
+          appshell.logout
+          appshell.change_scenario(Teachbase::Bot::Strategies::DEMO_MODE_NAME)
+          appshell.controller.context.handle.starting
+        end
+
         def sign_out
           interface.sys.menu.farewell(appshell.user_fullname(:string)).show
           appshell.reset_to_default_scenario if demo_mode_on?
@@ -91,6 +97,8 @@ module Teachbase
         alias accounts change_account
 
         def ready; end
+
+        def decline; end
 
         def send_contact; end
 

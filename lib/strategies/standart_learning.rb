@@ -11,12 +11,6 @@ module Teachbase
           interface.sys.menu.starting.show
         end
 
-        def demo_mode
-          appshell.logout
-          appshell.change_scenario(Teachbase::Bot::Strategies::DEMO_MODE_NAME)
-          appshell.controller.context.handle.starting
-        end
-
         def sign_in
           appshell.reset_to_default_scenario if demo_mode_on?
           interface.sys.text.on_enter(appshell.account_name).show
