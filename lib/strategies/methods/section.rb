@@ -51,7 +51,7 @@ module Teachbase
           section_db = section_loader.db_entity
           interface.sys(section_db).menu(back_button: { mode: :custom, order: :ending,
                                                         action: router.g(:section, :root, position: section_db.position,
-                                                                         p: [cs_id: cs_tb_id]).link },
+                                                                                          p: [cs_id: cs_tb_id]).link },
                                          title_params: { stages: %i[title] }).links(section_loader.links).show
         end
 

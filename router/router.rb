@@ -82,7 +82,7 @@ module Teachbase
       end
 
       def g(route_name, path, options = {})
-        self.class::find_route_class(route_name).new(path, options)
+        self.class.find_route_class(route_name).new(path, options)
       end
     end
   end

@@ -42,7 +42,7 @@ module Teachbase
 
         def build
           raise "Can't find such path: '#{path}'. For #{self.class}" unless respond_to?(path)
-          
+
           result = public_send(path)
           result = params ? add_params(result) : result
           result.join(DELIMETER).to_s

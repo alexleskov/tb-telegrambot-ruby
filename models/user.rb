@@ -7,7 +7,7 @@ module Teachbase
     class User < ActiveRecord::Base
       include Decorators::User
 
-      TYPE_TABLES = { cs: "course_sessions", document: "documents" }
+      TYPE_TABLES = { cs: "course_sessions", document: "documents" }.freeze
 
       has_many :profiles, dependent: :destroy
       has_many :auth_sessions, dependent: :destroy
@@ -72,7 +72,7 @@ module Teachbase
         raise "Don't know such table type: '#{type}'" unless table_name
 
         default_query_string = "#{options[:option_key]} #{find_params(options[:option_key])} AND #{table_name}.account_id = :account_id"
-        result_query_string = 
+        result_query_string =
           case type.to_sym
           when :cs
             if options[:scenario].to_s != "standart_learning"

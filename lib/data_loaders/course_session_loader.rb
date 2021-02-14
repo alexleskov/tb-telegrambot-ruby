@@ -141,7 +141,7 @@ module Teachbase
 
       def courses_db_with_paginate
         appshell.user.find_all_by_type(:cs, status: status, account_id: appshell.current_account.id, limit: limit, offset: offset,
-                                        scenario: category).order(started_at: :desc)
+                                            scenario: category).order(started_at: :desc)
       end
 
       def last_version

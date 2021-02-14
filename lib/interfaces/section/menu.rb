@@ -50,7 +50,7 @@ module Teachbase
             sections.each do |section|
               result << section.title_with_state(state: section.find_state,
                                                  route: router.g(:section, :root, position: section.position,
-                                                                 p: [cs_id: entity.tb_id]).link)
+                                                                                  p: [cs_id: entity.tb_id]).link)
             end
             return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
@@ -83,7 +83,7 @@ module Teachbase
           def build_content_button(content, type_by_section)
             InlineCallbackButton.g(button_sign: button_sign_by_content_type(type_by_section.to_s, content),
                                    callback_data: router.g(:content, :root, id: content.tb_id,
-                                                           p: [cs_id: cs_tb_id, sec_id: content.section_id, type: type_by_section]).link,
+                                                                            p: [cs_id: cs_tb_id, sec_id: content.section_id, type: type_by_section]).link,
                                    position: content.position)
           end
 
