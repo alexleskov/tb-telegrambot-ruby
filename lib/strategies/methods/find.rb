@@ -17,8 +17,9 @@ module Teachbase
           @result =
             case what.to_sym
             when :cs
-              appshell.user.find_by_type(:cs, find_options).order(rating: :desc, name: :asc)
+              appshell.user.find_all_by_type(:cs, find_options).order(rating: :desc, name: :asc)
             when :document
+              appshell.user.find_all_by_type(:document, find_options).order(name: :asc)
             else
               raise "Don't know how find: '#{what}'."
             end
@@ -30,8 +31,17 @@ module Teachbase
         def show_result
           return interface.sys.text.on_empty.show if !result && result.empty?
 
-          interface.cs.menu(title_params: { text: "#{Emoji.t(:mag_right)} \"#{keyword}\"" }, mode: :none,
-                            back_button: build_back_button_data).main(result).show
+          menu_param = { mode: :none, back_button: build_back_button_data }
+          text_param = { text: "#{Emoji.t(:mag_right)} \"#{keyword}\"" }
+          case what.to_sym
+          when :cs
+            menu_param[:title_params] = text_param
+            interface.cs.menu(menu_param).list(result).show
+          when :document
+            interface.document.menu(menu_param.merge!(text_param)).list(result).show
+          else
+            raise "Don't know how find: '#{what}'."
+          end
         end
 
         def take_keyword

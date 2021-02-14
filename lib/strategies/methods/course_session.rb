@@ -27,7 +27,7 @@ module Teachbase
           interface.cs.menu(title_params: { text: course_sessions.first.sign_course_state },
                             route_params: { route: :cs, path: :list, param: state },
                             back_button: { mode: :custom, action: router.g(:cs, :list).link })
-                   .main(course_sessions, limit: limit, offset: offset, all_count: total_cs_count).show
+                   .list(course_sessions, limit: limit, offset: offset, all_count: total_cs_count).show
         end
 
         def update_all(mode = :none)

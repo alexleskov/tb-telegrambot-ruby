@@ -7,6 +7,8 @@ module Teachbase
     class User < ActiveRecord::Base
       include Decorators::User
 
+      TYPE_TABLES = { cs: "course_sessions", document: "documents" }
+
       has_many :profiles, dependent: :destroy
       has_many :auth_sessions, dependent: :destroy
       has_many :tg_accounts, through: :auth_sessions
@@ -19,7 +21,7 @@ module Teachbase
         end
       end
 
-      def find_by_type(type, params)
+      def find_all_by_type(type, params)
         option_key = params.map { |key, _value| key if %i[status tb_id name].include?(key.to_sym) }.first
         query_param = { option_key.to_sym => params[option_key], account_id: params[:account_id] }
         case type.to_sym
@@ -32,33 +34,15 @@ module Teachbase
             query_param[:category] = find_category_cname_by(params[:scenario]) if params[:scenario]
           end
         when :document
+          list = documents
+        else
+          raise "Don't know such type: '#{type}'"
         end
         query_string = build_query_string(type, option_key: option_key, query_param: query_param, scenario: params[:scenario])
         list = list.where(query_string, query_param)
         return list unless params[:limit] && params[:offset]
 
         list.limit(params[:limit]).offset(params[:offset])
-      end
-
-      def course_sessions_by(params)
-        params[:scenario] ||= "standart_learning"
-        sessions_list = course_sessions
-        option_key = params.map { |key, _value| key if %i[status tb_id name].include?(key.to_sym) }.first
-        query_param = { option_key.to_sym => params[option_key], account_id: params[:account_id] }
-        query_string =
-          if params[:scenario].to_s == "standart_learning"
-            "#{option_key} #{find_params(option_key)} AND account_id = :account_id"
-          else
-            sessions_list = sessions_list.joins('LEFT JOIN course_categories ON course_categories.course_session_id = course_sessions.id
-                                                 LEFT JOIN categories ON categories.id = course_categories.category_id')
-            query_param[:category] = find_category_cname_by(params[:scenario])
-            "course_sessions.#{option_key} #{find_params(option_key)}
-             AND course_sessions.account_id = :account_id AND categories.name ILIKE :category"
-          end
-        sessions_list = sessions_list.where(query_string, query_param)
-        return sessions_list unless params[:limit] && params[:offset]
-
-        sessions_list.limit(params[:limit]).offset(params[:offset])
       end
 
       def sections_by_cs_tbid(cs_tb_id)
@@ -84,17 +68,22 @@ module Teachbase
       private
 
       def build_query_string(type, options)
-        case type.to_sym
-        when :cs
-          table_name = "course_sessions"
-          if options[:scenario].to_s == "standart_learning"
-            "#{table_name}.#{options[:option_key]} #{find_params(options[:option_key])} AND #{table_name}.account_id = :account_id"
+        table_name = TYPE_TABLES[type.to_sym]
+        raise "Don't know such table type: '#{type}'" unless table_name
+
+        default_query_string = "#{options[:option_key]} #{find_params(options[:option_key])} AND #{table_name}.account_id = :account_id"
+        result_query_string = 
+          case type.to_sym
+          when :cs
+            if options[:scenario].to_s != "standart_learning"
+              "#{default_query_string} AND categories.name ILIKE :category"
+            else
+              default_query_string
+            end
           else
-            "#{table_name}.#{options[:option_key]} #{find_params(options[:option_key])}
-             AND #{table_name}.account_id = :account_id AND categories.name ILIKE :category"
+            default_query_string
           end
-        when :document
-        end
+        "#{table_name}.#{result_query_string}"
       end
 
       def find_params(option_key)

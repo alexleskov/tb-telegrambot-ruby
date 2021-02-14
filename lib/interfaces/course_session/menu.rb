@@ -5,7 +5,7 @@ module Teachbase
     class Interfaces
       class CourseSession
         class Menu < Teachbase::Bot::Interfaces::Menu
-          def main(course_sessions, pagination_options = {})
+          def list(course_sessions, pagination_options = {})
             @type = :menu_inline
             @disable_notification = true
             @slices_count = 2
