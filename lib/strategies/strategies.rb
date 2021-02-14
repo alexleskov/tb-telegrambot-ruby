@@ -14,7 +14,7 @@ module Teachbase
         @controller = controller
         @interface = controller.interface
         @appshell = Teachbase::Bot::AppShell.new(controller)
-        @router = Teachbase::Bot::Routers.new
+        @router = Teachbase::Bot::Router.new
       end
 
       def default_strategies_methods_class

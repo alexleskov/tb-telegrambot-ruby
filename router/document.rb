@@ -2,8 +2,8 @@
 
 module Teachbase
   module Bot
-    class Routers
-      class Document < Teachbase::Bot::Routers::Controller
+    class Router
+      class Document < Teachbase::Bot::Router::Route
         SOURCE = "doc"
       end
     end

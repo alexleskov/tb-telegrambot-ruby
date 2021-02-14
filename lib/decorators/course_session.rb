@@ -50,7 +50,7 @@ module Decorators
     end
 
     def sign_aval_sections_count_from
-      "#{Formatter::DELIMETER}#{I18n.t('avaliable')} #{I18n.t('section3')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}"
+      "#{Formatter::DELIMETER}#{I18n.t('avaliable')} #{I18n.t('section2')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}"
     end
 
     def sign_open(params)

@@ -29,16 +29,16 @@ module Teachbase
             return unless entity.course_session.active? && entity.can_submit?
 
             InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('answer').downcase}",
-                                   callback_data: router.content(path: :take_answer, id: entity.tb_id,
-                                                                 p: [answer_type: :answer, cs_id: cs_tb_id]).link)
+                                   callback_data: router.g(:content, :take_answer, id: entity.tb_id,
+                                                           p: [cs_id: cs_tb_id, answer_type: :answer]).link)
           end
 
           def build_comment_button
             return unless entity.can_comment?
 
             InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('comment').downcase}",
-                                   callback_data: router.content(path: :take_answer, id: entity.tb_id,
-                                                                 p: [answer_type: :comment, cs_id: cs_tb_id]).link)
+                                   callback_data: router.g(:content, :take_answer, id: entity.tb_id,
+                                                           p: [cs_id: cs_tb_id, answer_type: :comment]).link)
           end
         end
       end

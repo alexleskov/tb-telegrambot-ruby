@@ -12,15 +12,7 @@ module Teachbase
             @mode ||= :edit_msg
             @text ||= ["#{create_title(title_params)}\n",
                        "#{build_list(course_sessions)}\n"]
-            buttons_list =
-              if pagination_options.empty?
-                []
-              else
-                current_page = (pagination_options[:offset] / pagination_options[:limit]) + 1
-                all_page_count = (pagination_options[:all_count].to_f / pagination_options[:limit].to_f).ceil
-                @text << "#{I18n.t('page')} #{current_page} #{I18n.t('from')} #{all_page_count}"
-                [build_pagination_button(:less, pagination_options), build_pagination_button(:more, pagination_options)]
-              end
+            buttons_list = pagination_buttons(pagination_options)
             buttons_list.compact!
             keyboard_param = { buttons: buttons_list }
             if buttons_list.empty? || (buttons_list.first.action_type == :more && buttons_list.size == 1)
@@ -42,10 +34,19 @@ module Teachbase
 
           private
 
+          def pagination_buttons(pagination_options)
+            return [] if pagination_options.empty?
+
+            current_page = (pagination_options[:offset] / pagination_options[:limit]) + 1
+            all_page_count = (pagination_options[:all_count].to_f / pagination_options[:limit].to_f).ceil
+            @text << "#{I18n.t('page')} #{current_page} #{I18n.t('from')} #{all_page_count}"
+            [build_pagination_button(:less, pagination_options), build_pagination_button(:more, pagination_options)]
+          end
+
           def build_list(course_sessions)
             result = []
             course_sessions.each do |cs|
-              result << cs.sign_open(cover_url: '', route: router.cs(path: :entity, id: cs.tb_id).link).to_s
+              result << cs.sign_open(cover_url: '', route: router.g(:cs, :root, id: cs.tb_id).link).to_s
             end
             return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
@@ -54,9 +55,10 @@ module Teachbase
 
           def state_buttons
             buttons_actions = []
-            Teachbase::Bot::CourseSession::STATES.each { |state| buttons_actions << router.cs(path: :list, p: [param: state.to_s]).link }
+            Teachbase::Bot::CourseSession::STATES.each { |state| buttons_actions << router.g(:cs, :list, p: [param: state.to_s]).link }
             InlineCallbackKeyboard.g(buttons_signs: to_i18n(Teachbase::Bot::CourseSession::STATES.dup, "cs_"),
-                                     buttons_actions: buttons_actions).raw
+                                     buttons_actions: buttons_actions,
+                                     back_button: back_button).raw
           end
         end
       end

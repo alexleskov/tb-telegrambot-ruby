@@ -7,7 +7,8 @@ module Teachbase
         DEFAULT_COUNT_PAGINAION = 5
 
         def states
-          interface.cs.menu.states.show
+          interface.cs.menu(back_button: { mode: :custom, action: router.g(:main, :find, p: [type: :cs]).link,
+                                           button_sign: I18n.t('search'), emoji: :mag, order: :ending }).states.show
         end
 
         def list_by(state, limit = DEFAULT_COUNT_PAGINAION, offset = 0, category = nil)
@@ -24,8 +25,8 @@ module Teachbase
           return interface.sys.text.on_empty.show if course_sessions.empty?
 
           interface.cs.menu(title_params: { text: course_sessions.first.sign_course_state },
-                            path_params: { object_type: :cs, path: :list, param: state },
-                            back_button: { mode: :custom, action: router.cs(path: :list).link })
+                            route_params: { route: :cs, path: :list, param: state },
+                            back_button: { mode: :custom, action: router.g(:cs, :list).link })
                    .main(course_sessions, limit: limit, offset: offset, all_count: total_cs_count).show
         end
 

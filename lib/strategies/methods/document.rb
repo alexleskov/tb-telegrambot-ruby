@@ -15,14 +15,12 @@ module Teachbase
         private
 
         def build_folder_button_params(documents_list)
-          if @folder_id
-            folder = documents_list.find_by(tb_id: @folder_id, is_folder: true)
-            action = folder.folder_id ? router.document(path: :entity, id: folder.folder_id).link : router.main(path: :documents).link
-            { text: "#{Emoji.t(folder.sign_emoji_by_type)}<b>#{folder.title}</b>",
-              back_button: { mode: :custom, action: action, order: :ending } }
-          else
-            {}
-          end
+          return {} unless @folder_id
+          
+          folder = documents_list.find_by(tb_id: @folder_id, is_folder: true)
+          action = folder.folder_id ? router.g(:document, :root, id: folder.folder_id).link : router.g(:main, :documents).link
+          { text: "#{Emoji.t(folder.sign_emoji_by_type)}<b>#{folder.title}</b>",
+            back_button: { mode: :custom, action: action, order: :ending } }
         end
       end
     end

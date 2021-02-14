@@ -40,25 +40,22 @@ module Teachbase
           return unless accounts_button
 
           InlineCallbackButton.g(button_sign: I18n.t('accounts').to_s,
-                                 callback_data: router.main(path: :accounts).link)
+                                 callback_data: router.g(:main, :accounts).link)
         end
 
         def build_send_message_button
           return unless send_message_button
-
           InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('message').downcase}",
-                                 callback_data: router.main(path: :send_message, p: [u_id: entity.tb_id]).link)
+                                 callback_data: router.g(:main, :send_message, p: [u_id: entity.tb_id]).link)
         end
 
         def build_pagination_button(action, pagination_options)
-          router_parameters = { offset: build_pagination_button_params(action, pagination_options),
-                                limit: pagination_options[:limit] }
+          router_parameters = { param: route_params[:param], limit: pagination_options[:limit],
+                                offset: build_pagination_button_params(action, pagination_options)}
           return unless router_parameters[:offset]
-
-          router_parameters[:param] = path_params[:param] if path_params[:param]
           InlineCallbackButton.public_send(action, button_sign: @button_sign,
-                                                   callback_data: router.public_send(path_params[:object_type], path: path_params[:path],
-                                                                                                                p: [router_parameters]).link)
+                                                   callback_data: router.g(route_params[:route], route_params[:path],
+                                                                           p: [router_parameters]).link)
         end
 
         def build_links_buttons(links_list)

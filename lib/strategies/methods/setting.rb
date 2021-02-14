@@ -11,7 +11,7 @@ module Teachbase
 
         def edit
           interface.sys.menu(back_button: { mode: :custom, order: :ending,
-                                            action: router.setting(path: :root).link }).edit_settings.show
+                                            action: router.g(:setting, :list).link }).edit_settings.show
         end
 
         def choose_one(setting)

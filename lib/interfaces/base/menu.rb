@@ -25,7 +25,7 @@ module Teachbase
 
           def sign_in_again
             @type = :menu_inline
-            @buttons = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.main(path: :login).link)]).raw
+            @buttons = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.g(:main, :login).link)]).raw
             @mode ||= :none
             @text ||= "#{I18n.t('error')}. #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
             self
@@ -55,9 +55,9 @@ module Teachbase
               buttons_actions = buttons_signs
             else
               buttons_signs.each do |buttons_sign|
-                buttons_actions << router.content(path: :confirm_answer, id: entity.tb_id,
-                                                  p: [param: buttons_sign, answer_type: answer_type, type: entity.class.type_like_sym,
-                                                      sec_id: entity.section.id, cs_id: cs_tb_id]).link
+                buttons_actions << router.g(:content, :confirm_answer, id: entity.tb_id,
+                                            p: [cs_id: cs_tb_id, sec_id: entity.section.id, type: entity.class.type_like_sym,
+                                                answer_type: answer_type, param: buttons_sign]).link
               end
             end
             @type = :menu_inline
@@ -79,7 +79,7 @@ module Teachbase
                        "#{I18n.t('localization')}: #{I18n.t(settings_data[:localization])}"].join("\n")
             @mode ||= :none
             @buttons = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
-                                                buttons_actions: [router.setting(path: :edit).link]).raw
+                                                buttons_actions: [router.g(:setting, :edit).link]).raw
             self
           end
 
@@ -90,7 +90,7 @@ module Teachbase
             @mode ||= :edit_msg
             buttons_actions = []
             buttons_signs = settings_class::PARAMS
-            buttons_signs.each { |buttons_sign| buttons_actions << router.setting(path: :edit, p: [param: buttons_sign]).link }
+            buttons_signs.each { |buttons_sign| buttons_actions << router.g(:setting, :edit, p: [param: buttons_sign]).link }
             @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
                                                 back_button: back_button).raw
             self
@@ -103,7 +103,7 @@ module Teachbase
             class_for_choosing = "Teachbase::Bot::#{class_type.capitalize}::"
             buttons_signs = to_constantize("#{option_name.upcase}_PARAMS", class_for_choosing)
             buttons_signs.each do |buttons_sign|
-              buttons_actions << router.setting(path: option_name.downcase.to_s, p: [param: buttons_sign]).link
+              buttons_actions << router.g(:setting, option_name.downcase.to_sym, p: [param: buttons_sign]).link
             end
             @slices_count = buttons_signs.size
             @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,

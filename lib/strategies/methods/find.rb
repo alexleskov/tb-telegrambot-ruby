@@ -4,17 +4,24 @@ module Teachbase
   module Bot
     class Strategies
       class Find < Teachbase::Bot::Strategies
-        attr_reader :keyword, :result, :finder_type
+        attr_reader :keyword, :result, :what
 
         def initialize(controller, options)
           super(controller)
           @keyword = options[:keyword] || take_keyword
+          @what = options[:what]
         end
 
-        def cs
-          @result = appshell.user.course_sessions_by(name: "%#{keyword}%", account_id: appshell.current_account.id)
-                            .order(rating: :desc, name: :asc)
-          @finder_type = :cs
+        def go
+          find_options = { name: "%#{keyword}%", account_id: appshell.current_account.id }
+          @result =
+            case what.to_sym
+            when :cs
+              appshell.user.find_by_type(:cs, find_options).order(rating: :desc, name: :asc)
+            when :document
+            else
+              raise "Don't know how find: '#{what}'."
+            end
           show_result
         end
 
@@ -36,7 +43,7 @@ module Teachbase
         end
 
         def build_back_button_data
-          { mode: :custom, action: router.main(path: :find, p: [type: finder_type]).link,
+          { mode: :custom, action: router.g(:main, :find, p: [type: what]).link,
             button_sign: I18n.t('find_again'), emoji: :mag }
         end
       end

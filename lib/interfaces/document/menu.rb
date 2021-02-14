@@ -29,7 +29,7 @@ module Teachbase
 
           def build_folder_button
             InlineCallbackButton.g(button_sign: entity.title, emoji: entity.sign_emoji_by_type,
-                                   callback_data: router.document(path: :entity, id: entity.tb_id).link)
+                                   callback_data: router.g(:document, :root, id: entity.tb_id).link)
           end
 
           def build_file_button

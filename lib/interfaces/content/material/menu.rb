@@ -21,8 +21,8 @@ module Teachbase
 
             time_spent = approve_button[:time_spent] || DEFAULT_TIME_SPENT
             InlineCallbackButton.g(button_sign: I18n.t('viewed').to_s,
-                                   callback_data: router.content(path: :track_time, id: entity.tb_id,
-                                                                 p: [time: time_spent, sec_id: entity.section.id, cs_id: cs_tb_id]).link)
+                                   callback_data: router.g(:content, :track_time, id: entity.tb_id,
+                                                           p: [cs_id: cs_tb_id, sec_id: entity.section.id, time: time_spent]).link)
           end
 
           def build_content

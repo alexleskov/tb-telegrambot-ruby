@@ -19,6 +19,27 @@ module Teachbase
         end
       end
 
+      def find_by_type(type, params)
+        option_key = params.map { |key, _value| key if %i[status tb_id name].include?(key.to_sym) }.first
+        query_param = { option_key.to_sym => params[option_key], account_id: params[:account_id] }
+        case type.to_sym
+        when :cs
+          params[:scenario] ||= "standart_learning"
+          list = course_sessions
+          unless params[:scenario].to_s == "standart_learning"
+            list = list.joins('LEFT JOIN course_categories ON course_categories.course_session_id = course_sessions.id
+                               LEFT JOIN categories ON categories.id = course_categories.category_id')
+            query_param[:category] = find_category_cname_by(params[:scenario]) if params[:scenario]
+          end
+        when :document
+        end
+        query_string = build_query_string(type, option_key: option_key, query_param: query_param, scenario: params[:scenario])
+        list = list.where(query_string, query_param)
+        return list unless params[:limit] && params[:offset]
+
+        list.limit(params[:limit]).offset(params[:offset])
+      end
+
       def course_sessions_by(params)
         params[:scenario] ||= "standart_learning"
         sessions_list = course_sessions
@@ -61,6 +82,20 @@ module Teachbase
       end
 
       private
+
+      def build_query_string(type, options)
+        case type.to_sym
+        when :cs
+          table_name = "course_sessions"
+          if options[:scenario].to_s == "standart_learning"
+            "#{table_name}.#{options[:option_key]} #{find_params(options[:option_key])} AND #{table_name}.account_id = :account_id"
+          else
+            "#{table_name}.#{options[:option_key]} #{find_params(options[:option_key])}
+             AND #{table_name}.account_id = :account_id AND categories.name ILIKE :category"
+          end
+        when :document
+        end
+      end
 
       def find_params(option_key)
         case option_key.to_sym
