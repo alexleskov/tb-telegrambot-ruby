@@ -98,11 +98,11 @@ module Teachbase
       end
 
       def delete_all_by(options)
-        appshell.user.course_sessions_by(options).destroy_all
+        appshell.user.find_all_by_type(:cs, options).destroy_all
       end
 
       def delete_unsigned(lms_tb_ids)
-        db_tb_ids = appshell.user.course_sessions_by(status: status, account_id: appshell.current_account.id, scenario: category)
+        db_tb_ids = appshell.user.find_all_by_type(:cs, status: status, account_id: appshell.current_account.id, scenario: category)
                             .order(started_at: :desc).select(:tb_id).pluck(:tb_id)[offset..(limit + offset) - 1]
         return if db_tb_ids.empty?
 
@@ -140,8 +140,8 @@ module Teachbase
       end
 
       def courses_db_with_paginate
-        appshell.user.course_sessions_by(status: status, account_id: appshell.current_account.id, limit: limit, offset: offset,
-                                         scenario: category).order(started_at: :desc)
+        appshell.user.find_all_by_type(:cs, status: status, account_id: appshell.current_account.id, limit: limit, offset: offset,
+                                            scenario: category).order(started_at: :desc)
       end
 
       def last_version

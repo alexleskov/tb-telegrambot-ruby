@@ -5,9 +5,9 @@ module Teachbase
     class Interfaces
       class Document
         class Menu < Teachbase::Bot::Interfaces::Menu
-          def list(documents, folder_id)
+          def list(documents, folder_id = nil)
             @type = :menu_inline
-            @mode = back_button ? :edit_msg : :none
+            @mode = back_button && folder_id ? :edit_msg : :none
             @text ||= "#{Emoji.t(:school_satchel)}<b>#{I18n.t('documents')}</b>"
             @disable_web_page_preview = :true
             @buttons = document_buttons(documents, folder_id)
@@ -29,7 +29,7 @@ module Teachbase
 
           def build_folder_button
             InlineCallbackButton.g(button_sign: entity.title, emoji: entity.sign_emoji_by_type,
-                                   callback_data: router.document(path: :entity, id: entity.tb_id).link)
+                                   callback_data: router.g(:document, :root, id: entity.tb_id).link)
           end
 
           def build_file_button

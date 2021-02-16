@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Strategies
       class Content < Teachbase::Bot::Strategies
-        def open_by(type, sec_id, cs_tb_id, content_tb_id)
+        def open_by(content_tb_id, cs_tb_id, sec_id, type)
           entity = content_loader(type, cs_tb_id, sec_id, content_tb_id).me
           return interface.sys.text.on_empty.show unless entity
 
@@ -13,14 +13,14 @@ module Teachbase
 
           options[:mode] = :edit_msg
           options[:title_params] = { stages: %i[title] }
-          options[:back_button] = { mode: :custom, action: router.section(path: :entity, position: entity.section.position,
-                                                                          p: [cs_id: cs_tb_id]).link }
+          options[:back_button] = { mode: :custom, action: router.g(:section, :root, position: entity.section.position,
+                                                                                     p: [cs_id: cs_tb_id]).link }
           interface.public_send(type, entity).menu(options).content.show
         rescue RuntimeError, TeachbaseBotException => e
           return interface.sys.text.on_forbidden.show if e.respond_to?(:http_code) && (401..403).include?(e.http_code)
         end
 
-        def take_user_answer(cs_tb_id, answer_type, content_tb_id)
+        def take_user_answer(content_tb_id, cs_tb_id, answer_type)
           content = appshell.user.task_by_cs_tbid(cs_tb_id, content_tb_id)
           return unless content
 
@@ -31,7 +31,7 @@ module Teachbase
                    .confirm_answer(answer_type, appshell.user_cached_answer).show
         end
 
-        def track_time(cs_tb_id, sec_id, time_spent, content_tb_id)
+        def track_time(content_tb_id, cs_tb_id, sec_id, time_spent)
           section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
           check_status(:default) do
             section_loader.content.material(tb_id: content_tb_id).track(time_spent)
@@ -39,28 +39,27 @@ module Teachbase
           interface.sys.text.ask_next_action.show
         end
 
-        def confirm_user_answer(cs_tb_id, sec_id, type, answer_type, param, object_tb_id)
+        def confirm_user_answer(object_tb_id, cs_tb_id, sec_id, type, answer_type, param)
           on_answer_confirmation(reaction: param) do
-            submit_user_answer(cs_tb_id, sec_id, object_tb_id, answer_type, type)
+            submit_user_answer(object_tb_id, cs_tb_id, sec_id, type, answer_type)
           end
           open_by(type, sec_id, cs_tb_id, object_tb_id)
         end
 
-        def submit_user_answer(cs_tb_id, sec_id, object_tb_id, answer_type, type)
+        def submit_user_answer(object_tb_id, cs_tb_id, sec_id, type, answer_type)
           raise "Can't submit answer" unless type.to_sym == :task
 
           content_loader(type, cs_tb_id, sec_id, object_tb_id)
             .submit(answer_type.to_sym => build_answer_data(files_mode: :upload))
         end
 
-        def answers(cs_tb_id, task_tb_id)
+        def answers(task_tb_id, cs_tb_id)
           task = appshell.user.task_by_cs_tbid(cs_tb_id, task_tb_id)
           return unless task
 
           interface.task(task).menu(back_button: { mode: :custom,
-                                                   action: router.content(path: :entity, id: task_tb_id,
-                                                                          p: [cs_id: cs_tb_id, sec_id: task.section_id,
-                                                                              type: :task]).link },
+                                                   action: router.g(:content, :root, id: task_tb_id,
+                                                                                     p: [cs_id: cs_tb_id, sec_id: task.section_id, type: :task]).link },
                                     title_params: { stages: %i[title answers] }).user_answers.show
         end
 

@@ -49,8 +49,8 @@ module Teachbase
             result = []
             sections.each do |section|
               result << section.title_with_state(state: section.find_state,
-                                                 route: router.section(path: :entity, position: section.position,
-                                                                       p: [cs_id: entity.tb_id]).link)
+                                                 route: router.g(:section, :root, position: section.position,
+                                                                                  p: [cs_id: entity.tb_id]).link)
             end
             return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
 
@@ -60,8 +60,7 @@ module Teachbase
           def main_buttons
             buttons_actions = []
             CHOOSING_BUTTONS.each do |choose_button|
-              buttons_actions << router.cs(path: :sections, id: entity.tb_id,
-                                           p: [param: choose_button]).link
+              buttons_actions << router.g(:cs, :sections, id: entity.tb_id, p: [param: choose_button]).link
             end
             InlineCallbackKeyboard.g(buttons_signs: to_i18n(CHOOSING_BUTTONS),
                                      buttons_actions: buttons_actions,
@@ -83,13 +82,13 @@ module Teachbase
 
           def build_content_button(content, type_by_section)
             InlineCallbackButton.g(button_sign: button_sign_by_content_type(type_by_section.to_s, content),
-                                   callback_data: router.content(path: :entity, id: content.tb_id,
-                                                                 p: [cs_id: cs_tb_id, sec_id: content.section_id, type: type_by_section]).link,
+                                   callback_data: router.g(:content, :root, id: content.tb_id,
+                                                                            p: [cs_id: cs_tb_id, sec_id: content.section_id, type: type_by_section]).link,
                                    position: content.position)
           end
 
           def build_addition_links_button
-            InlineCallbackButton.g(callback_data: router.section(path: :additions, id: entity.id, p: [cs_id: cs_tb_id]).link,
+            InlineCallbackButton.g(callback_data: router.g(:section, :additions, id: entity.id, p: [cs_id: cs_tb_id]).link,
                                    button_sign: I18n.t('attachments').to_s, emoji: :link)
           end
         end

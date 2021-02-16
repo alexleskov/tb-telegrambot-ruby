@@ -13,18 +13,18 @@ module Teachbase
                     :disable_web_page_preview,
                     :disable_notification,
                     :title_params,
-                    :path_params
+                    :route_params
 
       def initialize(params, entity)
         @entity = entity
         @answer = Teachbase::Bot::Interfaces.answers_controller
-        @router = Teachbase::Bot::Routers.new
+        @router = Teachbase::Bot::Router.new
         @text = params[:text]
         @mode = params[:mode]
         @disable_web_page_preview = params[:disable_web_page_preview]
         @disable_notification = params[:disable_notification] || false
         @title_params = params[:title_params]
-        @path_params = params[:path_params]
+        @route_params = params[:route_params]
       end
 
       def sing_on_empty
@@ -38,7 +38,7 @@ module Teachbase
       def sign_by_object_type(object_type)
         case object_type.to_sym
         when :section
-          I18n.t('section2')
+          I18n.t('section3')
         else
           raise "No such sign for object type: '#{object_type}'"
         end

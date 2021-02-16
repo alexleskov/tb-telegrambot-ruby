@@ -12,12 +12,12 @@ module Teachbase
           cs = cs_loader.progress
           interface.section(cs).menu(title_params: { stages: %i[title] },
                                      back_button: { mode: :custom, order: :ending,
-                                                    action: router.cs(path: :list).link }).main.show
+                                                    action: router.g(:cs, :list).link }).main.show
         rescue RuntimeError => e
           return interface.sys.text.on_empty.show if e.http_code == 404
         end
 
-        def list_by(option, cs_tb_id)
+        def list_by(cs_tb_id, option)
           option = option.to_sym
           all_sections = appshell.data_loader.cs(tb_id: cs_tb_id).sections
           sections_by_option = find_sections_by(option, all_sections)
@@ -26,11 +26,11 @@ module Teachbase
           cs = sections_by_option.first.course_session
           interface.section(cs).menu(title_params: { stages: %i[title menu], params: { state: "#{option}_sections" } },
                                      back_button: { mode: :custom,
-                                                    action: router.cs(path: :entity, id: cs_tb_id).link })
+                                                    action: router.g(:cs, :root, id: cs_tb_id).link })
                    .show_by_option(sections_by_option, option).show
         end
 
-        def contents(cs_tb_id, sec_pos)
+        def contents(sec_pos, cs_tb_id)
           section_loader = appshell.data_loader.section(option: :position, value: sec_pos,
                                                         cs_tb_id: cs_tb_id)
           check_status do
@@ -41,17 +41,17 @@ module Teachbase
           interface.section(section_loader.db_entity)
                    .menu(title_params: { stages: %i[title] },
                          back_button: { mode: :custom, order: :ending,
-                                        action: router.cs(path: :entity, id: cs_tb_id).link }).contents.show
+                                        action: router.g(:cs, :root, id: cs_tb_id).link }).contents.show
         end
 
-        def additions(cs_tb_id, sec_id)
+        def additions(sec_id, cs_tb_id)
           section_loader = appshell.data_loader.section(option: :id, value: sec_id, cs_tb_id: cs_tb_id)
           return interface.sys.text.on_empty.show if section_loader.links.empty?
 
           section_db = section_loader.db_entity
           interface.sys(section_db).menu(back_button: { mode: :custom, order: :ending,
-                                                        action: router.section(path: :entity, position: section_db.position,
-                                                                               p: [cs_id: cs_tb_id]).link },
+                                                        action: router.g(:section, :root, position: section_db.position,
+                                                                                          p: [cs_id: cs_tb_id]).link },
                                          title_params: { stages: %i[title] }).links(section_loader.links).show
         end
 

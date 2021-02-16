@@ -2,12 +2,13 @@
 
 module Teachbase
   module Bot
-    class Routers
-      class CourseSession < Teachbase::Bot::Routers::Controller
+    class Router
+      class CourseSession < Teachbase::Bot::Router::Route
         SOURCE = "cs"
+        SECTIONS = "sections"
 
         def sections
-          entity << routers.section(path: :list).build_path
+          root + [SECTIONS]
         end
       end
     end

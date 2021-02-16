@@ -6,7 +6,7 @@ module Teachbase
       class Profile < Teachbase::Bot::Strategies
         def me(user_id = nil)
           on_account = appshell.current_account
-          on_user = user_id ? appshell.current_account.users.find_by(tb_id: user_id) : appshell.user
+          on_user = find_user(user_id)
           return interface.sys.text.on_empty.show unless on_user&.current_profile(on_account.id)
 
           interface.user(on_user).menu(menu_options(on_user)).profile(on_account.id).show
@@ -20,6 +20,13 @@ module Teachbase
         end
 
         private
+
+        def find_user(user_id)
+          return appshell.current_account.users.find_by(tb_id: user_id) if user_id
+
+          appshell.data_loader.user.profile.me
+          appshell.user
+        end
 
         def menu_options(on_user)
           menu_options = {}

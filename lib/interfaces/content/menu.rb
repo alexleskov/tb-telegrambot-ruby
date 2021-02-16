@@ -26,7 +26,7 @@ module Teachbase
             return unless answers_avaliable? && answers_button
 
             InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
-                                   callback_data: router.content(path: :answers, id: entity.tb_id, p: [cs_id: cs_tb_id]).link)
+                                   callback_data: router.g(:content, :answers, id: entity.tb_id, p: [cs_id: cs_tb_id]).link)
           end
 
           def build_action_buttons
