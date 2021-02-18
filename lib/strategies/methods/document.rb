@@ -12,7 +12,7 @@ module Teachbase
           documents_in_folder = documents_list.where(folder_id: folder_id).order(is_folder: :desc, built_at: :asc)
 
           interface.document.menu(build_back_button_params(parent_folder, folder_id).merge!(mode: menu_mode.to_sym))
-                            .list(documents_in_folder, parent_folder).show
+                   .list(documents_in_folder, parent_folder).show
         end
 
         private

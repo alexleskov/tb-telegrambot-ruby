@@ -33,7 +33,7 @@ module Teachbase
 
           menu_param = { mode: :none, back_button: build_back_button_data }
           text_param = { text: "#{Emoji.t(:mag_right)} #{I18n.t(what.to_s)}: \"#{keyword}\"" }
-          text_param[:text] = "#{text_param[:text]}\n\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty? 
+          text_param[:text] = "#{text_param[:text]}\n\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
           case what.to_sym
           when :cs
             menu_param[:title_params] = text_param
