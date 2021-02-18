@@ -58,7 +58,7 @@ module Teachbase
           end
         rescue RestClient::NotFound => e
           nil
-          end
+        end
 
         def build_user_message
           answer_data = build_answer_data(files_mode: :download_url)

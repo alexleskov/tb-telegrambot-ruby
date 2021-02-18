@@ -5,20 +5,20 @@ module Teachbase
     class Interfaces
       class Document
         class Menu < Teachbase::Bot::Interfaces::Menu
-          def list(documents, folder_id = nil)
+          def list(documents, parent_folder = nil)
             @type = :menu_inline
-            @mode = back_button && folder_id ? :edit_msg : :none
+            @mode ||= back_button && parent_folder ? :edit_msg : :none
             @text ||= "#{Emoji.t(:school_satchel)}<b>#{I18n.t('documents')}</b>"
             @disable_web_page_preview = :true
-            @buttons = document_buttons(documents, folder_id)
+            @buttons = document_buttons(documents)
             self
           end
 
           private
 
-          def document_buttons(documents, folder_id)
+          def document_buttons(documents)
             buttons_list = []
-            documents.where(folder_id: folder_id).order(is_folder: :desc, built_at: :asc).each do |document|
+            documents.each do |document|
               @entity = document
               document_button = document.is_folder ? build_folder_button : build_file_button
               buttons_list << document_button
@@ -35,8 +35,7 @@ module Teachbase
           def build_file_button
             return unless entity.url
 
-            file_extension = "(#{entity.file_type.upcase})" if entity.file_type
-            InlineUrlButton.g(button_sign: "#{entity.title} #{file_extension}",
+            InlineUrlButton.g(button_sign: "#{entity.title} #{"(#{entity.file_type.upcase})" if entity.file_type}",
                               emoji: entity.sign_emoji_by_type, url: to_default_protocol(entity.url))
           end
         end

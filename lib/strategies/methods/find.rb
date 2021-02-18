@@ -19,7 +19,7 @@ module Teachbase
             when :cs
               appshell.user.find_all_by_type(:cs, find_options).order(rating: :desc, name: :asc)
             when :document
-              appshell.user.find_all_by_type(:document, find_options).order(name: :asc)
+              appshell.user.find_all_by_type(:document, find_options).order(is_folder: :desc, name: :asc)
             else
               raise "Don't know how find: '#{what}'."
             end
@@ -29,10 +29,11 @@ module Teachbase
         private
 
         def show_result
-          return interface.sys.text.on_empty.show if !result && result.empty?
+          return interface.sys.text.on_empty.show unless result
 
           menu_param = { mode: :none, back_button: build_back_button_data }
-          text_param = { text: "#{Emoji.t(:mag_right)} \"#{keyword}\"" }
+          text_param = { text: "#{Emoji.t(:mag_right)} #{I18n.t(what.to_s)}: \"#{keyword}\"" }
+          text_param[:text] = "#{text_param[:text]}\n\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty? 
           case what.to_sym
           when :cs
             menu_param[:title_params] = text_param
@@ -54,7 +55,7 @@ module Teachbase
 
         def build_back_button_data
           { mode: :custom, action: router.g(:main, :find, p: [type: what]).link,
-            button_sign: I18n.t('find_again'), emoji: :mag }
+            button_sign: I18n.t('find_again'), emoji: :mag, order: :ending }
         end
       end
     end

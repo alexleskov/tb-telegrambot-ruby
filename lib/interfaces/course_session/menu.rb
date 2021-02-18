@@ -48,8 +48,6 @@ module Teachbase
             course_sessions.each do |cs|
               result << cs.sign_open(cover_url: '', route: router.g(:cs, :root, id: cs.tb_id).link).to_s
             end
-            return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
-
             result.join("\n\n")
           end
 

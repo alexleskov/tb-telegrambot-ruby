@@ -111,9 +111,7 @@ module Teachbase
           cs.states
         end
 
-        def studying
-          cs.states
-        end
+        alias studying cs_list
 
         def more_actions
           profile.links
