@@ -12,7 +12,7 @@ class MessageResponder
     @ai_mode = options[:ai_mode] || $app_config.ai_mode
     fetching_tg_user_data_by(options)
     @tg_user = call_tg_user
-    raise "Can't find tg_user" unless tg_user
+    raise "Can't find tg_user. Options: #{options}" unless tg_user
 
     @settings = Teachbase::Bot::Setting.find_or_create_by!(tg_account_id: tg_user.id)
     @strategy_class = options[:strategy_class] || current_user_strategy_class
