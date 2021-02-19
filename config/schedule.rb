@@ -16,13 +16,12 @@ scheduler.every '3m', name: "New courses notification" do |job|
   job.kill unless notifications_params
 
   notifications_params.each do |notify_param|
-    tg_account = result[:raw].find_by(tg_account_id: notify_param[:tg_account_id])
-    next unless tg_account.last_active_auth_session
+    next unless notify_param[:messages].first.tg_account.last_active_auth_session
 
     I18n.with_locale notify_param[:settings].localization.to_sym do
       Teachbase::Bot::Strategies::Notify.new(notify_param[:controller], type: :cs).about(notify_param[:tb_ids])
     end
-    tg_account.destroy if tg_account
+    notify_param[:messages].each { |message| message.destroy }
   end
 end
 

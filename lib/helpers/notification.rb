@@ -26,7 +26,8 @@ module Teachbase
             next unless context.tg_user
 
             strategy = context.handle
-            params << { controller: strategy.controller, settings: context.settings, tg_account_id: tg_account_id, tb_ids: tb_ids.uniq }
+            params << { controller: strategy.controller, settings: context.settings, tg_account_id: tg_account_id,
+                        tb_ids: tb_ids.uniq, messages: messages }
           end
           params
         end
