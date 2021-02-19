@@ -23,8 +23,9 @@ module Teachbase
             first_message = messages_by_tg_users_id[tg_user_id].first
             catcher = Teachbase::Bot::Webhook::Catcher.new(first_message.webhook)
             context = catcher.init_webhook
+            p "context: #{context}"
             next unless context
-            
+
             strategy = context.handle
             params << { controller: strategy.controller, settings: context.settings, tb_ids: tb_ids.uniq }
           end
