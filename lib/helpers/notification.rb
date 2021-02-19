@@ -18,7 +18,7 @@ module Teachbase
           messages_by_tg_users_id.each do |tg_user_id, messages|
             tb_ids = []
             messages.each do |message|
-              tb_ids << message.webhook.payload["data"][id_param]
+              tb_ids << message.webhook.payload["data"][id_param].to_i
             end
             first_message = messages_by_tg_users_id[tg_user_id].first
             catcher = Teachbase::Bot::Webhook::Catcher.new(first_message.webhook)

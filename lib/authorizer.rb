@@ -126,6 +126,8 @@ module Teachbase
 
         @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(auth_session_id: authsession.id, active: true)
         apitoken.activate_by(token)
+
+        raise "Can't find login_type: '#{login type} for login: '#{login}'" unless login_type
         @user = Teachbase::Bot::User.find_or_create_by!(login_type => login)
         user.update!(password: crypted_password)
         authsession.activate_by(user.id, apitoken.id)
@@ -159,7 +161,7 @@ module Teachbase
 
       def take_user_auth_data
         data = db_user_auth_data || @appshell.request_user_data
-        raise if data.any?(nil)
+        raise "Can't find user auth data" if data.any?(nil)
 
         @login = data.first
         @crypted_password = data.second
