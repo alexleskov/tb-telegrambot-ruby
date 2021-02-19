@@ -128,6 +128,7 @@ module Teachbase
         apitoken.activate_by(token)
 
         raise "Can't find login_type: '#{login type} for login: '#{login}'" unless login_type
+
         @user = Teachbase::Bot::User.find_or_create_by!(login_type => login)
         user.update!(password: crypted_password)
         authsession.activate_by(user.id, apitoken.id)
