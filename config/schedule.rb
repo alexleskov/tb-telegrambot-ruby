@@ -19,7 +19,7 @@ scheduler.every '3m', name: "New courses notification" do |job|
     I18n.with_locale notify_param[:settings].localization.to_sym do
       Teachbase::Bot::Strategies::Notify.new(notify_param[:controller], type: :cs).about(notify_param[:tb_ids])
     end
-    result[:raw].find_by(tg_account_id: notify_param[:tg_account_id]).destroy
+    result[:raw].find_by(tg_account_id: notify_param[:tg_account_id]).destroy if notify_param[:tg_account_id]
   end
 end
 
