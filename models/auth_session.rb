@@ -13,9 +13,9 @@ module Teachbase
       belongs_to :account
 
       class << self
-        def active_auth_sessions_by(user_tb_id)
+        def by_user_tb_id(user_tb_id)
           joins('LEFT JOIN users ON auth_sessions.user_id = users.id')
-            .where("users.tb_id = :user_tb_id AND auth_sessions.active IS TRUE", user_tb_id: user_tb_id.to_i)
+            .where("users.tb_id = :user_tb_id", user_tb_id: user_tb_id.to_i)
             .order(auth_at: :desc)
         end
       end

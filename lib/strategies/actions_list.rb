@@ -29,7 +29,8 @@ module Teachbase
           end
 
           controller.on router.g(:document, :root).regexp do
-            document.list_by(data[1])
+            mode = controller.is_a?(Teachbase::Bot::TextController) ? :none : :edit_msg
+            document.list_by(data[1], mode)
           end
 
           controller.on router.g(:user, :root).regexp do
