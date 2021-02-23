@@ -12,7 +12,7 @@ module Teachbase
             @slices_count = 2
             @buttons = account_action_buttons
             @mode ||= :none
-            @text ||= "#{I18n.t('company')} — #{entity.tb_id}: #{entity.name}"
+            @text ||= "<b>#{entity.title}</b>"
             self
           end
 
@@ -21,7 +21,7 @@ module Teachbase
             @slices_count = 3
             @buttons = account_edit_action_buttons
             @mode ||= :edit_msg
-            @text ||= "#{I18n.t('company')} — #{entity.tb_id}: #{entity.name}\n<b>#{I18n.t('edit')}:</b>"
+            @text ||= "#{entity.main_info}\n\n<b>#{I18n.t('edit')}:</b>"
             self
           end
 
