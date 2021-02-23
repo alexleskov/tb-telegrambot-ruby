@@ -35,6 +35,7 @@ module Teachbase
 
       def take_data
         context.tg_user.update!(context_state: TAKING_DATA_CONTEXT_STATE)
+        context.ai_mode = false
         loop do
           next if context.tg_user.on_taking_data?
 

@@ -109,6 +109,10 @@ module Teachbase
         tb_api.request(:users, :users_passwords, payload: { "users" => { user_data[:tb_id].to_s => decrypt_user_password(user_data[:password]) } }).post
       end
 
+      def ping
+        tb_api.request(:ping, :ping).get
+      end
+
       private
 
       def decrypt_user_password(password)

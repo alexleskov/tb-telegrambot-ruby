@@ -36,6 +36,16 @@ module Teachbase
           strategies_methods_class::Notify.new(controller, options)
         end
 
+        def admin(options = {})
+          strategies_methods_class::Admin.new(controller, options)
+        end
+
+        def administration
+          with_tg_user_policy [:admin] do
+            interface.sys.menu.administration.show
+          end
+        end
+
         def help
           interface.sys.text.help_info.show
         end
@@ -96,13 +106,16 @@ module Teachbase
 
         alias accounts change_account
 
-        def ready; end
-
-        def decline; end
-
-        def send_contact; end
-
         # TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
+
+        def accounts_manager
+          admin.accounts
+        end
+
+        def new_account
+          admin.add_new_account
+        end
+
         def settings_list
           setting.list
         end

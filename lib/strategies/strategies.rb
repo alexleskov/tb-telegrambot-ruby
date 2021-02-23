@@ -7,6 +7,7 @@ module Teachbase
 
       DEMO_MODE_NAME = "demo_mode"
       LIST = %w[standart_learning marathon battle demo_mode].freeze
+      POLICIES = { admin: 2, member: 1 }
 
       attr_reader :controller, :interface, :router, :appshell
 
@@ -21,7 +22,22 @@ module Teachbase
         Teachbase::Bot::Strategies
       end
 
+      def ready; end
+
+      def decline; end
+
+      def send_contact; end
+
       protected
+
+      def with_tg_user_policy(roles, &block)
+        policies_ids = []
+        roles.each { |role| policies_ids << POLICIES[role.to_sym] }
+        policies_ids.compact!
+        return interface.sys.text.on_forbidden.show unless policies_ids.include?(controller.context.tg_user.role)
+
+        yield
+      end
 
       def user_reaction
         appshell.controller.take_data
@@ -48,7 +64,7 @@ module Teachbase
           interface.destroy(delete_bot_message: { mode: :last })
           return result
         end
-
+        
         if result
           text_interface.update_status(:success).show
         else
@@ -82,7 +98,8 @@ module Teachbase
         result.join("\n")
       end
 
-      def build_answer_data(params)
+      def build_answer_data(params = {})
+        return { text: appshell.cached_answers_texts } if params.empty?
         raise "No such mode: '#{params[:files_mode]}'." unless %i[upload download_url].include?(params[:files_mode].to_sym)
 
         attachments = []

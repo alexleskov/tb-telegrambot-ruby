@@ -48,15 +48,20 @@ module Teachbase
         @authsession = @tg_user.auth_sessions.find_by(active: true)
       end
 
+      def ping(client_params)
+        @authsession = @tg_user.auth_sessions.find_or_create_by!(active: true)
+        authsession.api_auth(:endpoint, 1, client_id: client_params[:client_id], client_secret: client_params[:client_secret],
+                                           account_id: client_params[:account_id])
+        authsession.ping
+      rescue RestClient::Unauthorized => e
+        e
+      end
+
       def call_tb_api_endpoint_client(client_params = {})
         client_params[:client_id] ||= $app_config.client_id
         client_params[:client_secret] ||= $app_config.client_secret
         client_params[:account_id] ||= $app_config.account_id
-        @account = Teachbase::Bot::Account.find_by!(tb_id: client_params[:account_id])
-        raise unless account
-
-        @authsession = @tg_user.auth_sessions.find_or_create_by!(active: true)
-        authsession.update!(user_id: user.id, account_id: account.id)
+        active_authsession_by_endpoint(client_params[:account_id])
         authsession.api_auth(:endpoint, 1, client_id: client_params[:client_id], client_secret: client_params[:client_secret],
                                            account_id: client_params[:account_id])
       end
@@ -87,6 +92,14 @@ module Teachbase
       end
 
       private
+
+      def active_authsession_by_endpoint(account_id)
+        @account = Teachbase::Bot::Account.find_by!(tb_id: account_id)
+        raise unless account
+
+        @authsession = @tg_user.auth_sessions.find_or_create_by!(active: true)
+        authsession.update!(user_id: user.id, account_id: account.id)
+      end
 
       def user_attrs_by(contact, password_mode = :take_new_pass)
         raise unless contact.is_a?(Teachbase::Bot::ContactController)
@@ -148,14 +161,15 @@ module Teachbase
 
       def login_by_access_token
         @account = db_user_account_auth_data
-        account_id = if account
-                       account.tb_id
-                     elsif !account && !authsession.active
-                       $app_config.account_id
-                     elsif authsession.tb_api
-                       take_user_account_auth_data
-                       account.tb_id
-                     end
+        account_id =
+          if account
+            account.tb_id
+          elsif !account && !authsession.active
+            $app_config.account_id
+          elsif authsession.tb_api
+            take_user_account_auth_data
+            account.tb_id
+          end
         authsession.api_auth(:mobile, 2, access_token: apitoken.value, account_id: account_id)
         authsession
       end
@@ -170,11 +184,16 @@ module Teachbase
         @login = login_type == :phone ? login.to_i.to_s : login
       end
 
-      def take_user_account_auth_data
+      def take_user_account_auth_data(mode = nil)
         raise TeachbaseBotException::Account.new("Not found", 404) if Teachbase::Bot::Account.all.empty?
 
-        data = db_user_account_auth_data || @appshell.request_user_account_data
-        raise unless data
+        data =
+          if mode == :switch
+            @appshell.request_user_account_data
+          else
+            db_user_account_auth_data || @appshell.request_user_account_data
+          end
+        return unless data
 
         @account = data.is_a?(Teachbase::Bot::Account) ? data : fetch_user_account(data)
       end

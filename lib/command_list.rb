@@ -15,7 +15,10 @@ module Teachbase
                           documents: Emoji.t(:school_satchel),
                           demo_mode: Emoji.t(:tv),
                           send_contact: Emoji.t(:pager),
-                          decline: Emoji.t(:x) }
+                          decline: Emoji.t(:x),
+                          accounts_manager: Emoji.t(:school),
+                          new_account: Emoji.t(:new),
+                          starting: Emoji.t(:triangular_flag_on_post) }
 
       class << self
         attr_reader :sign_and_emoji

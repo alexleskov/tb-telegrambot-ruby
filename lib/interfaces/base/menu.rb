@@ -5,6 +5,14 @@ module Teachbase
     class Interfaces
       class Base
         class Menu < Teachbase::Bot::Interfaces::Menu
+          def administration
+            @type = :menu
+            @slices_count = 2
+            @text ||= "#{Emoji.t(:wrench)} <b>#{I18n.t('admin_menu_message')}</b>"
+            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[accounts_manager new_account starting]).raw
+            self
+          end
+
           def starting
             @type = :menu
             @slices_count = 2
@@ -48,10 +56,11 @@ module Teachbase
             self
           end
 
-          def confirm_answer(answer_type, user_answer)
+          def confirm_answer(answer_type, user_answer = nil)
             buttons_signs = %i[accept decline]
             buttons_actions = []
-            if answer_type.to_sym == :message
+            case answer_type.to_sym
+            when :message, :choice
               buttons_actions = buttons_signs
             else
               buttons_signs.each do |buttons_sign|
@@ -119,6 +128,13 @@ module Teachbase
             self
           end
 
+          def decline
+            @type = :menu
+            @text ||= "#{I18n.t('start_menu_message')}"
+            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[decline]).raw
+            self
+          end
+
           def links(links_list)
             raise unless links_list.is_a?(Array)
 
@@ -129,14 +145,14 @@ module Teachbase
             self
           end
 
-          def accounts(accounts_list)
+          def accounts(accounts_list, options = [])
             raise unless accounts_list.first.is_a?(Teachbase::Bot::Account)
 
             @type = :menu_inline
             @slices_count = 2
             @mode ||= :none
             @text ||= "<b>#{Emoji.t(:school)} #{I18n.t('choose_account')}</b>"
-            @buttons = build_accounts_buttons(accounts_list)
+            @buttons = build_accounts_buttons(accounts_list, options)
             self
           end
 
@@ -160,9 +176,18 @@ module Teachbase
 
           private
 
-          def build_accounts_buttons(accounts_list)
-            InlineCallbackKeyboard.g(buttons_signs: accounts_list.pluck(:name),
-                                     buttons_actions: accounts_list.pluck(:tb_id), back_button: back_button).raw
+          def build_accounts_buttons(accounts_list, options)
+            keyboard_params = { buttons_signs: accounts_list.pluck(:name), buttons_actions: accounts_list.pluck(:tb_id),
+                                back_button: back_button }
+            if options.include?(:statuses)
+              keyboard_params[:emojis] = accounts_list.pluck(:active).map { |state| state ? :white_check_mark : :construction }
+            end
+            if options.include?(:tb_ids)
+              accounts_list.pluck(:tb_id).each_with_index do |account_tb_id, ind|
+                keyboard_params[:buttons_signs][ind] = "#{account_tb_id}: #{keyboard_params[:buttons_signs][ind]}"
+              end
+            end
+            InlineCallbackKeyboard.g(keyboard_params).raw
           end
 
           def settings_class
