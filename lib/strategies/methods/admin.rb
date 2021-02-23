@@ -27,7 +27,7 @@ module Teachbase
           with_tg_user_policy [:admin] do
             new_account_params = {}
             Teachbase::Bot::Account::MAIN_ATTRS.each do |attribute|
-              interface.sys.text.ask_value(" #{attribute}").show
+              interface.sys.text.ask_value(" <b>#{attribute}</b>").show
               value = appshell.ask_answer(mode: :once).source
               attribute == :tb_id ? value.to_i : value.to_s
               new_account_params[attribute.to_sym] = value
