@@ -11,8 +11,8 @@ module Decorators
     def main_info
       ["<b>#{title}</b>\n",
        "client_id: <pre>#{client_id}</pre>",
-       "curator_tg_id: <pre>#{curator_tg_id ? curator_tg_id : I18n.t('empty')}</pre>",
-       "support_tg_id: <pre>#{support_tg_id ? support_tg_id : I18n.t('empty')}</pre>"].join(Formatter::DELIMETER)
+       "curator_tg_id: <pre>#{curator_tg_id || I18n.t('empty')}</pre>",
+       "support_tg_id: <pre>#{support_tg_id || I18n.t('empty')}</pre>"].join(Formatter::DELIMETER)
     end
   end
 end
