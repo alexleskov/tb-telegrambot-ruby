@@ -94,7 +94,7 @@ module Teachbase
       end
 
       def logout_account
-        #authorizer.reset_account
+        # authorizer.reset_account
         account = authorizer.send(:take_user_account_auth_data, :switch)
         return unless account
 
@@ -142,7 +142,7 @@ module Teachbase
       end
 
       def request_user_account_data(avaliable_accounts = nil, options = [])
-        avaliable_accounts = avaliable_accounts ? avaliable_accounts : data_loader.user.accounts.avaliable_list
+        avaliable_accounts ||= data_loader.user.accounts.avaliable_list
         raise TeachbaseBotException::Account.new("Access denied", 403) unless avaliable_accounts
 
         controller.interface.sys.menu.accounts(avaliable_accounts, options).show
@@ -161,7 +161,7 @@ module Teachbase
           else
             raise "Unexpected error: #{e.inspect}"
           end
-          return
+          nil
         end
       end
 

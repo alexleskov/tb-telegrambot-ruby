@@ -22,7 +22,7 @@ module Teachbase
 
           controller.on router.g(:admin, :new_account).regexp do
             admin.add_new_account
-          end          
+          end
 
           controller.on router.g(:main, :start).regexp do
             starting
@@ -206,7 +206,7 @@ module Teachbase
 
         def push_ai
           return unless controller.is_a?(Teachbase::Bot::TextController)
-          
+
           ai_controller = controller.respond.ai
           controller.context.strategy_class.new(ai_controller).do_action
           interface.sys.text.on_undefined.show unless ai_controller.action

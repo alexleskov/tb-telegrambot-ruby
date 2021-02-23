@@ -130,7 +130,7 @@ module Teachbase
 
           def decline
             @type = :menu
-            @text ||= "#{I18n.t('start_menu_message')}"
+            @text ||= I18n.t('start_menu_message').to_s
             @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[decline]).raw
             self
           end

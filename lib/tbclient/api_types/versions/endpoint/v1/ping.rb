@@ -7,7 +7,7 @@ module Teachbase
             SOURCE = "_ping".freeze
 
             def ping
-              "#{SOURCE}"
+              SOURCE.to_s
             end
           end
         end

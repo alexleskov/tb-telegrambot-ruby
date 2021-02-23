@@ -5,7 +5,7 @@ module Teachbase
     class Interfaces
       class Admin
         class Menu < Teachbase::Bot::Interfaces::Menu
-          ACTIONS = %w[edit to_on to_off]
+          ACTIONS = %w[edit to_on to_off].freeze
 
           def account
             @type = :menu_inline

@@ -7,7 +7,7 @@ module Teachbase
 
       DEMO_MODE_NAME = "demo_mode"
       LIST = %w[standart_learning marathon battle demo_mode].freeze
-      POLICIES = { admin: 2, member: 1 }
+      POLICIES = { admin: 2, member: 1 }.freeze
 
       attr_reader :controller, :interface, :router, :appshell
 
@@ -30,7 +30,7 @@ module Teachbase
 
       protected
 
-      def with_tg_user_policy(roles, &block)
+      def with_tg_user_policy(roles)
         policies_ids = []
         roles.each { |role| policies_ids << POLICIES[role.to_sym] }
         policies_ids.compact!
@@ -64,7 +64,7 @@ module Teachbase
           interface.destroy(delete_bot_message: { mode: :last })
           return result
         end
-        
+
         if result
           text_interface.update_status(:success).show
         else
