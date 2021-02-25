@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 28) do
+ActiveRecord::Schema.define(version: 29) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -20,12 +20,13 @@ ActiveRecord::Schema.define(version: 28) do
     t.integer "tb_id", null: false
     t.string "client_id", null: false
     t.string "client_secret", null: false
-    t.string "name"
+    t.string "name", default: "Undefined"
     t.string "logo_url"
     t.integer "curator_tg_id"
     t.integer "support_tg_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "active", default: true, null: false
   end
 
   create_table "answers", force: :cascade do |t|

@@ -48,6 +48,7 @@ require './lib/strategies/methods/find'
 require './lib/strategies/methods/notify'
 require './lib/strategies/methods/profile'
 require './lib/strategies/methods/section'
+require './lib/strategies/methods/admin'
 
 require './lib/strategies/demo_mode/methods/setting'
 require './lib/strategies/demo_mode/methods/content'

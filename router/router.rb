@@ -8,6 +8,7 @@ require './router/content/'
 require './router/setting/'
 require './router/document/'
 require './router/user/'
+require './router/admin/'
 
 module Teachbase
   module Bot
@@ -21,6 +22,7 @@ module Teachbase
       LIMIT = "limit"
       OFFSET = "offset"
       TIME = "time"
+      ACCOUNT = "acc"
 
       class << self
         def param(value = STRING_REGEXP)
@@ -45,6 +47,10 @@ module Teachbase
 
         def time(value = DIGIT_REGEXP)
           "#{TIME}#{DELIMETER}#{value}"
+        end
+
+        def acc_id(value = DIGIT_REGEXP)
+          "#{ACCOUNT}#{DELIMETER}#{value}"
         end
 
         def cs_id(value = DIGIT_REGEXP)
@@ -75,6 +81,8 @@ module Teachbase
             Document
           when :user
             User
+          when :admin
+            Admin
           else
             raise "Don't know such route name: '#{route_name}'."
           end

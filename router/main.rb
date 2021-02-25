@@ -14,6 +14,11 @@ module Teachbase
         SEND_MESSAGE = "send_msg"
         FIND = "find"
         HELP = "help"
+        ADMIN = "admin"
+
+        def admin
+          [ADMIN]
+        end
 
         def start
           [START]

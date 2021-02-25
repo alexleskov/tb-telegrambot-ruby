@@ -10,5 +10,6 @@ require './lib/decorators/scorm_package'
 require './lib/decorators/poll'
 require './lib/decorators/document'
 require './lib/decorators/tg_account'
+require './lib/decorators/account'
 
 module Decorators; end

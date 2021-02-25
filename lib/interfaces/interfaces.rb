@@ -15,6 +15,10 @@ module Teachbase
           @sys_class ||= Teachbase::Bot::Interfaces::Base
         end
 
+        def admin(entity = nil)
+          self::Admin.new(entity)
+        end
+
         def cs(entity = nil)
           self::CourseSession.new(entity)
         end

@@ -76,6 +76,11 @@ module Teachbase
           self
         end
 
+        def ask_value(value_name = "")
+          @text = "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_value')}#{value_name}:"
+          self
+        end
+
         def error
           @text = "#{Emoji.t(:boom)} <i>#{I18n.t('unexpected_error')}</i>"
           self

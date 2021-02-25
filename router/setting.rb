@@ -8,10 +8,6 @@ module Teachbase
         LOCALIZATION = "localization"
         SCENARIO = "scenario"
 
-        def edit
-          [SOURCE, EDIT]
-        end
-
         def localization
           [SOURCE, LOCALIZATION]
         end

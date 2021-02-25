@@ -16,7 +16,7 @@ module Teachbase
         avaliable_accounts = connected_accounts
         return if avaliable_accounts.empty?
 
-        update_accounts_info(avaliable_accounts)
+        update_info(avaliable_accounts)
         avaliable_accounts.order(name: :asc)
       end
 
@@ -37,10 +37,10 @@ module Teachbase
 
             account_by_lms["id"]
           end
-        Teachbase::Bot::Account.find_all_matches_by_tbid(avaliable_accounts_ids)
+        Teachbase::Bot::Account.where(tb_id: avaliable_accounts_ids, active: true)
       end
 
-      def update_accounts_info(avaliable_accounts)
+      def update_info(avaliable_accounts)
         avaliable_accounts.pluck(:tb_id).each do |avaliable_account_tb_id|
           lms_info.each do |avaliable_account_by_lms|
             next unless avaliable_account_by_lms["id"] == avaliable_account_tb_id

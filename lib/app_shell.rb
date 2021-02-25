@@ -94,8 +94,10 @@ module Teachbase
       end
 
       def logout_account
-        authorizer.reset_account
-        authorizer.send(:take_user_account_auth_data)
+        # authorizer.reset_account
+        account = authorizer.send(:take_user_account_auth_data, :switch)
+        return unless account
+
         authorizer.send(:login_by_user_data,
                         client_id: authorizer.account.client_id,
                         client_secret: authorizer.account.client_secret,
@@ -139,16 +141,28 @@ module Teachbase
         request_data(:login)
       end
 
-      def request_user_account_data
-        avaliable_accounts = data_loader.user.accounts.avaliable_list
+      def request_user_account_data(avaliable_accounts = nil, options = [])
+        avaliable_accounts ||= data_loader.user.accounts.avaliable_list
         raise TeachbaseBotException::Account.new("Access denied", 403) unless avaliable_accounts
 
-        controller.interface.sys.menu.accounts(avaliable_accounts).show
+        controller.interface.sys.menu.accounts(avaliable_accounts, options).show
         user_answer = controller.take_data
         controller.interface.destroy(delete_bot_message: { mode: :last })
-        raise TeachbaseBotException::Account.new("Access denied", 403) unless user_answer.source.is_a?(String)
+        return unless user_answer.is_a?(CallbackController)
 
         user_answer.source
+      rescue TeachbaseBotException => e
+        if e.respond_to?(:http_code)
+          case e.http_code
+          when 401..403
+            controller.interface.sys.text.on_forbidden.show
+          when 404
+            controller.interface.sys.text.error.show
+          else
+            raise "Unexpected error: #{e.inspect}"
+          end
+          nil
+        end
       end
 
       def ask_answer(params = {})

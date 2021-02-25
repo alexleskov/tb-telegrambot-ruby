@@ -8,6 +8,22 @@ module Teachbase
           return if push_command
           return if push_file
 
+          controller.on router.g(:main, :admin).regexp do
+            administration
+          end
+
+          controller.on router.g(:admin, :root, p: %i[acc_id type]).regexp do
+            admin.update_account(data[1], data[2])
+          end
+
+          controller.on router.g(:admin, :root, p: %i[acc_id param]).regexp do
+            admin.update_account_setting(data[1], data[2])
+          end
+
+          controller.on router.g(:admin, :new_account).regexp do
+            admin.add_new_account
+          end
+
           controller.on router.g(:main, :start).regexp do
             starting
           end

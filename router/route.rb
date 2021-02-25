@@ -34,8 +34,8 @@ module Teachbase
           [self.class::SOURCE, LIST]
         end
 
-        def entity
-          ["#{self.class::SOURCE}#{id || router_class::DIGIT_REGEXP}"]
+        def edit
+          [self.class::SOURCE, EDIT]
         end
 
         protected
