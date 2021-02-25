@@ -149,7 +149,7 @@ module Teachbase
             raise unless accounts_list.first.is_a?(Teachbase::Bot::Account)
 
             @type = :menu_inline
-            @slices_count = 2
+            @slices_count = 1
             @mode ||= :none
             @text ||= "<b>#{Emoji.t(:school)} #{I18n.t('choose_account')}</b>"
             @buttons = build_accounts_buttons(accounts_list, options)
