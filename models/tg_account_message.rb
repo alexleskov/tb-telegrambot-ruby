@@ -12,6 +12,8 @@ module Teachbase
           raised_message_list = []
           messages_list = where("data->'payload'->>'type' = :type AND data->'payload'->>'event' = :event",
                                 type: params[:type], event: params[:event]).order(created_at: :desc)
+          return if messages_list.empty?
+          
           messages_list.each do |message|
             raised_message_list << raise_message(message, Teachbase::Bot::TgAccount.find_by(id: message.tg_account_id))
           end
