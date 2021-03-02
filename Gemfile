@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-gem 'activerecord', '< 5.3.0', '>= 4.2.7'
+gem 'activerecord', '>= 4.2.7', '< 5.3.0'
 gem "async"
 gem 'capistrano'
 gem 'capistrano-bundler'
