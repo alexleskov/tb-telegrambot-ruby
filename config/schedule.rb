@@ -23,6 +23,8 @@ scheduler.every '3m', name: "New courses notification" do |job|
     end
     result[:raw].where(tg_account_id: notify_param[:tg_account_id]).destroy_all
   end
+rescue RuntimeError => e
+  $logger.debug "Schduler error: #{e.inspect}."
 end
 
 scheduler.join
