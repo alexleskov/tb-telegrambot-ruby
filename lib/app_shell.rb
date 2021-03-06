@@ -213,6 +213,8 @@ module Teachbase
 
         result =
           case msg_controller
+          when Teachbase::Bot::BotMessage
+            true
           when Teachbase::Bot::TextController
             msg_controller.source =~ ABORT_ACTION_COMMAND
           when Teachbase::Bot::CommandController
