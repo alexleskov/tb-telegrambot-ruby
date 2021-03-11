@@ -41,6 +41,7 @@ module Teachbase
 
           def on_timeout
             @text ||= "#{Emoji.t(:alarm_clock)} #{I18n.t('timeout')}"
+            @disable_notification = true
             self
           end
 

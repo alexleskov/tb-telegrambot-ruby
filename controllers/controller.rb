@@ -7,6 +7,7 @@ module Teachbase
       include Decorators
 
       TAKING_DATA_CONTEXT_STATE = "taking_data"
+      TAKING_DATA_DELAY = 3*60
 
       attr_reader :respond,
                   :message_params,
@@ -36,7 +37,12 @@ module Teachbase
       def take_data
         context.tg_user.update!(context_state: TAKING_DATA_CONTEXT_STATE)
         context.ai_mode = false
+        taking_expiration_time = Time.now + TAKING_DATA_DELAY
         loop do
+          if Time.now >= taking_expiration_time
+            context.tg_user.update!(context_state: nil)
+            break interface.sys.text.on_timeout.show
+          end
           next if context.tg_user.on_taking_data?
 
           message = Teachbase::Bot::CacheMessage.raise_last_message_by(context.tg_user)
