@@ -3,7 +3,7 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Admin < Teachbase::Bot::Interfaces::Object
+      class Base < Teachbase::Bot::Interfaces::Core
       end
     end
   end

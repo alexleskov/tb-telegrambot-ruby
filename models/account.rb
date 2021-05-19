@@ -15,6 +15,12 @@ module Teachbase
       has_many :course_sessions, dependent: :destroy
       has_many :documents, dependent: :destroy
       has_many :categories, dependent: :destroy
+
+      class << self
+        def include_attribute?(attribute)
+          (MAIN_ATTRS + ADDIT_ATTRS).include?(attribute.to_sym)
+        end
+      end
     end
   end
 end

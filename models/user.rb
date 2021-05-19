@@ -26,9 +26,9 @@ module Teachbase
         query_param = { option_key.to_sym => params[option_key], account_id: params[:account_id] }
         case type.to_sym
         when :cs
-          params[:scenario] ||= "standart_learning"
+          params[:scenario] ||= Teachbase::Bot::Strategies::STANDART_LEARNING_NAME
           list = course_sessions
-          unless params[:scenario].to_s == "standart_learning"
+          unless params[:scenario].to_s == Teachbase::Bot::Strategies::STANDART_LEARNING_NAME
             list = list.joins('LEFT JOIN course_categories ON course_categories.course_session_id = course_sessions.id
                                LEFT JOIN categories ON categories.id = course_categories.category_id')
             query_param[:category] = find_category_cname_by(params[:scenario]) if params[:scenario]
@@ -75,7 +75,7 @@ module Teachbase
         result_query_string =
           case type.to_sym
           when :cs
-            if options[:scenario].to_s != "standart_learning"
+            if options[:scenario].to_s != Teachbase::Bot::Strategies::STANDART_LEARNING_NAME
               "#{default_query_string} AND categories.name ILIKE :category"
             else
               default_query_string

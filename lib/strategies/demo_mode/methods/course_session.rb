@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Strategies
       class DemoMode
-        class CourseSession < Teachbase::Bot::Strategies::CourseSession
+        class CourseSession < Teachbase::Bot::Strategies::Base::CourseSession
           def states
             interface.cs.menu(text: "#{Emoji.t(:books)}<b>#{I18n.t('cs_list')}</b>\n\n#{I18n.t('about_courses_page')}").states.show
           end

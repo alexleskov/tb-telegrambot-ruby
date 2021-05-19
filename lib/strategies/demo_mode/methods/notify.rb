@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Strategies
       class DemoMode
-        class Notify < Teachbase::Bot::Strategies::Notify
+        class Notify < Teachbase::Bot::Strategies::Base::Notify
         end
       end
     end

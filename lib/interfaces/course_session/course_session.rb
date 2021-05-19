@@ -3,7 +3,7 @@
 module Teachbase
   module Bot
     class Interfaces
-      class CourseSession < Teachbase::Bot::Interfaces::Object
+      class CourseSession < Teachbase::Bot::Interfaces::Core
       end
     end
   end

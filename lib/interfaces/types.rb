@@ -1,17 +1,24 @@
 # frozen_string_literal: true
 
 require './lib/interfaces/interface_controller'
-require './lib/interfaces/object'
 require './lib/interfaces/text'
 require './lib/interfaces/menu'
+require './lib/interfaces/content'
+
+require './lib/interfaces/strategies/core'
+require './lib/interfaces/strategies/core/text'
+require './lib/interfaces/strategies/core/menu'
+require './lib/interfaces/strategies/content_item'
+require './lib/interfaces/strategies/core/content'
+
 require './lib/interfaces/course_session/course_session'
 require './lib/interfaces/course_session/text'
 require './lib/interfaces/course_session/menu'
+
 require './lib/interfaces/section/section'
 require './lib/interfaces/section/text'
 require './lib/interfaces/section/menu'
-require './lib/interfaces/content_item'
-require './lib/interfaces/content'
+
 require './lib/interfaces/content/text'
 require './lib/interfaces/content/menu'
 require './lib/interfaces/content/material/material'
@@ -30,31 +37,39 @@ require './lib/interfaces/content/quiz/menu'
 require './lib/interfaces/content/poll/poll'
 require './lib/interfaces/content/poll/text'
 require './lib/interfaces/content/poll/menu'
+
 require './lib/interfaces/user/user'
 require './lib/interfaces/user/text'
 require './lib/interfaces/user/menu'
+
 require './lib/interfaces/document/document'
 require './lib/interfaces/document/text'
 require './lib/interfaces/document/menu'
-require './lib/interfaces/admin/admin'
-require './lib/interfaces/admin/text'
-require './lib/interfaces/admin/menu'
-require './lib/interfaces/base/base'
-require './lib/interfaces/base/text'
-require './lib/interfaces/base/menu'
-require './lib/interfaces/base/content'
+
+require './lib/interfaces/strategies/admin'
+require './lib/interfaces/strategies/admin/text'
+require './lib/interfaces/strategies/admin/menu'
+
+require './lib/interfaces/strategies/base'
+require './lib/interfaces/strategies/base/text'
+require './lib/interfaces/strategies/base/menu'
+require './lib/interfaces/strategies/base/content'
+
 require './lib/interfaces/strategies/standart_learning'
 require './lib/interfaces/strategies/standart_learning/text'
 require './lib/interfaces/strategies/standart_learning/menu'
 require './lib/interfaces/strategies/standart_learning/content'
+
 require './lib/interfaces/strategies/marathon'
 require './lib/interfaces/strategies/marathon/text'
 require './lib/interfaces/strategies/marathon/menu'
 require './lib/interfaces/strategies/marathon/content'
+
 require './lib/interfaces/strategies/battle'
 require './lib/interfaces/strategies/battle/text'
 require './lib/interfaces/strategies/battle/menu'
 require './lib/interfaces/strategies/battle/content'
+
 require './lib/interfaces/strategies/demo_mode'
 require './lib/interfaces/strategies/demo_mode/text'
 require './lib/interfaces/strategies/demo_mode/menu'

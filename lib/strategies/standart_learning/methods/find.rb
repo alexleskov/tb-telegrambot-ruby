@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Strategies
       class StandartLearning
-        class Find < Teachbase::Bot::Strategies::Find
+        class Find < Teachbase::Bot::Strategies::Base::Find
         end
       end
     end

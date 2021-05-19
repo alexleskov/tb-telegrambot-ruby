@@ -4,8 +4,16 @@ module Teachbase
   module Bot
     class Interfaces
       class Admin
-        class Menu < Teachbase::Bot::Interfaces::Menu
+        class Menu < Teachbase::Bot::Interfaces::Core::Menu
           ACTIONS = %w[edit to_on to_off].freeze
+
+          def main
+            @type = :menu
+            @slices_count = 2
+            @text ||= "#{Emoji.t(:wrench)} <b>#{I18n.t('admin_menu_message')}</b>"
+            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[accounts_manager new_account starting]).raw
+            self
+          end
 
           def account
             @type = :menu_inline

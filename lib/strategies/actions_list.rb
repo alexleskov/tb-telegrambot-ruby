@@ -13,15 +13,15 @@ module Teachbase
           end
 
           controller.on router.g(:admin, :root, p: %i[acc_id type]).regexp do
-            admin.update_account(data[1], data[2])
+            admin.account(tb_id: data[1]).action(data[2])
           end
 
           controller.on router.g(:admin, :root, p: %i[acc_id param]).regexp do
-            admin.update_account_setting(data[1], data[2])
+            admin.account(tb_id: data[1]).update(data[2])
           end
 
           controller.on router.g(:admin, :new_account).regexp do
-            admin.add_new_account
+            admin.account.add_new
           end
 
           controller.on router.g(:main, :start).regexp do
@@ -45,8 +45,7 @@ module Teachbase
           end
 
           controller.on router.g(:document, :root).regexp do
-            mode = controller.is_a?(Teachbase::Bot::TextController) ? :none : :edit_msg
-            document.list_by(data[1], mode)
+            document.list_by(data[1], controller.is_a?(Teachbase::Bot::TextController) ? :none : :edit_msg)
           end
 
           controller.on router.g(:user, :root).regexp do
@@ -82,11 +81,11 @@ module Teachbase
           end
 
           controller.on router.g(:setting, :localization, p: %i[param]).regexp do
-            setting.langugage_change(data[1])
+            setting.langugage(data[1])
           end
 
           controller.on router.g(:setting, :scenario, p: %i[param]).regexp do
-            setting.scenario_change(data[1])
+            setting.scenario(data[1])
           end
 
           controller.on router.g(:cs, :list).regexp do

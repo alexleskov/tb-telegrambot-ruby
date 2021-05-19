@@ -91,7 +91,7 @@ module Teachbase
           list_load_params[:page] = page.to_i
           list_load_params[:per_page] = per_page.to_i
         end
-        if category && category != "standart_learning" && Teachbase::Bot::Category.find_by_name(category)
+        if category && category != Teachbase::Bot::Strategies::STANDART_LEARNING_NAME && Teachbase::Bot::Category.find_by_name(category)
           list_load_params[:course_types] = [Teachbase::Bot::Category.find_by_name(category).tb_id]
         end
         list_load_params
