@@ -6,7 +6,7 @@ module Teachbase
       include Formatter
 
       STANDART_LEARNING_NAME = "standart_learning"
-      MARATHON_MODE_NAME =  "marathon"
+      MARATHON_MODE_NAME = "marathon"
       BATTLE_MODE_NAME = "battle"
       DEMO_MODE_NAME = "demo_mode"
       ADMIN_MODE_NAME = "admin"

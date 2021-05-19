@@ -36,7 +36,6 @@ require './lib/webhooks/course_stat'
 require './lib/attribute'
 require './lib/respond'
 
-
 require './lib/strategies/strategies'
 require './lib/strategies/actions_list'
 require './lib/strategies/core'

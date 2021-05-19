@@ -81,7 +81,6 @@ module Teachbase
           end
           { text: appshell.cached_answers_texts, attachments: attachments }
         end
-
       end
     end
   end

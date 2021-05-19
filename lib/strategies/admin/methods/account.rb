@@ -5,7 +5,6 @@ module Teachbase
     class Strategies
       class Admin
         class Account < Teachbase::Bot::Strategies
-
           attr_reader :tb_id
 
           def initialize(params, controller)
@@ -65,7 +64,7 @@ module Teachbase
               data = appshell.ask_answer(mode: :once)
               interface.sys.menu(disable_web_page_preview: true, mode: :none, text: I18n.t('confirm_action')).confirm_answer(:choice).show
               on_answer_confirmation(reaction: user_reaction.source) do
-                value = [:tb_id, :curator_tg_id, :support_tg_id].include?(setting.to_sym) ? data.source.to_i : data.source.to_s
+                value = %i[tb_id curator_tg_id support_tg_id].include?(setting.to_sym) ? data.source.to_i : data.source.to_s
                 account.public_send("#{setting}=", value)
                 with_check_avaliable(account.tb_id, account.client_id, account.client_secret) do
                   account.save!

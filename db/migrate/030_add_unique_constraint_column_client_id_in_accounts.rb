@@ -2,6 +2,6 @@
 
 class AddUniqueConstraintColumnClientIdInAccounts < ActiveRecord::Migration[5.2]
   def change
-    add_index :accounts, [:client_id, :tb_id], unique: true
+    add_index :accounts, %i[client_id tb_id], unique: true
   end
 end
