@@ -3,21 +3,24 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Base
+      class Core
         class Menu < Teachbase::Bot::Interfaces::Menu
-          def administration
-            @type = :menu
-            @slices_count = 2
-            @text ||= "#{Emoji.t(:wrench)} <b>#{I18n.t('admin_menu_message')}</b>"
-            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[accounts_manager new_account starting]).raw
-            self
-          end
-
           def starting
             @type = :menu
             @slices_count = 2
             @text ||= I18n.t('start_menu_message').to_s
             @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[demo_mode sign_in settings_list]).raw
+            self
+          end
+
+          def accounts(accounts_list, options = [])
+            raise unless accounts_list.first.is_a?(Teachbase::Bot::Account)
+
+            @type = :menu_inline
+            @slices_count = 1
+            @mode ||= :none
+            @text ||= "<b>#{Emoji.t(:school)} #{I18n.t('choose_account')}</b>"
+            @buttons = build_accounts_buttons(accounts_list, options)
             self
           end
 
@@ -98,7 +101,7 @@ module Teachbase
             @text ||= "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>"
             @mode ||= :edit_msg
             buttons_actions = []
-            buttons_signs = settings_class::PARAMS
+            buttons_signs = Teachbase::Bot::Setting::PARAMS
             buttons_signs.each { |buttons_sign| buttons_actions << router.g(:setting, :edit, p: [param: buttons_sign]).link }
             @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
                                                 back_button: back_button).raw
@@ -135,27 +138,6 @@ module Teachbase
             self
           end
 
-          def links(links_list)
-            raise unless links_list.is_a?(Array)
-
-            @type = :menu_inline
-            @mode ||= :edit_msg
-            @text ||= "#{create_title(title_params)}<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
-            @buttons = InlineUrlKeyboard.collect(buttons: build_links_buttons(links_list), back_button: back_button).raw
-            self
-          end
-
-          def accounts(accounts_list, options = [])
-            raise unless accounts_list.first.is_a?(Teachbase::Bot::Account)
-
-            @type = :menu_inline
-            @slices_count = 1
-            @mode ||= :none
-            @text ||= "<b>#{Emoji.t(:school)} #{I18n.t('choose_account')}</b>"
-            @buttons = build_accounts_buttons(accounts_list, options)
-            self
-          end
-
           def about_bot
             @type = :hide_kb
             @text ||= I18n.t('about_bot').to_sym
@@ -188,10 +170,6 @@ module Teachbase
               end
             end
             InlineCallbackKeyboard.g(keyboard_params).raw
-          end
-
-          def settings_class
-            Teachbase::Bot::Setting
           end
         end
       end

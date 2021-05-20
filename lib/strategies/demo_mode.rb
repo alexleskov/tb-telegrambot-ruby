@@ -4,9 +4,8 @@ module Teachbase
   module Bot
     class Strategies
       class DemoMode < Teachbase::Bot::Strategies::Base
-        include Teachbase::Bot::Strategies::ActionsList
-
         def starting
+          super
           result = registration
           return interface.sys.menu(text: I18n.t('declined')).starting.show unless result
 
@@ -21,7 +20,7 @@ module Teachbase
 
           appshell.authorizer.registration(contact, "193850" => "193851")
         rescue RuntimeError, TeachbaseBotException => e
-          appshell.reset_to_default_scenario
+          appshell.to_default_scenario
           appshell.logout
         end
 
@@ -42,7 +41,7 @@ module Teachbase
             appshell.logout
             title = "#{title} #{I18n.t('enter_by_auth_data').downcase} #{I18n.t('info_about_setted_password')}" if e.http_code == 401
             interface.sys.menu(text: title).sign_in_again.show
-            appshell.reset_to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
+            appshell.to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
           end
           interface.sys.menu.starting.show
         end

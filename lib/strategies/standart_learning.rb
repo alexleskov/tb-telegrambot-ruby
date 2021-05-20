@@ -4,15 +4,14 @@ module Teachbase
   module Bot
     class Strategies
       class StandartLearning < Teachbase::Bot::Strategies::Base
-        include Teachbase::Bot::Strategies::ActionsList
-
         def starting
+          super
           interface.sys.menu.about_bot.show
           interface.sys.menu.starting.show
         end
 
         def sign_in
-          appshell.reset_to_default_scenario if demo_mode_on?
+          appshell.to_default_scenario if demo_mode?
           interface.sys.text.on_enter(appshell.account_name).show
           auth = appshell.authorization
           raise unless auth

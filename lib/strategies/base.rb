@@ -3,67 +3,37 @@
 module Teachbase
   module Bot
     class Strategies
-      class Base < Teachbase::Bot::Strategies
+      class Base < Teachbase::Bot::Strategies::Core
         def setting
-          strategies_methods_class::Setting.new(controller)
+          current_strategy_class::Setting.new(controller)
         end
 
         def content
-          strategies_methods_class::Content.new(controller)
+          current_strategy_class::Content.new(controller)
         end
 
         def cs
-          strategies_methods_class::CourseSession.new(controller)
+          current_strategy_class::CourseSession.new(controller)
         end
 
         def profile
-          strategies_methods_class::Profile.new(controller)
+          current_strategy_class::Profile.new(controller)
         end
 
         def section
-          strategies_methods_class::Section.new(controller)
+          current_strategy_class::Section.new(controller)
         end
 
         def document
-          strategies_methods_class::Document.new(controller)
+          current_strategy_class::Document.new(controller)
         end
 
         def find(options = {})
-          strategies_methods_class::Find.new(controller, options)
+          current_strategy_class::Find.new(controller, options)
         end
 
         def notify(options = {})
-          strategies_methods_class::Notify.new(controller, options)
-        end
-
-        def admin(options = {})
-          strategies_methods_class::Admin.new(controller, options)
-        end
-
-        def administration
-          with_tg_user_policy [:admin] do
-            interface.sys.menu.administration.show
-          end
-        end
-
-        def help
-          interface.sys.text.help_info.show
-        end
-
-        def demo_mode
-          appshell.logout
-          appshell.change_scenario(Teachbase::Bot::Strategies::DEMO_MODE_NAME)
-          appshell.controller.context.handle.starting
-        end
-
-        def sign_out
-          interface.sys.menu.farewell(appshell.user_fullname(:string)).show
-          appshell.reset_to_default_scenario if demo_mode_on?
-          appshell.logout
-          appshell.controller.context.handle
-          appshell.controller.context.current_strategy.starting
-        rescue RuntimeError => e
-          interface.sys.text.on_error(e).show
+          current_strategy_class::Notify.new(controller, options)
         end
 
         def reset_password
@@ -72,7 +42,7 @@ module Teachbase
           interface.sys.menu(text: "#{Emoji.t(:point_down)} #{I18n.t('click_to_send_contact')}").take_contact.show
           contact = appshell.request_data(:none)
           unless contact.is_a?(Teachbase::Bot::ContactController)
-            appshell.reset_to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
+            appshell.to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
             return interface.sys.menu(text: I18n.t('declined')).starting.show
           end
           raise if contact.user_id != controller.context.tg_user.id
@@ -87,10 +57,8 @@ module Teachbase
           interface.sys.menu(text: I18n.t('declined')).starting.show
           title = to_text_by_exceiption_code(e)
           interface.sys.menu(text: title).sign_in_again.show
-          appshell.reset_to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
+          appshell.to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
         end
-
-        alias closing sign_out
 
         def change_account
           appshell.logout_account
@@ -107,14 +75,6 @@ module Teachbase
         alias accounts change_account
 
         # TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
-
-        def accounts_manager
-          admin.accounts
-        end
-
-        def new_account
-          admin.add_new_account
-        end
 
         def settings_list
           setting.list
@@ -140,8 +100,8 @@ module Teachbase
 
         private
 
-        def strategies_methods_class
-          appshell.controller.context.current_strategy ? appshell.controller.context.current_strategy.class : default_strategies_methods_class
+        def current_strategy_class
+          appshell.controller.context.current_strategy ? appshell.controller.context.current_strategy.class : Teachbase::Bot::Strategies::Base
         end
       end
     end

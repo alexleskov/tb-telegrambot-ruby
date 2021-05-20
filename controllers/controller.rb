@@ -7,7 +7,7 @@ module Teachbase
       include Decorators
 
       TAKING_DATA_CONTEXT_STATE = "taking_data"
-      TAKING_DATA_DELAY = 3*60
+      TAKING_DATA_DELAY = 3 * 60
 
       attr_reader :respond,
                   :message_params,

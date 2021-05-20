@@ -82,8 +82,8 @@ module Teachbase
         controller.reload_commands_list
       end
 
-      def reset_to_default_scenario
-        change_scenario("standart_learning")
+      def to_default_scenario
+        change_scenario(Teachbase::Bot::Strategies::STANDART_LEARNING_NAME)
       end
 
       def change_localization(lang)

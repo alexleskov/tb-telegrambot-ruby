@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Strategies
       class DemoMode
-        class Content < Teachbase::Bot::Strategies::Content
+        class Content < Teachbase::Bot::Strategies::Base::Content
         end
       end
     end

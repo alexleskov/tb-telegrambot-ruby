@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Strategies
       class StandartLearning
-        class Profile < Teachbase::Bot::Strategies::Profile
+        class Profile < Teachbase::Bot::Strategies::Base::Profile
         end
       end
     end

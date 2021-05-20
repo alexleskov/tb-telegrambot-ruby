@@ -3,7 +3,9 @@
 module Teachbase
   module Bot
     class Interfaces
-      class StandartLearning < Teachbase::Bot::Interfaces::Base
+      class Admin
+        class Text < Teachbase::Bot::Interfaces::Core::Text
+        end
       end
     end
   end

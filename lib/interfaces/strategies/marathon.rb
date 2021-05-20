@@ -3,7 +3,7 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Marathon < Teachbase::Bot::Interfaces::Object
+      class Marathon < Teachbase::Bot::Interfaces::Base
       end
     end
   end

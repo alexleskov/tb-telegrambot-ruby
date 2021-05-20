@@ -5,8 +5,12 @@ module Teachbase
     class Strategies
       include Formatter
 
+      STANDART_LEARNING_NAME = "standart_learning"
+      MARATHON_MODE_NAME = "marathon"
+      BATTLE_MODE_NAME = "battle"
       DEMO_MODE_NAME = "demo_mode"
-      LIST = %w[standart_learning marathon battle demo_mode].freeze
+      ADMIN_MODE_NAME = "admin"
+      LIST = [STANDART_LEARNING_NAME, MARATHON_MODE_NAME, BATTLE_MODE_NAME, DEMO_MODE_NAME, ADMIN_MODE_NAME].freeze
       POLICIES = { admin: 2, member: 1 }.freeze
 
       attr_reader :controller, :interface, :router, :appshell
@@ -17,16 +21,6 @@ module Teachbase
         @appshell = Teachbase::Bot::AppShell.new(controller)
         @router = Teachbase::Bot::Router.new
       end
-
-      def default_strategies_methods_class
-        Teachbase::Bot::Strategies
-      end
-
-      def ready; end
-
-      def decline; end
-
-      def send_contact; end
 
       protected
 
@@ -49,10 +43,6 @@ module Teachbase
 
       def access_denied?(e)
         e.respond_to?(:http_code) && [401, 403].include?(e.http_code)
-      end
-
-      def demo_mode_on?
-        controller.context.settings.scenario == DEMO_MODE_NAME
       end
 
       def check_status(mode = :silence)
@@ -86,31 +76,6 @@ module Teachbase
           appshell.clear_cached_answers
           interface.sys.text.declined.show
         end
-      end
-
-      def build_attachments_list(attachments_array)
-        return "" if attachments_array.empty?
-
-        result = ["#{Emoji.t(:bookmark_tabs)} #{to_italic(I18n.t('attachments').capitalize)}"]
-        attachments_array.each_with_index do |attachment, ind|
-          result << to_url_link(attachment[:file], "#{I18n.t('file').capitalize} #{ind + 1}").to_s
-        end
-        result.join("\n")
-      end
-
-      def build_answer_data(params = {})
-        return { text: appshell.cached_answers_texts } if params.empty?
-        raise "No such mode: '#{params[:files_mode]}'." unless %i[upload download_url].include?(params[:files_mode].to_sym)
-
-        attachments = []
-        files_ids = appshell.cached_answers_files
-        unless files_ids.empty?
-          appshell.cached_answers_files.each do |file_id|
-            attachments << { file: appshell.controller.filer.public_send(params[:files_mode], file_id) }
-          end
-          attachments
-        end
-        { text: appshell.cached_answers_texts, attachments: attachments }
       end
     end
   end

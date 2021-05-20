@@ -3,7 +3,7 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Base
+      class Core
         class Text < Teachbase::Bot::Interfaces::Text
           def link(url, link_name)
             answer.content.url(link: url, link_name: link_name)

@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Strategies
       class StandartLearning
-        class Section < Teachbase::Bot::Strategies::Section
+        class Section < Teachbase::Bot::Strategies::Base::Section
         end
       end
     end

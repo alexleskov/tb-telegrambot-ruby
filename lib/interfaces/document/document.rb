@@ -3,7 +3,7 @@
 module Teachbase
   module Bot
     class Interfaces
-      class Document < Teachbase::Bot::Interfaces::Object
+      class Document < Teachbase::Bot::Interfaces::Core
       end
     end
   end
