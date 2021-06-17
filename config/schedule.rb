@@ -23,7 +23,8 @@ scheduler.every '3m', name: "New courses notification" do |job|
       Teachbase::Bot::Strategies::Base::Notify.new(notify_param[:controller], type: :cs).about(notify_param[:tb_ids])
     end
   rescue => e
-    $logger.debug "Schduler error: #{e.inspect}."
+    $logger.debug "Sending notification error: #{e.inspect}."
+    next
   end
     result[:raw].where(tg_account_id: notify_param[:tg_account_id]).destroy_all
   end
