@@ -22,7 +22,7 @@ scheduler.every '3m', name: "New courses notification" do |job|
     I18n.with_locale notify_param[:settings].localization.to_sym do
       Teachbase::Bot::Strategies::Base::Notify.new(notify_param[:controller], type: :cs).about(notify_param[:tb_ids])
     end
-  rescue
+  rescue => e
     $logger.debug "Schduler error: #{e.inspect}."
   end
     result[:raw].where(tg_account_id: notify_param[:tg_account_id]).destroy_all
