@@ -140,7 +140,7 @@ module Teachbase
         @apitoken = Teachbase::Bot::ApiToken.find_or_create_by!(auth_session_id: authsession.id, active: true)
         apitoken.activate_by(token)
 
-        raise "Can't find login_type: '#{login type} for login: '#{login}'" unless login_type
+        raise "Can't find login_type: '#{login_type} for login: '#{login}'" unless login_type
 
         @user = Teachbase::Bot::User.find_or_create_by!(login_type => login)
         user.update!(password: crypted_password)
