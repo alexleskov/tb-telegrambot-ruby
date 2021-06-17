@@ -6,7 +6,7 @@ module Teachbase
       class Task
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
           def content
-            @text = [create_title(title_params), sign_entity_status, description].join("\n")
+            @text = [create_title(title_params), "#{Phrase.entity_status(entity)}\n", description].join("\n")
             super
           end
 
@@ -30,7 +30,7 @@ module Teachbase
 
             InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('answer').downcase}",
                                    callback_data: router.g(:content, :take_answer, id: entity.tb_id,
-                                                                                   p: [cs_id: cs_tb_id, answer_type: :answer]).link)
+                                                           p: [cs_id: entity.course_session.tb_id, answer_type: :answer]).link)
           end
 
           def build_comment_button
@@ -38,7 +38,7 @@ module Teachbase
 
             InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('comment').downcase}",
                                    callback_data: router.g(:content, :take_answer, id: entity.tb_id,
-                                                                                   p: [cs_id: cs_tb_id, answer_type: :comment]).link)
+                                                           p: [cs_id: entity.course_session.tb_id, answer_type: :comment]).link)
           end
         end
       end

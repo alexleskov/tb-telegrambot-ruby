@@ -9,11 +9,7 @@ module Decorators
     def build_source
       case content_type.to_sym
       when :text
-        if editor_js
-          to_text_by_editorjs(content)
-        else
-          sanitize_html(source)
-        end
+        editor_js ? EditorJs.new(content).parse.render : sanitize_html(source)
       when :image, :video, :audio, :pdf, :iframe, :vimeo, :netology
         to_default_protocol(source)
       when :youtube

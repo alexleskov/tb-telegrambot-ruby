@@ -83,12 +83,12 @@ module Teachbase
           def build_content_button(content, type_by_section)
             InlineCallbackButton.g(button_sign: button_sign_by_content_type(type_by_section.to_s, content),
                                    callback_data: router.g(:content, :root, id: content.tb_id,
-                                                                            p: [cs_id: cs_tb_id, sec_id: content.section_id, type: type_by_section]).link,
+                                                           p: [cs_id: content.course_session.tb_id, sec_id: content.section_id, type: type_by_section]).link,
                                    position: content.position)
           end
 
           def build_addition_links_button
-            InlineCallbackButton.g(callback_data: router.g(:section, :additions, id: entity.id, p: [cs_id: cs_tb_id]).link,
+            InlineCallbackButton.g(callback_data: router.g(:section, :additions, id: entity.id, p: [cs_id: entity.course_session.tb_id]).link,
                                    button_sign: I18n.t('attachments').to_s, emoji: :link)
           end
         end

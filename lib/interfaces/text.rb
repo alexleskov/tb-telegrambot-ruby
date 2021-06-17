@@ -11,13 +11,7 @@ module Teachbase
         def send_to(tg_id, from_user)
           return unless text
 
-          link_on_user =
-            if from_user.respond_to?(:link_on) && from_user.link_on
-              "#{I18n.t('send')} #{I18n.t('answer').downcase}: #{from_user.link_on}"
-            end
-          message_to_user = ["#{I18n.t('incoming')} #{I18n.t('message').downcase} - #{from_user.to_full_name(:string)}:\n",
-                             text.to_s, link_on_user || ""].join("\n")
-          answer.text.send_to(tg_id, message_to_user)
+          answer.text.send_to(tg_id, Phrase.incoming_message(from_user, text))
         end
 
         def on_undefined_contact

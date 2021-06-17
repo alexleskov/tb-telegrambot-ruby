@@ -4,8 +4,7 @@ module Teachbase
   module Bot
     class InterfaceController
       include Formatter
-
-      LINK_ATTRS = { "url" => "source", "label" => "title" }.freeze
+      include Phrase
 
       attr_reader :answer, :entity, :router
       attr_accessor :text,
@@ -27,38 +26,6 @@ module Teachbase
         @route_params = params[:route_params]
       end
 
-      def sing_on_empty
-        "<b>#{I18n.t('empty')}</b>"
-      end
-
-      def sign_on_error
-        "<b>#{I18n.t('error')}</b>"
-      end
-
-      def sign_by_object_type(object_type)
-        case object_type.to_sym
-        when :section
-          I18n.t('section3')
-        else
-          raise "No such sign for object type: '#{object_type}'"
-        end
-      end
-
-      def sign_entity_status
-        "<b>#{I18n.t('state').capitalize}: #{attach_emoji(entity.status)} #{to_italic(I18n.t(entity.status).capitalize)}</b>"
-      end
-
-      def sign_by_status(status)
-        case status.to_sym
-        when :in_progress
-          "#{Emoji.t(:arrows_counterclockwise)} #{to_bolder(I18n.t('updating_data'))}"
-        when :success
-          "#{Emoji.t(:thumbsup)} #{I18n.t('updating_success')}"
-        else
-          "#{Emoji.t(:thumbsdown)} #{sign_on_error}"
-        end
-      end
-
       def create_title(options)
         options[:object] ||= entity
         if options.keys.include?(:text)
@@ -71,7 +38,7 @@ module Teachbase
       end
 
       def attachments(object)
-        result = ["#{Emoji.t(:bookmark_tabs)} #{to_italic(I18n.t('attachments').capitalize)}"]
+        result = [Phrase.attachments]
         object.attachments.each_with_index do |attach, ind|
           result << "#{ind + 1}. #{to_url_link(attach.url, attach.name)}"
         end
@@ -79,11 +46,9 @@ module Teachbase
       end
 
       def comments(object)
-        result = ["#{Emoji.t(:lips)} #{to_italic(I18n.t('comments').capitalize)}"]
-        object.comments.order(:id).each do |comment|
-          result << "<a href='#{comment.avatar_url}'>#{comment.user_name}</a> (#{Time.parse(Time.at(comment.tb_created_at).strftime('%d.%m.%Y %H:%M'))
-                                                                                             .strftime('%d.%m.%Y %H:%M')}):
-                     — \"#{to_italic(comment.text)}\"\n"
+        result = [Phrase.comments]
+        object.comments.order(:id).each do |user_comment|
+          result << Phrase.user_comment(user_comment)
         end
         result.join("\n")
       end
@@ -93,8 +58,7 @@ module Teachbase
         entity.answers.order(created_at: :desc).each do |user_answer|
           build_attachments = user_answer.attachments? ? "#{attachments(user_answer)}\n" : nil
           build_comments = user_answer.comments? ? "\n#{sanitize_html(comments(user_answer))}\n" : nil
-          result << "<b>#{I18n.t('answer').capitalize} №#{user_answer.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(user_answer.status)} #{to_italic(I18n.t(user_answer.status).capitalize)}</b>
-                     \"#{sanitize_html(user_answer.text)}\"\n\n#{build_attachments}#{build_comments}"
+          result << "#{Phrase.user_answer(user_answer)}\n\n#{build_attachments}#{build_comments}"
         end
         result.join("\n")
       end
@@ -102,7 +66,7 @@ module Teachbase
       def description
         result =
           if entity.respond_to?(:content) && entity.content && !entity.content.empty?
-            to_text_by_editorjs(entity.content)
+            EditorJs.new(entity.content).parse.render
           elsif entity.description && !sanitize_html(entity.description).strip.empty?
             "\n#{sanitize_html(entity.description)}"
           end
@@ -113,23 +77,14 @@ module Teachbase
 
       protected
 
-      def replace_key_names(cnames_hash, hash_on_replace)
-        cnames_hash.each do |old_key, new_key|
-          next unless hash_on_replace[old_key]
-
-          hash_on_replace[new_key.to_s] = hash_on_replace.delete(old_key)
-        end
-        hash_on_replace
-      end
-
       def on_empty_params
         title = title_params ? "#{create_title(title_params)}\n" : ""
-        @text ||= "#{title}#{sing_on_empty}"
+        @text ||= "#{title}#{Phrase.empty}"
       end
 
-      def cs_tb_id
-        entity.is_a?(Teachbase::Bot::CourseSession) ? entity.tb_id : entity.course_session.tb_id
-      end
+      # def cs_tb_id
+      #   entity.is_a?(Teachbase::Bot::CourseSession) ? entity.tb_id : entity.course_session.tb_id
+      # end
     end
   end
 end

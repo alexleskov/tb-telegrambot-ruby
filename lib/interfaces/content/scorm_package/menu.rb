@@ -6,7 +6,7 @@ module Teachbase
       class ScormPackage
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
           def content
-            @text = [create_title(title_params), "#{sign_entity_status}\n"].join("\n")
+            @text = [create_title(title_params), "#{Phrase.entity_status(entity)}\n"].join("\n")
             super
           end
 

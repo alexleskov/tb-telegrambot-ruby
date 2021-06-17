@@ -65,7 +65,7 @@ module Teachbase
           links_list.each do |link_params|
             raise unless link_params.is_a?(Hash)
 
-            link_params = replace_key_names(Teachbase::Bot::InterfaceController::LINK_ATTRS, link_params)
+            link_params = Attribute.replace_key_names(Teachbase::Bot::Profile::LINK_ATTRS, link_params)
             buttons_list << InlineUrlButton.to_open(link_params["source"], link_params["title"])
           end
           buttons_list

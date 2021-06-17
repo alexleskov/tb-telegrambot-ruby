@@ -68,8 +68,8 @@ module Teachbase
             else
               buttons_signs.each do |buttons_sign|
                 buttons_actions << router.g(:content, :confirm_answer, id: entity.tb_id,
-                                                                       p: [cs_id: cs_tb_id, sec_id: entity.section.id, type: entity.class.type_like_sym,
-                                                                           answer_type: answer_type, param: buttons_sign]).link
+                                            p: [cs_id: entity.course_session.tb_id, sec_id: entity.section.id, type: entity.class.type_like_sym,
+                                                answer_type: answer_type, param: buttons_sign]).link
               end
             end
             @type = :menu_inline
