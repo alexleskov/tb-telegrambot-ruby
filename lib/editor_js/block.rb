@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-  class EditorJs
-    class Block
-      attr_reader :data
+class EditorJs
+  class Block
+    attr_reader :data
 
-      def initialize(data)
-        @data = data
-      end
+    def initialize(data)
+      @data = data
     end
+  end
   end

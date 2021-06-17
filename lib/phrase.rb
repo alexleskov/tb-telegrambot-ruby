@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-module Phrase 
+module Phrase
   class << self
     include Formatter
-    
+
     def empty
       "<b>#{I18n.t('empty')}</b>"
     end
@@ -62,6 +62,5 @@ module Phrase
       message_back_button = from_user.link_on ? "#{I18n.t('send')} #{I18n.t('answer').downcase}: #{from_user.link_on}" : ""
       ["#{I18n.t('incoming')} #{I18n.t('message').downcase} - #{from_user.to_full_name(:string)}:\n", text, message_back_button].join("\n")
     end
-
   end
 end

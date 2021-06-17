@@ -83,7 +83,7 @@ module Teachbase
           def build_content_button(content, type_by_section)
             InlineCallbackButton.g(button_sign: button_sign_by_content_type(type_by_section.to_s, content),
                                    callback_data: router.g(:content, :root, id: content.tb_id,
-                                                           p: [cs_id: content.course_session.tb_id, sec_id: content.section_id, type: type_by_section]).link,
+                                                                            p: [cs_id: content.course_session.tb_id, sec_id: content.section_id, type: type_by_section]).link,
                                    position: content.position)
           end
 

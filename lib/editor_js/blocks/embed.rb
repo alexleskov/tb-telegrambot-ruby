@@ -1,24 +1,24 @@
 # frozen_string_literal: true
 
-  class EditorJs
-    class Block
-      class Embed < EditorJs::Block::External
-        attr_reader :url
+class EditorJs
+  class Block
+    class Embed < EditorJs::Block::External
+      attr_reader :url
 
-        def initialize(data)
-          @url = data["source"]
-          super(data)
-        end
+      def initialize(data)
+        @url = data["source"]
+        super(data)
+      end
 
-        def render
-          "#{EmojiAliaser.video} <a href='#{build_url}'>#{name}</a>"
-        end
+      def render
+        "#{EmojiAliaser.video} <a href='#{build_url}'>#{name}</a>"
+      end
 
-        private
+      private
 
-        def build_name
-          caption.empty? ? url : caption
-        end
+      def build_name
+        caption.empty? ? url : caption
       end
     end
+  end
   end
