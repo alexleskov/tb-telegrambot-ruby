@@ -56,31 +56,6 @@ module Teachbase
         def demo_mode?
           controller.context.settings.scenario == DEMO_MODE_NAME
         end
-
-        def build_attachments_list(attachments_array)
-          return "" if attachments_array.empty?
-
-          result = ["#{Emoji.t(:bookmark_tabs)} #{to_italic(I18n.t('attachments').capitalize)}"]
-          attachments_array.each_with_index do |attachment, ind|
-            result << to_url_link(attachment[:file], "#{I18n.t('file').capitalize} #{ind + 1}").to_s
-          end
-          result.join("\n")
-        end
-
-        def build_answer_data(params = {})
-          return { text: appshell.cached_answers_texts } if params.empty?
-          raise "No such mode: '#{params[:files_mode]}'." unless %i[upload download_url].include?(params[:files_mode].to_sym)
-
-          attachments = []
-          files_ids = appshell.cached_answers_files
-          unless files_ids.empty?
-            appshell.cached_answers_files.each do |file_id|
-              attachments << { file: appshell.controller.filer.public_send(params[:files_mode], file_id) }
-            end
-            attachments
-          end
-          { text: appshell.cached_answers_texts, attachments: attachments }
-        end
       end
     end
   end
