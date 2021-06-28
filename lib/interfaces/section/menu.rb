@@ -39,7 +39,7 @@ module Teachbase
             @mode ||= :none
             @buttons = contents_buttons
             @text = "#{create_title(object: entity.course_session,
-                                    stages: %i[title], params: { cover_url: '' })}#{create_title(title_params)}"
+                                    stages: %i[title], params: { cover_url: '' })} \u21B3 #{create_title(title_params)}"
             self
           end
 
@@ -52,7 +52,7 @@ module Teachbase
                                                  route: router.g(:section, :root, position: section.position,
                                                                                   p: [cs_id: entity.tb_id]).link)
             end
-            return "\n#{Emoji.t(:soon)} <i>#{I18n.t('empty')}</i>" if result.empty?
+            return "\n#{Phrase.empty}" if result.empty?
 
             result.join("\n")
           end
@@ -62,8 +62,7 @@ module Teachbase
             CHOOSING_BUTTONS.each do |choose_button|
               buttons_actions << router.g(:cs, :sections, id: entity.tb_id, p: [param: choose_button]).link
             end
-            InlineCallbackKeyboard.g(buttons_signs: to_i18n(CHOOSING_BUTTONS),
-                                     buttons_actions: buttons_actions,
+            InlineCallbackKeyboard.g(buttons_signs: to_i18n(CHOOSING_BUTTONS), buttons_actions: buttons_actions,
                                      back_button: back_button).raw
           end
 
@@ -71,8 +70,9 @@ module Teachbase
             buttons_list = []
             contents_by_types = entity.contents_by_types
             contents_by_types.keys.each do |content_type|
-              type_by_section = Teachbase::Bot::Section::OBJECTS_TYPES[content_type.to_sym]
-              contents_by_types[content_type].each { |content| buttons_list << build_content_button(content, type_by_section) }
+              contents_by_types[content_type].each do |content|
+                buttons_list << build_content_button(content, Teachbase::Bot::Section::OBJECTS_TYPES[content_type.to_sym])
+              end
             end
             buttons_list = buttons_list.sort_by(&:position)
             buttons_list.unshift(build_addition_links_button) if entity.links_count.positive?
@@ -81,9 +81,10 @@ module Teachbase
           end
 
           def build_content_button(content, type_by_section)
+            router_parameters = { cs_id: content.course_session.tb_id, sec_id: content.section_id, type: type_by_section }
             InlineCallbackButton.g(button_sign: button_sign_by_content_type(type_by_section.to_s, content),
                                    callback_data: router.g(:content, :root, id: content.tb_id,
-                                                                            p: [cs_id: content.course_session.tb_id, sec_id: content.section_id, type: type_by_section]).link,
+                                                                            p: [router_parameters]).link,
                                    position: content.position)
           end
 

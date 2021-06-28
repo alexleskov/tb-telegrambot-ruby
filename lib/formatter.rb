@@ -6,6 +6,7 @@ module Formatter
   URL_REGEXP = %r{^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-zA-Z0-9]+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,5}(:[0-9]{1,5})?(\/.*)?$}.freeze
   DEFAULT_URL_PROTOCOL = "http://"
   DELIMETER = "\n"
+  TIME_F = "%d.%m.%Y %H:%M"
 
   def to_bolder(string)
     "<b>#{string}</b>"

@@ -8,7 +8,7 @@ module Teachbase
           def list(documents, parent_folder = nil)
             @type = :menu_inline
             @mode ||= back_button && parent_folder ? :edit_msg : :none
-            @text ||= "#{Emoji.t(:school_satchel)}<b>#{I18n.t('documents')}</b>"
+            @text ||= Phrase.documents
             @disable_web_page_preview = :true
             @buttons = document_buttons(documents)
             self
@@ -23,8 +23,7 @@ module Teachbase
               document_button = document.is_folder ? build_folder_button : build_file_button
               buttons_list << document_button
             end
-            InlineCallbackKeyboard.collect(buttons: buttons_list,
-                                           back_button: back_button).raw
+            InlineCallbackKeyboard.collect(buttons: buttons_list, back_button: back_button).raw
           end
 
           def build_folder_button

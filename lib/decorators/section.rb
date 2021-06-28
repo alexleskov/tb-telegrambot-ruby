@@ -25,7 +25,7 @@ module Decorators
     end
 
     def section_delayed
-      "<i>#{I18n.t('section_delayed')}</i>: <i>#{Time.at(opened_at).utc.strftime('%d.%m.%Y %H:%M')}.</i>"
+      "<i>#{I18n.t('section_delayed')}</i>: <pre>#{Time.at(opened_at).utc.strftime(Formatter::TIME_F)}.</pre>"
     end
 
     def section_unpublish

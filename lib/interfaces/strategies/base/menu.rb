@@ -10,7 +10,7 @@ module Teachbase
 
             @type = :menu_inline
             @mode ||= :edit_msg
-            @text ||= "#{create_title(title_params)}<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
+            @text ||= "#{create_title(title_params)}#{Phrase.links}"
             @buttons = InlineUrlKeyboard.collect(buttons: build_links_buttons(links_list), back_button: back_button).raw
             self
           end

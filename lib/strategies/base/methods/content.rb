@@ -81,8 +81,8 @@ module Teachbase
               menu_options[:answers_button] = true
               menu_options[:approve_button] = true
               menu_options[:disable_web_page_preview] = true
-            when :quiz, :scorm_package
-              menu_options[:approve_button] = true
+            when :quiz, :scorm_package, :poll
+              menu_options[:open_button] = true
             end
             menu_options
           end

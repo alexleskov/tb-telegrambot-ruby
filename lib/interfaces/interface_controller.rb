@@ -4,7 +4,6 @@ module Teachbase
   module Bot
     class InterfaceController
       include Formatter
-      include Phrase
 
       attr_reader :answer, :entity, :router
       attr_accessor :text,
@@ -48,7 +47,7 @@ module Teachbase
       def comments(object)
         result = [Phrase.comments]
         object.comments.order(:id).each do |user_comment|
-          result << Phrase.user_comment(user_comment)
+          result << Phrase.new(user_comment).comment
         end
         result.join("\n")
       end
@@ -58,7 +57,7 @@ module Teachbase
         entity.answers.order(created_at: :desc).each do |user_answer|
           build_attachments = user_answer.attachments? ? "#{attachments(user_answer)}\n" : nil
           build_comments = user_answer.comments? ? "\n#{sanitize_html(comments(user_answer))}\n" : nil
-          result << "#{Phrase.user_answer(user_answer)}\n\n#{build_attachments}#{build_comments}"
+          result << "#{Phrase.new(user_answer).answer}\n\n#{build_attachments}#{build_comments}"
         end
         result.join("\n")
       end
@@ -72,7 +71,7 @@ module Teachbase
           end
         return result unless entity.respond_to?("attachments?") && entity.attachments?
 
-        "#{result}\n\n#{attachments(entity)}"
+        "#{result}\n#{attachments(entity)}"
       end
 
       protected
