@@ -6,7 +6,7 @@ module Formatter
   URL_REGEXP = %r{^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-zA-Z0-9]+([\-\.]{1}[a-zA-Z0-9]+)*\.[a-zA-Z]{2,5}(:[0-9]{1,5})?(\/.*)?$}.freeze
   DEFAULT_URL_PROTOCOL = "http://"
   DELIMETER = "\n"
-  HOST = "https://go.teachbase.ru"
+  TIME_F = "%d.%m.%Y %H:%M"
 
   def to_bolder(string)
     "<b>#{string}</b>"
@@ -67,14 +67,6 @@ module Formatter
     integer.positive? ? integer / 60 : 0
   end
 
-  def to_text_by_editorjs(editorjs_content)
-    result = []
-    editorjs_content["blocks"].each do |block|
-      result << build_text_block_by_data_type(block) + DELIMETER
-    end
-    to_paragraph(result)
-  end
-
   def to_text_by_exceiption_code(error)
     return unless error.respond_to?(:http_code)
 
@@ -98,7 +90,7 @@ module Formatter
     ONLY_FILE_NAME_REGEXP =~ file_name
     return file_name unless $LAST_MATCH_INFO
 
-    $LAST_MATCH_INFO
+    $LAST_MATCH_INFO[1]
   end
 
   def attach_emoji(sign)
@@ -119,39 +111,6 @@ module Formatter
   end
 
   private
-
-  def build_text_block_by_data_type(block)
-    raise "Given '#{block.class}'. Expected a Hash" unless block.is_a?(Hash)
-
-    data = block["data"]
-    case block["type"]
-    when "header"
-      to_bolder(data["text"])
-    when "paragraph"
-      data["text"]
-    when "image"
-      url = data["file"]["url"]
-      image_name = data["caption"].empty? ? chomp_file_name(url, :only_name) : data["caption"]
-      "#{attach_emoji(:image)} #{to_url_link("#{HOST}#{url}", image_name)}"
-    when "list"
-      result = []
-      data["items"].each_with_index do |item, ind|
-        mark = data["style"] == "ordered" ? "#{ind + 1}." : "•"
-        result << "#{mark} #{item}"
-      end
-      to_paragraph(result)
-    when "code"
-      "<pre>#{data['code']}</pre>"
-    when "quote"
-      data["caption"].empty? ? data["text"] : "#{data['text']}\n#{to_italic(data['caption'])}"
-    when "embed"
-      url = data["source"]
-      embed_name = data["caption"].empty? ? data["source"] : data["caption"]
-      "#{attach_emoji(:video)} #{to_url_link(url, embed_name)}"
-    else
-      "Undefined content."
-    end
-  end
 
   def url_valid?(url)
     url !~ NOT_VAILD_URL_REGEXP

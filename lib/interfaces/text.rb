@@ -11,78 +11,72 @@ module Teachbase
         def send_to(tg_id, from_user)
           return unless text
 
-          link_on_user =
-            if from_user.respond_to?(:link_on) && from_user.link_on
-              "#{I18n.t('send')} #{I18n.t('answer').downcase}: #{from_user.link_on}"
-            end
-          message_to_user = ["#{I18n.t('incoming')} #{I18n.t('message').downcase} - #{from_user.to_full_name(:string)}:\n",
-                             text.to_s, link_on_user || ""].join("\n")
-          answer.text.send_to(tg_id, message_to_user)
+          answer.text.send_to(tg_id, Phrase.new(from_user).incoming_message(text))
         end
 
         def on_undefined_contact
-          @text = I18n.t('undefined_contact').to_s
+          @text = I18n.t('undefined_contact')
           self
         end
 
         def on_undefined
-          @text = I18n.t('undefined_text').to_s
+          @text = I18n.t('undefined_text')
           self
         end
 
         def on_undefined_action
-          @text = I18n.t('undefined_action').to_s
+          @text = I18n.t('undefined_action')
           self
         end
 
         def on_undefined_file
-          @text = I18n.t('undefined_file').to_s
+          @text = I18n.t('undefined_file')
           self
         end
 
         def on_forbidden
-          @text = "#{Emoji.t(:x)} #{I18n.t('forbidden')}"
+          @text = Phrase.forbidden
           self
         end
 
         def declined
-          @text = "#{Emoji.t(:leftwards_arrow_with_hook)} <i>#{I18n.t('declined')}</i>"
+          @text = Phrase.declined
           self
         end
 
         def ask_find_keyword
-          @text = "#{Emoji.t(:pencil2)} #{I18n.t('enter_what_find')}:"
+          @text = Phrase::Enter.keyword
           self
         end
 
         def ask_next_action
-          @text = "<i>#{I18n.t('start_menu_message')}</i>"
+          @text = Phrase.start_action
           self
         end
 
         def ask_login
-          @text = "#{Emoji.t(:pencil2)} #{I18n.t('add_user_login')}:"
+          @text = Phrase::Enter.login
           self
         end
 
         def ask_password(state)
-          @text = "#{Emoji.t(:pencil2)} #{I18n.t('add_user_password')}:"
+          @text = Phrase::Enter.password
           @text = "#{text} #{I18n.t('new_password_condition').downcase}:" if state == :new
           self
         end
 
         def ask_answer
-          @text = "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_answer')}:"
+          @text = Phrase::Enter.answer
           self
         end
 
-        def ask_value(value_name = "")
-          @text = "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_value')}#{value_name}:"
+        def ask_value(name = "")
+          @text = Phrase::Enter.value(name)
           self
         end
 
         def error
-          @text = "#{Emoji.t(:boom)} <i>#{I18n.t('unexpected_error')}</i>"
+          @text = Phrase.error
           self
         end
 

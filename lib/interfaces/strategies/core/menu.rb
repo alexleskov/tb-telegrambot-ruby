@@ -9,7 +9,8 @@ module Teachbase
             @type = :menu
             @slices_count = 2
             @text ||= I18n.t('start_menu_message').to_s
-            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[demo_mode sign_in settings_list]).raw
+            @buttons = TextCommandKeyboard.g(commands: init_commands,
+                                             buttons_signs: %i[demo_mode sign_in settings_list]).raw
             self
           end
 
@@ -28,7 +29,7 @@ module Teachbase
             @type = :menu
             @mode ||= :none
             @slices_count = 2
-            @text ||= "#{I18n.t('meet_with_bot')}\n\n#{Emoji.t(:point_down)} #{I18n.t('click_to_send_contact')} #{I18n.t('notice_about_safety')}"
+            @text ||= Phrase::Enter.contact
             @buttons = TextCommandKeyboard.collect(buttons: [TextCommandButton.take_contact(init_commands),
                                                              TextCommandButton.decline(init_commands)]).raw
             self
@@ -38,7 +39,7 @@ module Teachbase
             @type = :menu_inline
             @buttons = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.g(:main, :login).link)]).raw
             @mode ||= :none
-            @text ||= "#{I18n.t('error')}. #{I18n.t('auth_failed')}\n#{I18n.t('try_again')}"
+            @text ||= Phrase.auth_failed
             self
           end
 
@@ -66,10 +67,11 @@ module Teachbase
             when :message, :choice
               buttons_actions = buttons_signs
             else
+              router_parameters = { cs_id: entity.course_session.tb_id, sec_id: entity.section.id,
+                                    type: entity.class.type_like_sym, answer_type: answer_type }
               buttons_signs.each do |buttons_sign|
-                buttons_actions << router.g(:content, :confirm_answer, id: entity.tb_id,
-                                                                       p: [cs_id: cs_tb_id, sec_id: entity.section.id, type: entity.class.type_like_sym,
-                                                                           answer_type: answer_type, param: buttons_sign]).link
+                router_parameters[:param] = buttons_sign
+                buttons_actions << router.g(:content, :confirm_answer, id: entity.tb_id, p: [router_parameters]).link
               end
             end
             @type = :menu_inline
@@ -77,9 +79,9 @@ module Teachbase
             @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
                                                 emojis: %i[ok leftwards_arrow_with_hook]).raw
             @text ||= ["<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n",
-                       "#{Emoji.t(:memo)} #{I18n.t('text').capitalize}:",
-                       "<pre>#{user_answer[:text]}</pre>\n",
-                       "#{Emoji.t(:bookmark_tabs)} #{I18n.t('attachments').capitalize}: #{user_answer[:files].size}"].join("\n")
+                       "#{Emoji.t(:memo)} #{I18n.t('text').capitalize}:\n",
+                       "#{user_answer[:text]}\n",
+                       "#{Phrase.attachments}: #{user_answer[:files].size}"].join("\n")
             self
           end
 
@@ -126,7 +128,7 @@ module Teachbase
 
           def ready
             @type = :menu
-            @text ||= "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_next_answer')} #{Emoji.t(:point_down)}"
+            @text ||= Phrase::Enter.next_answer
             @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[ready]).raw
             self
           end

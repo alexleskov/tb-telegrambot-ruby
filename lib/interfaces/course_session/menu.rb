@@ -28,7 +28,7 @@ module Teachbase
             @slices_count = 2
             @buttons = state_buttons
             @mode ||= :none
-            @text ||= "#{Emoji.t(:books)}<b>#{I18n.t('cs_list')}</b>"
+            @text ||= Phrase.courses_list
             self
           end
 
@@ -39,7 +39,7 @@ module Teachbase
 
             current_page = (pagination_options[:offset] / pagination_options[:limit]) + 1
             all_page_count = (pagination_options[:all_count].to_f / pagination_options[:limit].to_f).ceil
-            @text << "#{I18n.t('page')} #{current_page} #{I18n.t('from')} #{all_page_count}"
+            @text << Phrase.page_number(current_page, all_page_count)
             [build_pagination_button(:less, pagination_options), build_pagination_button(:more, pagination_options)]
           end
 
@@ -53,7 +53,9 @@ module Teachbase
 
           def state_buttons
             buttons_actions = []
-            Teachbase::Bot::CourseSession::STATES.each { |state| buttons_actions << router.g(:cs, :list, p: [param: state.to_s]).link }
+            Teachbase::Bot::CourseSession::STATES.each do |state|
+              buttons_actions << router.g(:cs, :list, p: [param: state.to_s]).link
+            end
             InlineCallbackKeyboard.g(buttons_signs: to_i18n(Teachbase::Bot::CourseSession::STATES.dup, "cs_"),
                                      buttons_actions: buttons_actions,
                                      back_button: back_button).raw

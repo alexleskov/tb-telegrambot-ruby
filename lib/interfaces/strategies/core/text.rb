@@ -10,7 +10,7 @@ module Teachbase
           end
 
           def update_status(status)
-            @text = sign_by_status(status)
+            @text = Phrase.status(status)
             self
           end
 
@@ -35,7 +35,7 @@ module Teachbase
           end
 
           def on_error(error = "Undefined error")
-            @text ||= "#{Emoji.t(:crying_cat_face)}#{sign_on_error}: #{error}"
+            @text ||= "#{Emoji.t(:crying_cat_face)}#{Phrase.error}: #{error}"
             self
           end
 
@@ -46,7 +46,7 @@ module Teachbase
           end
 
           def ask_enter_the_number(object_type)
-            @text ||= "#{Emoji.t(:pencil2)} <b>#{I18n.t('enter_the_number')} #{sign_by_object_type(object_type)}:</b>"
+            @text ||= "#{Emoji.t(:pencil2)} <b>#{I18n.t('enter_the_number')} #{Phrase.by_object_type(object_type)}:</b>"
             self
           end
         end

@@ -5,11 +5,6 @@ module Teachbase
     class Interfaces
       class Task
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
-          def content
-            @text = [create_title(title_params), sign_entity_status, description].join("\n")
-            super
-          end
-
           def user_answers
             @type = :menu_inline
             @mode ||= :edit_msg
@@ -24,21 +19,24 @@ module Teachbase
 
           private
 
-          def build_approve_button
-            super
-            return unless entity.course_session.active? && entity.can_submit?
+          alias content_area description
 
+          def build_approve_button
+            return unless super
+
+            router_parameters = { cs_id: entity.course_session.tb_id, answer_type: :answer }
             InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('answer').downcase}",
                                    callback_data: router.g(:content, :take_answer, id: entity.tb_id,
-                                                                                   p: [cs_id: cs_tb_id, answer_type: :answer]).link)
+                                                                                   p: [router_parameters]).link)
           end
 
           def build_comment_button
             return unless entity.can_comment?
 
+            router_parameters = { cs_id: entity.course_session.tb_id, answer_type: :comment }
             InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('comment').downcase}",
                                    callback_data: router.g(:content, :take_answer, id: entity.tb_id,
-                                                                                   p: [cs_id: cs_tb_id, answer_type: :comment]).link)
+                                                                                   p: [router_parameters]).link)
           end
         end
       end

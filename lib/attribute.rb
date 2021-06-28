@@ -7,6 +7,17 @@ class Attribute
     def create(object_attr_names, lms_data, lms_attr_cnames = {})
       new(object_attr_names, lms_data, lms_attr_cnames).build_attributes
     end
+
+    def replace_key_names(cnames_hash, hash_on_replace)
+      return unless cnames_hash && !cnames_hash.empty?
+
+      cnames_hash.each do |old_key, new_key|
+        next unless hash_on_replace[old_key]
+
+        hash_on_replace[new_key.to_s] = hash_on_replace.delete(old_key)
+      end
+      hash_on_replace
+    end
   end
 
   attr_reader :object_attr_names, :lms_data, :lms_attr_cnames, :attributes
@@ -24,23 +35,12 @@ class Attribute
   end
 
   def build_attributes
-    replace_key_names if lms_attr_cnames && !lms_attr_cnames.empty?
+    Attribute.replace_key_names(lms_attr_cnames, lms_data)
     object_attr_names.each do |attr_name|
       next if lms_data[attr_name.to_s].nil? || SKIPPABLE_ATTRS.include?(attr_name.to_sym)
 
       attributes[attr_name.to_sym] = lms_data[attr_name.to_s]
     end
     attributes
-  end
-
-  private
-
-  def replace_key_names
-    lms_attr_cnames.each do |old_key, new_key|
-      next unless lms_data[old_key]
-
-      lms_data[new_key.to_s] = lms_data.delete(old_key)
-    end
-    lms_data
   end
 end

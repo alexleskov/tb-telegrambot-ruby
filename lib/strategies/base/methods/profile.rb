@@ -17,7 +17,7 @@ module Teachbase
             links_list = appshell.data_loader.user.profile.links
             return interface.sys.text.on_empty.show if links_list&.empty?
 
-            interface.sys.menu(text: "#{Emoji.t(:link)}#{I18n.t('more_actions')}", mode: :none).links(links_list).show
+            interface.sys.menu(text: Phrase.more_actions, mode: :none).links(links_list).show
           end
 
           private
@@ -34,7 +34,7 @@ module Teachbase
             if on_user.id != appshell.user.id
               menu_options[:send_message_button] = true
             else
-              menu_options[:text] = "<b>#{Emoji.t(:tiger)} #{I18n.t('profile_state')}</b>\n\n"
+              menu_options[:text] = "#{Phrase.profile}\n\n"
               menu_options[:accounts_button] = true
             end
             menu_options

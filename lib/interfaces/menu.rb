@@ -10,7 +10,8 @@ module Teachbase
                       :approve_button,
                       :answers_button,
                       :send_message_button,
-                      :accounts_button
+                      :accounts_button,
+                      :open_button
 
         attr_reader :type
 
@@ -19,6 +20,7 @@ module Teachbase
           @approve_button = params[:approve_button]
           @answers_button = params[:answers_button]
           @accounts_button = params[:accounts_button]
+          @open_button = params[:open_button]
           @send_message_button = params[:send_message_button]
           @buttons = params[:buttons]
           @slices_count = params[:slices_count]
@@ -39,8 +41,7 @@ module Teachbase
         def build_accounts_button
           return unless accounts_button
 
-          InlineCallbackButton.g(button_sign: I18n.t('accounts').to_s,
-                                 callback_data: router.g(:main, :accounts).link)
+          InlineCallbackButton.g(button_sign: I18n.t('accounts').to_s, callback_data: router.g(:main, :accounts).link)
         end
 
         def build_send_message_button
@@ -65,7 +66,7 @@ module Teachbase
           links_list.each do |link_params|
             raise unless link_params.is_a?(Hash)
 
-            link_params = replace_key_names(Teachbase::Bot::InterfaceController::LINK_ATTRS, link_params)
+            link_params = Attribute.replace_key_names(Teachbase::Bot::Profile::LINK_ATTRS, link_params)
             buttons_list << InlineUrlButton.to_open(link_params["source"], link_params["title"])
           end
           buttons_list
