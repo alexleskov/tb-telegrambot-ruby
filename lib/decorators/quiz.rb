@@ -9,10 +9,12 @@ module Decorators
     end
 
     def statistics
-      ["#{I18n.t(grading_method.to_s)} #{I18n.t('result').downcase}: #{to_dash_from_zero(attempt_score)} / #{total_score}#{"\n"}",
+      ["#{I18n.t(grading_method.to_s)} #{I18n.t('result').downcase}: #{to_dash_from_zero(attempt_score)} / #{total_score}
+",
        "#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{active_status}")}",
        "#{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}",
-       "#{I18n.t('attempts')}: #{available_attempts} / #{attempts}#{"\n"}",
+       "#{I18n.t('attempts')}: #{available_attempts} / #{attempts}
+",
        "#{I18n.t('questions_count')}: #{questions_count}",
        "#{I18n.t('passing_grade')}: #{to_dash_from_zero(passing_grade)}",
        "#{I18n.t('time_limit')}: #{to_dash_from_zero(time_limit_sign)}"].join("\n")

@@ -38,7 +38,7 @@ class Breadcrumb
   end
 
   def answers
-    "#{Emoji.t(:speech_balloon)} #{I18n.t('answers').capitalize}"
+    "\u21B3 #{Emoji.t(:speech_balloon)} #{I18n.t('answers').capitalize}"
   end
 
   alias contents sections

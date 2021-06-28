@@ -42,7 +42,7 @@ module Teachbase
 
             InlineCallbackButton.g(button_sign: "#{I18n.t('show')} #{I18n.t('answers').downcase}",
                                    callback_data: router.g(:content, :answers, id: entity.tb_id,
-                                                           p: [cs_id: entity.course_session.tb_id]).link)
+                                                                               p: [cs_id: entity.course_session.tb_id]).link)
           end
 
           def build_action_buttons

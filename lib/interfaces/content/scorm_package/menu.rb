@@ -5,7 +5,6 @@ module Teachbase
     class Interfaces
       class ScormPackage
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
-
           private
 
           def content_area

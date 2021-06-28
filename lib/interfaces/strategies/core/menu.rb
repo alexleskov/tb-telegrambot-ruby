@@ -79,8 +79,8 @@ module Teachbase
             @buttons = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
                                                 emojis: %i[ok leftwards_arrow_with_hook]).raw
             @text ||= ["<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n",
-                       "#{Emoji.t(:memo)} #{I18n.t('text').capitalize}:",
-                       "<pre>#{user_answer[:text]}</pre>\n",
+                       "#{Emoji.t(:memo)} #{I18n.t('text').capitalize}:\n",
+                       "#{user_answer[:text]}\n",
                        "#{Phrase.attachments}: #{user_answer[:files].size}"].join("\n")
             self
           end
@@ -128,7 +128,7 @@ module Teachbase
 
           def ready
             @type = :menu
-            @text ||= Phrase.next_answer
+            @text ||= Phrase::Enter.next_answer
             @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[ready]).raw
             self
           end

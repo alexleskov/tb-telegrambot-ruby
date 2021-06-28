@@ -5,7 +5,6 @@ module Teachbase
     class Interfaces
       class Task
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
-
           def user_answers
             @type = :menu_inline
             @mode ||= :edit_msg
@@ -28,7 +27,7 @@ module Teachbase
             router_parameters = { cs_id: entity.course_session.tb_id, answer_type: :answer }
             InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('answer').downcase}",
                                    callback_data: router.g(:content, :take_answer, id: entity.tb_id,
-                                                           p: [router_parameters]).link)
+                                                                                   p: [router_parameters]).link)
           end
 
           def build_comment_button
@@ -37,7 +36,7 @@ module Teachbase
             router_parameters = { cs_id: entity.course_session.tb_id, answer_type: :comment }
             InlineCallbackButton.g(button_sign: "#{I18n.t('send')} #{I18n.t('comment').downcase}",
                                    callback_data: router.g(:content, :take_answer, id: entity.tb_id,
-                                                           p: [router_parameters]).link)
+                                                                                   p: [router_parameters]).link)
           end
         end
       end

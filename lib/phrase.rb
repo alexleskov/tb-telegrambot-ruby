@@ -59,11 +59,11 @@ class Phrase
     end
 
     def attachments
-      "#{Emoji.t(:package)} #{(I18n.t('attachments').capitalize)}"
+      "#{Emoji.t(:package)} #{I18n.t('attachments').capitalize}"
     end
 
     def comments
-      "#{Emoji.t(:lips)} #{(I18n.t('comments').capitalize)}"
+      "#{Emoji.t(:lips)} #{I18n.t('comments').capitalize}"
     end
 
     def courses_list
@@ -132,15 +132,13 @@ class Phrase
   end
 
   def comment
-    "<a href='#{entity.avatar_url}'>#{entity.user_name}</a> <pre>(#{Time.parse(Time.at(entity.tb_created_at)
-                                                                        .strftime("%d/%m/%Y %H:%M"))
-                                                                        .strftime("%d/%m/%Y %H:%M")})</pre>:
+    "<a href='#{entity.avatar_url}'>#{entity.user_name}</a> <pre>(#{build_time(entity.tb_created_at)})</pre>:
      — \"#{to_italic(entity.text)}\"\n"
   end
 
   def answer
-    "<b>#{I18n.t('answer').capitalize} №#{entity.attempt}. #{I18n.t('state').capitalize}: #{attach_emoji(entity.status)} #{to_italic(I18n.t(entity.status).capitalize)}</b>
-     \"#{sanitize_html(entity.text)}\""
+    "<b>#{I18n.t('answer').capitalize} №#{entity.attempt}:</b>\n
+     #{sanitize_html(entity.text)}"
   end
 
   def incoming_message(text)
@@ -148,4 +146,9 @@ class Phrase
     ["#{I18n.t('incoming')} #{I18n.t('message').downcase} - #{entity.to_full_name(:string)}:\n", text, message_back_button].join("\n")
   end
 
+  private
+
+  def build_time(timestamp)
+    Time.parse(Time.at(timestamp).strftime("%d/%m/%Y %H:%M")).strftime("%d/%m/%Y %H:%M")
+  end
 end

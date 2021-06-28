@@ -5,7 +5,6 @@ module Teachbase
     class Interfaces
       class Quiz
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
-          
           private
 
           def content_area

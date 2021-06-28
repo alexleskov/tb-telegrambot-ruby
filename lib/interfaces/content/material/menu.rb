@@ -20,7 +20,7 @@ module Teachbase
             router_parameters = { cs_id: entity.course_session.tb_id, sec_id: entity.section.id,
                                   time: approve_button[:time_spent] || DEFAULT_TIME_SPENT }
             InlineCallbackButton.g(button_sign: I18n.t('viewed').to_s, callback_data: router.g(:content, :track_time, id: entity.tb_id,
-                                                                                               p: [router_parameters]).link)
+                                                                                                                      p: [router_parameters]).link)
           end
 
           def content_area

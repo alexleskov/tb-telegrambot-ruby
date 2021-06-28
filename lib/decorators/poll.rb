@@ -9,7 +9,8 @@ module Decorators
     end
 
     def statistics
-      result = ["#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}#{"\n"}", description].join("\n")
+      result = ["#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}
+", description].join("\n")
     end
   end
 end
