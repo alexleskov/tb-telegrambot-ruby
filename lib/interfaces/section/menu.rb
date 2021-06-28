@@ -90,7 +90,7 @@ module Teachbase
 
           def build_addition_links_button
             InlineCallbackButton.g(callback_data: router.g(:section, :additions, id: entity.id, p: [cs_id: entity.course_session.tb_id]).link,
-                                   button_sign: I18n.t('attachments').to_s, emoji: :link)
+                                   button_sign: I18n.t('attachments').to_s, emoji: :package)
           end
         end
       end

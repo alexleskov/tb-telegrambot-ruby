@@ -44,7 +44,7 @@ module Teachbase
       def build_attachments_list(attachments_array)
         return "" if attachments_array.empty?
 
-        result = ["#{Emoji.t(:bookmark_tabs)} #{to_italic(I18n.t('attachments').capitalize)}"]
+        result = [Phrase.attachments]
         attachments_array.each_with_index do |attachment, ind|
           result << to_url_link(attachment[:file], "#{I18n.t('file').capitalize} #{ind + 1}").to_s
         end

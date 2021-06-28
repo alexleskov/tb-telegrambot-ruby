@@ -59,20 +59,18 @@ class Phrase
     end
 
     def attachments
-      "#{Emoji.t(:bookmark_tabs)} #{to_italic(I18n.t('attachments').capitalize)}"
+      "#{Emoji.t(:package)} #{(I18n.t('attachments').capitalize)}"
     end
 
     def comments
-      "#{Emoji.t(:lips)} #{to_italic(I18n.t('comments').capitalize)}"
+      "#{Emoji.t(:lips)} #{(I18n.t('comments').capitalize)}"
     end
 
     def courses_list
       "<b>#{Emoji.t(:books)} #{I18n.t('cs_list')}</b>"
     end
 
-    def links
-      "<b>#{Emoji.t(:link)} #{I18n.t('attachments')}</b>"
-    end
+    alias links attachments
 
     def more_actions
       "#{Emoji.t(:link)}#{I18n.t('more_actions')}"
@@ -135,8 +133,8 @@ class Phrase
 
   def comment
     "<a href='#{entity.avatar_url}'>#{entity.user_name}</a> <pre>(#{Time.parse(Time.at(entity.tb_created_at)
-                                                                        .strftime(Formatter::TIME_F))
-                                                                        .strftime(Formatter::TIME_F)})</pre>:
+                                                                        .strftime("%d/%m/%Y %H:%M"))
+                                                                        .strftime("%d/%m/%Y %H:%M")})</pre>:
      — \"#{to_italic(entity.text)}\"\n"
   end
 
