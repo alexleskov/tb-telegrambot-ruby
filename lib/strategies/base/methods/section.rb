@@ -10,10 +10,9 @@ module Teachbase
             sections = cs_loader.sections
             return interface.sys.text.on_empty.show if sections.empty?
 
-            cs = cs_loader.progress
-            interface.section(cs).menu(title_params: { stages: %i[title] },
-                                       back_button: { mode: :custom, order: :ending,
-                                                      action: router.g(:cs, :list).link }).main.show
+            interface.section(cs_loader.progress).menu(title_params: { stages: %i[title] },
+                                                       back_button: { mode: :custom, order: :ending,
+                                                                      action: router.g(:cs, :list).link }).main.show
           rescue RuntimeError => e
             return interface.sys.text.on_empty.show if e.http_code == 404
           end
