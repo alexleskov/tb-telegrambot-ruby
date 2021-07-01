@@ -15,6 +15,10 @@ module Teachbase
         def menu(params = {})
           self.class::Menu.new(params, @entity)
         end
+
+        def content(params = {})
+          self.class::Content.new(params, @entity)
+        end
       end
     end
   end
