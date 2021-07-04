@@ -11,7 +11,7 @@ module Teachbase
             @params[:slices_count] = 2
             @params[:mode] ||= :edit_msg
             @params[:text] ||= ["#{create_title(title_params)}\n",
-                       "#{build_list(course_sessions)}\n"]
+                                "#{build_list(course_sessions)}\n"]
             buttons_list = pagination_buttons(pagination_options)
             buttons_list.compact!
             keyboard_param = { buttons: buttons_list }

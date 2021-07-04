@@ -56,14 +56,14 @@ module Teachbase
       protected
 
       def find_chat_id
-        finded_id = 
-        if reply_to_tg_id
-          reply_to_tg_id
-        elsif reply_to_message_id
-          reply_to_message_id
-        else
-          destination.id
-        end
+        finded_id =
+          if reply_to_tg_id
+            reply_to_tg_id
+          elsif reply_to_message_id
+            reply_to_message_id
+          else
+            destination.id
+          end
         raise "Can't find chat_id" unless finded_id
 
         finded_id.to_i

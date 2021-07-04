@@ -10,7 +10,7 @@ module Teachbase
                       :accounts_button,
                       :open_button,
                       :back_button
-        
+
         def initialize(params, entity)
           @back_button = params[:back_button]
           @approve_button = params[:approve_button]

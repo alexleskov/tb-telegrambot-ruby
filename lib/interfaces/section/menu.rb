@@ -14,8 +14,8 @@ module Teachbase
             @params[:slices_count] = 3
             @params[:disable_web_page_preview] = false
             @params[:buttons] = main_buttons
-            @params[:text] = [ create_title(title_params), entity.statistics, entity.categories_name, description,
-                               entity.sign_aval_sections_count_from ].compact.join("\n")
+            @params[:text] = [create_title(title_params), entity.statistics, entity.categories_name, description,
+                              entity.sign_aval_sections_count_from].compact.join("\n")
 
             @params[:mode] ||= :none
             self
@@ -27,7 +27,7 @@ module Teachbase
             @params[:type] = :menu_inline
             @disable_notification = true
             @params[:mode] ||= option == :find_by_query_num ? :none : :edit_msg
-            @params[:text] ||= [ create_title(title_params), build_list_with_state(sections.sort_by(&:position)) ].join("\n")
+            @params[:text] ||= [create_title(title_params), build_list_with_state(sections.sort_by(&:position))].join("\n")
             @params[:buttons] = InlineCallbackKeyboard.collect(buttons: [], back_button: back_button).raw
             self
           end
@@ -38,8 +38,8 @@ module Teachbase
             @params[:type] = :menu_inline
             @params[:mode] ||= :none
             @params[:buttons] = contents_buttons
-            @params[:text] = "#{ create_title(object: entity.course_session,
-                                 stages: %i[title], params: { cover_url: '' })} \u21B3 #{create_title(title_params) }"
+            @params[:text] = "#{create_title(object: entity.course_session,
+                                             stages: %i[title], params: { cover_url: '' })} \u21B3 #{create_title(title_params)}"
             self
           end
 

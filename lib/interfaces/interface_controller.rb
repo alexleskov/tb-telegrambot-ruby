@@ -69,7 +69,7 @@ module Teachbase
       protected
 
       def on_empty_params
-        @params[:text] ||= "#{title_params ? "#{create_title(title_params)}\n" : ""}#{Phrase.empty}"
+        @params[:text] ||= "#{title_params ? "#{create_title(title_params)}\n" : ''}#{Phrase.empty}"
       end
 
       # def cs_tb_id

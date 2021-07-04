@@ -12,11 +12,11 @@ class MessageSender
 
   def send_now
     @sent_message =
-    if message.mode == :edit_msg && message.bot_messages.last_sent
-      send_with_edit_mode
-    else
-      send_normal
-    end
+      if message.mode == :edit_msg && message.bot_messages.last_sent
+        send_with_edit_mode
+      else
+        send_normal
+      end
     save_result if sent_message
   end
 

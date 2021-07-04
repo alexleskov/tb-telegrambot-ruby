@@ -10,7 +10,7 @@ module Teachbase
             @params[:slices_count] = 2
             @params[:text] ||= I18n.t('start_menu_message').to_s
             @params[:buttons] = TextCommandKeyboard.g(commands: init_commands,
-                                             buttons_signs: %i[demo_mode sign_in settings_list]).raw
+                                                      buttons_signs: %i[demo_mode sign_in settings_list]).raw
             self
           end
 
@@ -31,7 +31,7 @@ module Teachbase
             @params[:slices_count] = 2
             @params[:text] ||= Phrase::Enter.contact
             @params[:buttons] = TextCommandKeyboard.collect(buttons: [TextCommandButton.take_contact(init_commands),
-                                                             TextCommandButton.decline(init_commands)]).raw
+                                                                      TextCommandButton.decline(init_commands)]).raw
             self
           end
 
@@ -48,7 +48,7 @@ module Teachbase
             @params[:slices_count] = 2
             @params[:text] ||= I18n.t('start_menu_message').to_s
             @params[:buttons] = TextCommandKeyboard.g(commands: init_commands,
-                                             buttons_signs: %i[studying user_profile documents more_actions settings_list sign_out]).raw
+                                                      buttons_signs: %i[studying user_profile documents more_actions settings_list sign_out]).raw
             self
           end
 
@@ -77,23 +77,23 @@ module Teachbase
             @params[:type] = :menu_inline
             @params[:slices_count] = 2
             @params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
-                                                emojis: %i[ok leftwards_arrow_with_hook]).raw
+                                                         emojis: %i[ok leftwards_arrow_with_hook]).raw
             @params[:text] ||= ["<b>#{I18n.t('send').capitalize} #{I18n.t(answer_type.to_s).downcase}</b>\n",
-                       "#{Emoji.t(:memo)} #{I18n.t('text').capitalize}:\n",
-                       "#{user_answer[:text]}\n",
-                       "#{Phrase.attachments}: #{user_answer[:files].size}"].join("\n")
+                                "#{Emoji.t(:memo)} #{I18n.t('text').capitalize}:\n",
+                                "#{user_answer[:text]}\n",
+                                "#{Phrase.attachments}: #{user_answer[:files].size}"].join("\n")
             self
           end
 
           def settings(settings_data)
             @params[:type] = :menu_inline
             @params[:text] ||= ["<b>#{Emoji.t(:wrench)}#{I18n.t('settings')} #{I18n.t('for_profile')}</b>\n",
-                       # TODO: Get it back after update scenarios logics
-                       # "#{I18n.t('scenario')}: #{I18n.t(to_snakecase(settings_data[:scenario]))}",
-                       "#{I18n.t('localization')}: #{I18n.t(settings_data[:localization])}"].join("\n")
+                                # TODO: Get it back after update scenarios logics
+                                # "#{I18n.t('scenario')}: #{I18n.t(to_snakecase(settings_data[:scenario]))}",
+                                "#{I18n.t('localization')}: #{I18n.t(settings_data[:localization])}"].join("\n")
             @params[:mode] ||= :none
             @params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: ["#{I18n.t('edit')} #{I18n.t('settings').downcase}"],
-                                                buttons_actions: [router.g(:setting, :edit).link]).raw
+                                                         buttons_actions: [router.g(:setting, :edit).link]).raw
             self
           end
 
@@ -106,7 +106,7 @@ module Teachbase
             buttons_signs = Teachbase::Bot::Setting::PARAMS
             buttons_signs.each { |buttons_sign| buttons_actions << router.g(:setting, :edit, p: [param: buttons_sign]).link }
             @params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
-                                                back_button: back_button).raw
+                                                         back_button: back_button).raw
             self
           end
 
@@ -121,8 +121,8 @@ module Teachbase
             end
             @params[:slices_count] = buttons_signs.size
             @params[:buttons] = InlineCallbackKeyboard.g(buttons_signs: to_i18n(buttons_signs), buttons_actions: buttons_actions,
-                                                emojis: to_constantize("#{option_name.upcase}_EMOJI", class_for_choosing),
-                                                back_button: back_button).raw
+                                                         emojis: to_constantize("#{option_name.upcase}_EMOJI", class_for_choosing),
+                                                         back_button: back_button).raw
             self
           end
 
