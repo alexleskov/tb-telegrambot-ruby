@@ -6,14 +6,14 @@ module Teachbase
       class Task
         class Menu < Teachbase::Bot::Interfaces::ContentItem::Menu
           def user_answers
-            @type = :menu_inline
-            @mode ||= :edit_msg
-            @disable_web_page_preview ||= true
-            @slices_count = 2
-            @text = "#{create_title(title_params)}\n#{answers}"
+            @params[:type] = :menu_inline
+            @params[:mode] ||= :edit_msg
+            @params[:disable_web_page_preview] ||= true
+            @params[:slices_count] = 2
+            @params[:text] = "#{create_title(title_params)}\n#{answers}"
             buttons_list = []
             buttons_list << build_comment_button
-            @buttons = InlineCallbackKeyboard.collect(buttons: buttons_list, back_button: back_button).raw
+            @params[:buttons] = InlineCallbackKeyboard.collect(buttons: buttons_list, back_button: back_button).raw
             self
           end
 

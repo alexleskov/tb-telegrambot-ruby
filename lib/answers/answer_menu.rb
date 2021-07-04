@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require './lib/reply_markup_formatter'
 require './lib/keyboards/text_command_keyboard'
 require './lib/keyboards/inline_callback_keyboard'
 require './lib/keyboards/inline_url_keyboard'
@@ -7,21 +8,20 @@ require './lib/keyboards/inline_url_keyboard'
 class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
   MENU_TYPES = %i[menu menu_inline hide_kb force_reply].freeze
 
+  attr_reader :menu_type, :slices_count, :buttons, :reply_markup
+
   def create(options)
+    @message_type = :reply_markup
     super(options)
-    buttons = options[:buttons]
-    raise "No such menu type: #{options[:type]}" unless MENU_TYPES.include?(options[:type])
-
-    @msg_params[:menu] = options[:type]
-    @msg_params[:mode] = options[:mode]
-    slices_count = options[:slices_count] || nil
-
-    unless %i[hide_kb force_reply].include?(options[:type])
-      raise "Buttons must be an Array class. Given '#{buttons.class}'" unless buttons.is_a?(Array)
-
-      @msg_params[:menu_data] = init_menu_params(buttons, slices_count)
+    @menu_type = options[:type]
+    @buttons = options[:buttons]
+    @slices_count = options[:slices_count] || nil
+    @reply_markup = !%i[hide_kb force_reply].include?(menu_type) ? build_reply_markup : nil
+    @mode = options[:mode]
+    unless mode
+      menu_type == :menu_inline ? :edit_msg : :none
     end
-    MessageSender.new(msg_params).send
+    self
   end
 
   def hide(options)
@@ -32,20 +32,33 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     create(text: options[:text], type: :force_reply)
   end
 
-  private
+  protected
 
-  def build_back_button
-    InlineCallbackButton.back(@msg_params[:tg_user].tg_account_messages)
+  def build_reply_markup
+    case menu_type
+    when :menu_inline
+      build_markup(:inline)
+    when :menu
+      build_markup(:normal)
+    when :hide_kb
+      hide_markup
+    when :force_reply
+      force_reply_markup
+    end
   end
 
-  def build_open_url_button(params)
-    raise "Can't find source for url" unless params[:object].respond_to?(:source)
+  def build_markup(markup_type)
+    raise "Buttons must be an Array class. Given '#{buttons.class}'" unless buttons.is_a?(Array)
 
-    InlineUrlButton.g(button_sign: I18n.t('open').capitalize,
-                      url: to_default_protocol(params[:object].source))
+    result = ReplyMarkupFormatter.new(buttons: buttons, slices: slices_count)
+    markup_type == :inline ? result.build_inline_markup : result.build_markup
   end
 
-  def init_menu_params(buttons, slices_count)
-    { buttons: buttons, slices: slices_count }
+  def hide_markup
+    Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
+  end
+
+  def force_reply_markup
+    Telegram::Bot::Types::ForceReply.new(force_reply: true)
   end
 end

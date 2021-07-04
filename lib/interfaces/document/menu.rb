@@ -6,11 +6,11 @@ module Teachbase
       class Document
         class Menu < Teachbase::Bot::Interfaces::Menu
           def list(documents, parent_folder = nil)
-            @type = :menu_inline
-            @mode ||= back_button && parent_folder ? :edit_msg : :none
-            @text ||= Phrase.documents
-            @disable_web_page_preview = :true
-            @buttons = document_buttons(documents)
+            @params[:type] = :menu_inline
+            @params[:mode] ||= back_button && parent_folder ? :edit_msg : :none
+            @params[:text] ||= Phrase.documents
+            @params[:disable_web_page_preview] = true
+            @params[:buttons] = document_buttons(documents)
             self
           end
 

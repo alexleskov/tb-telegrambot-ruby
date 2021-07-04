@@ -6,11 +6,11 @@ module Teachbase
       class ContentItem
         class Menu < Teachbase::Bot::Interfaces::Menu
           def content
-            @type = :menu_inline
-            @slices_count = 2
-            @disable_notification = true
-            @buttons = build_action_buttons
-            @text = build_content_area
+            @params[:type] = :menu_inline
+            @params[:slices_count] = 2
+            @params[:disable_notification] = true
+            @params[:buttons] = build_action_buttons
+            @params[:text] = build_content_area
             self
           end
 

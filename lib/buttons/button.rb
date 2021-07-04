@@ -46,6 +46,10 @@ class Button
   end
 
   def text_on_button
-    emoji ? "#{Emoji.t(emoji)}#{button_sign}" : button_sign
+    if emoji
+      emoji == :arrow_right ? "#{button_sign} #{Emoji.t(emoji)}" : "#{Emoji.t(emoji)} #{button_sign}"
+    else
+      button_sign
+    end
   end
 end

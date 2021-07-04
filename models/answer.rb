@@ -10,7 +10,7 @@ module Teachbase
       has_many :comments, as: :commentable, dependent: :destroy
 
       class << self
-        def last_sended
+        def last_sent
           order(attempt: :desc).first
         end
       end

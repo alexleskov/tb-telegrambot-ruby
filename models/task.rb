@@ -34,7 +34,7 @@ module Teachbase
       end
 
       def can_comment?
-        !!answers.last_sended
+        !!answers.last_sent
       end
 
       def cs_tb_id

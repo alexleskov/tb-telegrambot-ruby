@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 30) do
+ActiveRecord::Schema.define(version: 31) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -141,7 +141,7 @@ ActiveRecord::Schema.define(version: 30) do
 
   create_table "course_sessions", force: :cascade do |t|
     t.string "name"
-    t.string "icon_url", default: "https://image.flaticon.com/icons/svg/149/149092.svg"
+    t.string "icon_url", default: "https://image.flaticon.com/icons/png/256/2468/2468189.png"
     t.string "bg_url"
     t.string "application_status"
     t.string "status"

@@ -123,6 +123,7 @@ module Teachbase
 
       def request_user_data
         user_login = request_user_login
+
         raise "Can't find user login" unless user_login
 
         user_password = request_user_password

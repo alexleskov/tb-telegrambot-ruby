@@ -60,7 +60,7 @@ module Teachbase
         end
 
         def destroy(params)
-          answers_controller.destroy.create(params)
+          answers_controller.destroy.create(params).push
         end
       end
     end

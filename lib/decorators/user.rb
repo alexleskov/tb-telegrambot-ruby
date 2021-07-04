@@ -3,6 +3,7 @@
 module Decorators
   module User
     include Formatter
+    PHOTO_PLACEHOLDER = "https://stickerbase.ru/wp-content/uploads/2020/02/2892.png"
 
     def profile_info(account_id)
       current_account_profile = current_profile(account_id)
@@ -14,6 +15,10 @@ module Decorators
        "#{I18n.t('courses')}:",
        "\u2022 #{I18n.t('cs_active')}: #{current_account_profile.active_courses_count}",
        "\u2022 #{I18n.t('cs_archived')}: #{current_account_profile.archived_courses_count}"].join("\n")
+    end
+
+    def photo
+      avatar_url.nil? || avatar_url.empty? ? PHOTO_PLACEHOLDER : avatar_url
     end
 
     def link_on

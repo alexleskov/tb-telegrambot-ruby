@@ -8,28 +8,28 @@ module Teachbase
           ACTIONS = %w[edit to_on to_off].freeze
 
           def main
-            @type = :menu
-            @slices_count = 2
-            @text ||= "#{Emoji.t(:wrench)} <b>#{I18n.t('admin_menu_message')}</b>"
-            @buttons = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[accounts_manager new_account starting]).raw
+            @params[:type] = :menu
+            @params[:slices_count] = 2
+            @params[:text] ||= "#{Emoji.t(:wrench)} <b>#{I18n.t('admin_menu_message')}</b>"
+            @params[:buttons] = TextCommandKeyboard.g(commands: init_commands, buttons_signs: %i[accounts_manager new_account starting]).raw
             self
           end
 
           def account
-            @type = :menu_inline
-            @slices_count = 2
-            @buttons = account_action_buttons
-            @mode ||= :none
-            @text ||= "<b>#{entity.title}</b>"
+            @params[:type] = :menu_inline
+            @params[:slices_count] = 2
+            @params[:buttons] = account_action_buttons
+            @params[:mode] ||= :none
+            @params[:text] ||= "<b>#{entity.title}</b>"
             self
           end
 
           def edit_account
-            @type = :menu_inline
-            @slices_count = 3
-            @buttons = account_edit_action_buttons
-            @mode ||= :edit_msg
-            @text ||= "#{entity.main_info}\n\n<b>#{I18n.t('edit')}:</b>"
+            @params[:type] = :menu_inline
+            @params[:slices_count] = 3
+            @params[:buttons] = account_edit_action_buttons
+            @params[:mode] ||= :edit_msg
+            @params[:text] ||= "#{entity.main_info}\n\n<b>#{I18n.t('edit')}:</b>"
             self
           end
 
