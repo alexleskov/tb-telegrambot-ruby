@@ -5,7 +5,7 @@ module Teachbase
     class Interfaces
       class Section
         class Menu < Teachbase::Bot::Interfaces::Menu
-          #def main
+          # def main
           #  raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
           #
           #  @params[:type] = :menu_inline
@@ -17,9 +17,9 @@ module Teachbase
           #
           #  @params[:mode] ||= :none
           #  self
-          #end
+          # end
 
-          #def show_by_option(sections, option)
+          # def show_by_option(sections, option)
           #  raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
           #
           #  @params[:type] = :menu_inline
@@ -28,7 +28,7 @@ module Teachbase
           #  @params[:text] ||= [create_title(title_params), build_list_with_state(sections.sort_by(&:position))].join("\n")
           #  @params[:buttons] = InlineCallbackKeyboard.collect(buttons: [], back_button: back_button).raw
           #  self
-          #end
+          # end
 
           def contents
             raise "Entity must be a Section" unless entity.is_a?(Teachbase::Bot::Section)
@@ -43,7 +43,7 @@ module Teachbase
 
           private
 
-          #def build_list_with_state(sections)
+          # def build_list_with_state(sections)
           #  result = []
           #  sections.each do |section|
           #    result << section.title_with_state(state: section.find_state,
@@ -53,9 +53,9 @@ module Teachbase
           #  return "\n#{Phrase.empty}" if result.empty?
           #
           #  result.join("\n\n")
-          #end
+          # end
 
-          #def main_buttons
+          # def main_buttons
           #  buttons_actions = []
           #  Teachbase::Bot::Interfaces::Section::CHOOSING_BUTTONS.each do |choose_button|
           #    buttons_actions << router.g(:cs, :sections, id: entity.tb_id, p: [param: choose_button]).link
@@ -63,7 +63,7 @@ module Teachbase
           #  InlineCallbackKeyboard.g(buttons_signs: to_i18n(Teachbase::Bot::Interfaces::Section::CHOOSING_BUTTONS),
           #                           buttons_actions: buttons_actions,
           #                           back_button: back_button).raw
-          #end
+          # end
 
           def contents_buttons
             buttons_list = []

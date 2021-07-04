@@ -3,7 +3,7 @@
 module Teachbase
   module Bot
     class Interfaces
-      class ContentItem < Teachbase::Bot::Interfaces::Core ;end
+      class ContentItem < Teachbase::Bot::Interfaces::Core; end
     end
   end
 end
