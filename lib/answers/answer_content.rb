@@ -7,7 +7,6 @@ class Teachbase::Bot::AnswerContent < Teachbase::Bot::AnswerMenu
     @caption = options[:caption]
     @file = options[:file]
     super(options)
-    self
   end
 
   def photo(options)

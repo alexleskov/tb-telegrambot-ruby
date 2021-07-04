@@ -45,9 +45,8 @@ class MessageSender
 
   def send_with_edit_mode
     @on_send_params["message_id"] = message.bot_messages.last_sent.message_id
-    if message.respond_to?(:content_type) && message.content_type
-      @on_send_params[message.content_type.to_s] = message.file
-      message.bot.api.edit_message_media(on_send_params)
+    if message.respond_to?(:caption) && message.caption
+      message.bot.api.edit_message_caption(on_send_params)
     else
       message.bot.api.edit_message_text(on_send_params)
     end
@@ -85,7 +84,7 @@ class MessageSender
       chat_id: sent_result["chat"]["id"],
       date: sent_result["date"],
       edit_date: sent_result["edit_date"],
-      text: sent_result["text"],
+      text: sent_result["text"] || sent_result["caption"],
       reply_markup: sent_result["reply_markup"] }
   end
 end

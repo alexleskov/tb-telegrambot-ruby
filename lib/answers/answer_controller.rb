@@ -46,7 +46,6 @@ module Teachbase
         @parse_mode = options[:parse_mode] || $app_config.load_parse_mode
         @disable_notification = !!options[:disable_notification]
         @disable_web_page_preview = !!options[:disable_web_page_preview]
-        self
       end
 
       def push

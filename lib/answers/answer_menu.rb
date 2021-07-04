@@ -14,8 +14,6 @@ class Teachbase::Bot::AnswerMenu < Teachbase::Bot::AnswerController
     @message_type = :reply_markup
     super(options)
     @menu_type = options[:type]
-    raise "No such menu type: #{menu_type}" unless MENU_TYPES.include?(menu_type)
-
     @buttons = options[:buttons]
     @slices_count = options[:slices_count] || nil
     @reply_markup = !%i[hide_kb force_reply].include?(menu_type) ? build_reply_markup : nil

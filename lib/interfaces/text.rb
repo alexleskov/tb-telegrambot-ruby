@@ -60,7 +60,8 @@ module Teachbase
         end
 
         def ask_password(state)
-          @params[:text] = "#{Phrase::Enter.password} #{I18n.t('new_password_condition').downcase}:" if state == :new
+          @params[:text] = "#{Phrase::Enter.password}"
+          @params[:text] = "#{params[:text]} #{I18n.t('new_password_condition').downcase}:" if state == :new
           self
         end
 

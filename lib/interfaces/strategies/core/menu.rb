@@ -101,7 +101,7 @@ module Teachbase
             @params[:type] = :menu_inline
             @params[:slices_count] = 2
             @params[:text] ||= "<b>#{Emoji.t(:wrench)} #{I18n.t('editing_settings')}</b>"
-            @params[:mode] ||= :edit_msg
+            @params[:mode] = :edit_msg
             buttons_actions = []
             buttons_signs = Teachbase::Bot::Setting::PARAMS
             buttons_signs.each { |buttons_sign| buttons_actions << router.g(:setting, :edit, p: [param: buttons_sign]).link }

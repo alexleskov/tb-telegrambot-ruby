@@ -29,9 +29,9 @@ module Teachbase
           raise unless auth
 
           appshell.data_loader.user.profile.me
-          interface.sys.menu.greetings(appshell.user_fullname(:array).first).show
+          interface.sys.menu.greetings.show
           interface.sys.content(file: "https://storage.yandexcloud.net/tbpublic/other/2868-300x300.png",
-                                caption: "#{Emoji.t(:wave)} #{I18n.t('about_bot_demo_mode')}").photo
+                                caption: "#{appshell.user_fullname(:array).first} #{Emoji.t(:wave)}\n#{I18n.t('about_bot_demo_mode')}").photo
           interface.sys.menu.after_auth.show
         rescue RuntimeError, TeachbaseBotException => e
           $logger.debug "On auth error: #{e.class}. #{e.inspect}"
