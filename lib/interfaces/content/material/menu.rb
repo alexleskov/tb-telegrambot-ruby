@@ -8,7 +8,7 @@ module Teachbase
           DEFAULT_TIME_SPENT = 25
 
           def content
-            @disable_web_page_preview = false
+            @params[:disable_web_page_preview] = false
             super
           end
 

@@ -5,24 +5,16 @@ module Teachbase
     class InterfaceController
       include Formatter
 
-      attr_reader :answer, :entity, :router
-      attr_accessor :text,
-                    :mode,
-                    :disable_web_page_preview,
-                    :disable_notification,
-                    :title_params,
-                    :route_params
+      attr_reader :answer, :entity, :router, :params
+      attr_accessor :title_params, :route_params
 
       def initialize(params, entity)
+        @params = params
+        @title_params = params[:title_params]
+        @route_params = params[:route_params]
         @entity = entity
         @answer = Teachbase::Bot::Interfaces.answers_controller
         @router = Teachbase::Bot::Router.new
-        @text = params[:text]
-        @mode = params[:mode]
-        @disable_web_page_preview = params[:disable_web_page_preview]
-        @disable_notification = params[:disable_notification] || false
-        @title_params = params[:title_params]
-        @route_params = params[:route_params]
       end
 
       def create_title(options)
@@ -77,8 +69,7 @@ module Teachbase
       protected
 
       def on_empty_params
-        title = title_params ? "#{create_title(title_params)}\n" : ""
-        @text ||= "#{title}#{Phrase.empty}"
+        @params[:text] ||= "#{title_params ? "#{create_title(title_params)}\n" : ""}#{Phrase.empty}"
       end
 
       # def cs_tb_id

@@ -4,17 +4,13 @@ module Teachbase
   module Bot
     class Interfaces
       class Menu < Teachbase::Bot::InterfaceController
-        attr_accessor :buttons,
-                      :back_button,
-                      :slices_count,
-                      :approve_button,
+        attr_accessor :approve_button,
                       :answers_button,
                       :send_message_button,
                       :accounts_button,
-                      :open_button
-
-        attr_reader :type
-
+                      :open_button,
+                      :back_button
+        
         def initialize(params, entity)
           @back_button = params[:back_button]
           @approve_button = params[:approve_button]
@@ -22,18 +18,15 @@ module Teachbase
           @accounts_button = params[:accounts_button]
           @open_button = params[:open_button]
           @send_message_button = params[:send_message_button]
-          @buttons = params[:buttons]
-          @slices_count = params[:slices_count]
-          @type = params[:type]
           super(params, entity)
         end
 
         def show
-          answer.menu.create(build_menu_options)
+          answer.menu.create(params).push
         end
 
         def hide
-          answer.menu.hide(build_menu_options)
+          answer.menu.hide(params).push
         end
 
         protected
@@ -88,11 +81,6 @@ module Teachbase
             raise "No such pagination action: '#{action}'"
           end
           offset
-        end
-
-        def build_menu_options
-          { text: text, type: type, slices_count: slices_count, mode: mode, buttons: buttons,
-            disable_web_page_preview: disable_web_page_preview }
         end
 
         def init_commands

@@ -10,36 +10,36 @@ module Teachbase
           def main
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
 
-            @type = :menu_inline
-            @slices_count = 3
-            @disable_web_page_preview = false
-            @buttons = main_buttons
-            @text = [create_title(title_params), entity.statistics, entity.categories_name, description,
-                     entity.sign_aval_sections_count_from].compact.join("\n")
+            @params[:type] = :menu_inline
+            @params[:slices_count] = 3
+            @params[:disable_web_page_preview] = false
+            @params[:buttons] = main_buttons
+            @params[:text] = [ create_title(title_params), entity.statistics, entity.categories_name, description,
+                               entity.sign_aval_sections_count_from ].compact.join("\n")
 
-            @mode ||= :none
+            @params[:mode] ||= :none
             self
           end
 
           def show_by_option(sections, option)
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
 
-            @type = :menu_inline
+            @params[:type] = :menu_inline
             @disable_notification = true
-            @mode ||= option == :find_by_query_num ? :none : :edit_msg
-            @text ||= [create_title(title_params), build_list_with_state(sections.sort_by(&:position))].join("\n")
-            @buttons = InlineCallbackKeyboard.collect(buttons: [], back_button: back_button).raw
+            @params[:mode] ||= option == :find_by_query_num ? :none : :edit_msg
+            @params[:text] ||= [ create_title(title_params), build_list_with_state(sections.sort_by(&:position)) ].join("\n")
+            @params[:buttons] = InlineCallbackKeyboard.collect(buttons: [], back_button: back_button).raw
             self
           end
 
           def contents
             raise "Entity must be a Section" unless entity.is_a?(Teachbase::Bot::Section)
 
-            @type = :menu_inline
-            @mode ||= :none
-            @buttons = contents_buttons
-            @text = "#{create_title(object: entity.course_session,
-                                    stages: %i[title], params: { cover_url: '' })} \u21B3 #{create_title(title_params)}"
+            @params[:type] = :menu_inline
+            @params[:mode] ||= :none
+            @params[:buttons] = contents_buttons
+            @params[:text] = "#{ create_title(object: entity.course_session,
+                                 stages: %i[title], params: { cover_url: '' })} \u21B3 #{create_title(title_params) }"
             self
           end
 
@@ -54,7 +54,7 @@ module Teachbase
             end
             return "\n#{Phrase.empty}" if result.empty?
 
-            result.join("\n")
+            result.join("\n\n")
           end
 
           def main_buttons

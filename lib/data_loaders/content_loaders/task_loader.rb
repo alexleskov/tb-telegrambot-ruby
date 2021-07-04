@@ -32,7 +32,7 @@ module Teachbase
             if options[:answer]
               appshell.authsession.send_task_answer(cs_tb_id, tb_id, options[:answer])
             elsif options[:comment]
-              appshell.authsession.send_task_comment(db_entity.answers.last_sended.tb_id, options[:comment])
+              appshell.authsession.send_task_comment(db_entity.answers.last_sent.tb_id, options[:comment])
             else
               raise "Must have comment or answer"
             end

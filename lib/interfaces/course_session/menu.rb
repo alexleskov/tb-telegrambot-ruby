@@ -6,11 +6,11 @@ module Teachbase
       class CourseSession
         class Menu < Teachbase::Bot::Interfaces::Menu
           def list(course_sessions, pagination_options = {})
-            @type = :menu_inline
-            @disable_notification = true
-            @slices_count = 2
-            @mode ||= :edit_msg
-            @text ||= ["#{create_title(title_params)}\n",
+            @params[:type] = :menu_inline
+            @params[:disable_notification] = true
+            @params[:slices_count] = 2
+            @params[:mode] ||= :edit_msg
+            @params[:text] ||= ["#{create_title(title_params)}\n",
                        "#{build_list(course_sessions)}\n"]
             buttons_list = pagination_buttons(pagination_options)
             buttons_list.compact!
@@ -18,17 +18,17 @@ module Teachbase
             if buttons_list.empty? || (buttons_list.first.action_type == :more && buttons_list.size == 1)
               keyboard_param[:back_button] = back_button
             end
-            @text = @text.join("\n")
-            @buttons = InlineCallbackKeyboard.collect(keyboard_param).raw
+            @params[:text] = @params[:text].join("\n")
+            @params[:buttons] = InlineCallbackKeyboard.collect(keyboard_param).raw
             self
           end
 
           def states
-            @type = :menu_inline
-            @slices_count = 2
-            @buttons = state_buttons
-            @mode ||= :none
-            @text ||= Phrase.courses_list
+            @params[:type] = :menu_inline
+            @params[:slices_count] = 2
+            @params[:buttons] = state_buttons
+            @params[:mode] ||= :none
+            @params[:text] ||= Phrase.courses_list
             self
           end
 
@@ -39,7 +39,7 @@ module Teachbase
 
             current_page = (pagination_options[:offset] / pagination_options[:limit]) + 1
             all_page_count = (pagination_options[:all_count].to_f / pagination_options[:limit].to_f).ceil
-            @text << Phrase.page_number(current_page, all_page_count)
+            @params[:text] << Phrase.page_number(current_page, all_page_count)
             [build_pagination_button(:less, pagination_options), build_pagination_button(:more, pagination_options)]
           end
 

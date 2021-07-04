@@ -1,44 +1,48 @@
 # frozen_string_literal: true
 
-class Teachbase::Bot::AnswerContent < Teachbase::Bot::AnswerController
+class Teachbase::Bot::AnswerContent < Teachbase::Bot::AnswerMenu
+  attr_reader :caption, :file, :content_type
+
   def create(options)
+    @caption = options[:caption]
+    @file = options[:file]
     super(options)
-    MessageSender.new(msg_params).send
+    self
   end
 
-  def photo(param)
-    create(param)
+  def photo(options)
+    @content_type = :photo
+    create(options)
   end
 
-  def video(param)
-    create(param)
+  def video(options)
+    @content_type = :video
+    create(options)
   end
 
-  def document(param)
-    create(param)
+  def document(options)
+    @content_type = :document
+    create(options)
   end
 
-  def audio(param)
-    create(param)
+  def audio(options)
+    @content_type = :audio
+    create(options)
   end
 
-  def url(param)
-    create(text: to_url_link(param[:link], param[:link_name]))
+  def url(options)
+    create(text: to_url_link(options[:link], options[:link_name]))
   end
 
-  def text(param)
-    create(text: param)
+  def iframe(options)
+    url(options)
   end
 
-  def iframe(param)
-    url(param)
+  def youtube(options)
+    iframe(options)
   end
 
-  def youtube(param)
-    iframe(param)
-  end
-
-  def pdf(param)
-    document(param)
+  def pdf(options)
+    document(options)
   end
 end

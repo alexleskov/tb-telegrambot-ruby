@@ -2,14 +2,15 @@
 
 class Teachbase::Bot::AnswerText < Teachbase::Bot::AnswerController
   def create(options)
+    @message_type = :text
     super(options)
-    raise "Option 'text' is missing" unless options[:text]
+    raise "Option 'text' is missing" unless text
 
-    MessageSender.new(msg_params).send
+    self
   end
 
-  def send_out(text, disable_notification = false)
-    create(text: text, disable_notification: disable_notification)
+  def send_out(options)
+    create(options)
   end
 
   def send_to(tg_id, text)

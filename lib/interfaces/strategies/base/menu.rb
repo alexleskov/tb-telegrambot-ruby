@@ -8,10 +8,10 @@ module Teachbase
           def links(links_list)
             raise unless links_list.is_a?(Array)
 
-            @type = :menu_inline
-            @mode ||= :edit_msg
-            @text ||= "#{create_title(title_params)} \u21B3 #{Phrase.links}"
-            @buttons = InlineUrlKeyboard.collect(buttons: build_links_buttons(links_list), back_button: back_button).raw
+            @params[:type] = :menu_inline
+            @params[:mode] ||= :edit_msg
+            @params[:text] ||= "#{create_title(title_params)} \u21B3 #{Phrase.links}"
+            @params[:buttons] = InlineUrlKeyboard.collect(buttons: build_links_buttons(links_list), back_button: back_button).raw
             self
           end
         end
