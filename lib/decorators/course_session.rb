@@ -23,12 +23,12 @@ module Decorators
          "#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}",
          "#{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}",
          "#{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{progress}%"]
-      result = 
-      if started_out?
-        result
-      else
-        result.unshift(to_bolder("#{Emoji.t(:bangbang)}#{I18n.t('start_time_has_not_come')} #{time_by(:started_at)}\n"))
-      end
+      result =
+        if started_out?
+          result
+        else
+          result.unshift(to_bolder("#{Emoji.t(:bangbang)}#{I18n.t('start_time_has_not_come')} #{time_by(:started_at)}\n"))
+        end
       result.join("\n")
     end
 
