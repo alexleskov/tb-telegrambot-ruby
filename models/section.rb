@@ -46,7 +46,9 @@ module Teachbase
       end
 
       def find_state
-        if open?
+        if !cs_started?
+          :not_started
+        elsif open?
           :open
         elsif unable?
           :section_unable
@@ -55,6 +57,10 @@ module Teachbase
         elsif unpublish?
           :section_unpublish
         end
+      end
+
+      def cs_started?
+        course_session.started_out?
       end
 
       def open?
@@ -66,7 +72,7 @@ module Teachbase
       end
 
       def delayed?
-        is_publish && !is_available && opened_at
+        is_publish && !is_available && !!opened_at
       end
 
       def unpublish?

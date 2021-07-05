@@ -9,7 +9,7 @@ module Teachbase
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
 
             @params[:type] = :menu_inline
-            @params[:slices_count] = 3
+            @params[:slices_count] = 2
             @params[:disable_web_page_preview] = false
             @params[:buttons] = main_buttons
             @params[:caption] = [create_title(title_params), entity.statistics, entity.categories_name, description,

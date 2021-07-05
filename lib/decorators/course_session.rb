@@ -23,7 +23,12 @@ module Decorators
          "#{Emoji.t(:star2)}#{I18n.t('status')}: #{I18n.t("status_#{status}")}",
          "#{Emoji.t(:trophy)}#{I18n.t('success')}: #{I18n.t("success_#{success}")}",
          "#{Emoji.t(:chart_with_upwards_trend)}#{I18n.t('progress')}: #{progress}%"]
-      result = started_out? ? result : result.unshift("#{Emoji.t(:bangbang)}#{I18n.t('start_time_has_not_come')}\n")
+      result = 
+      if started_out?
+        result
+      else
+        result.unshift(to_bolder("#{Emoji.t(:bangbang)}#{I18n.t('start_time_has_not_come')} #{time_by(:started_at)}\n"))
+      end
       result.join("\n")
     end
 
@@ -38,8 +43,7 @@ module Decorators
     end
 
     def sign_aval_sections_count_from
-      "
-#{I18n.t('avaliable')} #{I18n.t('section2')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}"
+      "\n#{I18n.t('avaliable')} #{I18n.t('section2')}: #{sections.where(is_available: true).size} #{I18n.t('from')} #{sections.size}"
     end
 
     def sign_open(params)

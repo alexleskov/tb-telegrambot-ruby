@@ -92,6 +92,7 @@ module EmojiAliaser
 
     alias section_unable no_entry_sign
     alias section_delayed no_entry_sign
+    alias not_started no_entry_sign
 
     alias section_unpublish x
     alias declined x

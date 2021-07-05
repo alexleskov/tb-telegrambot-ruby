@@ -16,6 +16,10 @@ module Decorators
       "#{title(params)}\n#{section_state_msg}"
     end
 
+    def not_started
+      "<i>#{I18n.t('section_delayed')}</i> <pre>#{Time.at(course_session.started_at).utc.strftime(Formatter::TIME_F)}</pre>"
+    end
+
     def open
       "<i>#{I18n.t('open')}</i>: #{@route}"
     end
@@ -25,7 +29,7 @@ module Decorators
     end
 
     def section_delayed
-      "<i>#{I18n.t('section_delayed')}</i>: <pre>#{Time.at(opened_at).utc.strftime(Formatter::TIME_F)}.</pre>"
+      "<i>#{I18n.t('section_delayed')}</i> <pre>#{Time.at(opened_at).utc.strftime(Formatter::TIME_F)}</pre>"
     end
 
     def section_unpublish
