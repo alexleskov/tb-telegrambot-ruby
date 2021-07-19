@@ -49,14 +49,9 @@ module Teachbase
           private
 
           def build_notification_data(entity_tb_id)
-            entity_loader = appshell.data_loader.public_send(type, tb_id: entity_tb_id)
-
-            if type == :cs
-              entity_loader.progress
-              interface.public_send(type, entity_loader.info).text.public_send(type).text
-            else
-              raise "Don't know how build notification interface for this type: '#{type}'"
-            end
+            entity_loader = appshell.data_loader.cs(tb_id: entity_tb_id)
+            entity_loader.progress
+            interface.cs(entity_loader.info).text.course.show
           rescue RestClient::NotFound => e
             nil
           end
