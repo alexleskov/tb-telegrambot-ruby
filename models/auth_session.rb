@@ -24,7 +24,7 @@ module Teachbase
           return unless active_session
 
           last_actual_token = active_session.api_tokens.last_actual
-          if last_actual_token && last_actual_token.avaliable?
+          if last_actual_token&.avaliable?
             active_session
           else
             active_session.update!(active: false)
@@ -48,7 +48,7 @@ module Teachbase
       end
 
       def deactivate
-        api_tokens.last_actual.update!(active: false) if api_tokens.last_actual
+        api_tokens.last_actual&.update!(active: false)
         reset_account
         update!(active: false, logout_at: Time.now.utc)
       end
@@ -175,7 +175,7 @@ module Teachbase
       def reset_user_password(user_data)
         payload_data = { "users" =>
                          { user_data[:tb_id].to_s => user_data[:password]
-                                                     .decrypt(:symmetric, password: $app_config.load_encrypt_key) } }
+                       .decrypt(:symmetric, password: $app_config.load_encrypt_key) } }
         tb_api.request(:users, :users_passwords, payload: payload_data).post
       end
 

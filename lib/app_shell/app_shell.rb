@@ -41,7 +41,7 @@ module Teachbase
       end
 
       def authsession(mode = access_mode)
-        authorizer.authsession && authorizer.authsession.tb_api ? authorizer.authsession : authorizer.init_authsession(mode)
+        authorizer.authsession&.tb_api ? authorizer.authsession : authorizer.init_authsession(mode)
       end
 
       def authorization(mode = access_mode)
@@ -75,7 +75,7 @@ module Teachbase
         controller.reload_commands_list
       end
 
-      def registration(contact, labels = {}) #TO DO: Check after authorizer refactoring
+      def registration(contact, labels = {}) # TO DO: Check after authorizer refactoring
         raise "Expecting ContactController, given: '#{contact.class}" unless contact.is_a?(Teachbase::Bot::ContactController)
 
         phone_number = contact.phone_number.to_i.to_s
@@ -93,7 +93,7 @@ module Teachbase
         registration_result
       end
 
-      def reset_password(contact) #TO DO: Check after authorizer refactoring
+      def reset_password(contact) # TO DO: Check after authorizer refactoring
         raise "Expecting ContactController, given: '#{contact.class}" unless contact.is_a?(Teachbase::Bot::ContactController)
 
         phone_number = contact.phone_number.to_i.to_s
@@ -118,7 +118,7 @@ module Teachbase
         change_scenario(Teachbase::Bot::Strategies::STANDART_LEARNING_NAME)
       end
 
-      def ping_account(account_tb_id, client_params)
+      def ping_account(_account_tb_id, client_params)
         Teachbase::Bot::AuthSession.new.endpoint_v1_api_auth(client_params).ping
       rescue RestClient::Unauthorized => e
         e

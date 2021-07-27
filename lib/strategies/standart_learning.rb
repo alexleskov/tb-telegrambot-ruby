@@ -15,7 +15,7 @@ module Teachbase
           interface.sys.text.on_enter(appshell.account_name).show
           auth = appshell.authorization
           raise unless auth
-          
+
           user_profile
           interface.sys.menu.after_auth.show
         rescue RuntimeError, TeachbaseBotException => e

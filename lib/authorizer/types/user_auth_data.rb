@@ -7,7 +7,7 @@ module Teachbase
         attr_reader :login_type, :login
 
         def build
-          data = @authsession && @authsession.user ? @authsession.user_auth_data : @appshell.request_user_auth_data
+          data = @authsession&.user ? @authsession.user_auth_data : @appshell.request_user_auth_data
           raise "Can't find user auth data" if data.any?(nil)
 
           @crypted_password = data[:crypted_password]

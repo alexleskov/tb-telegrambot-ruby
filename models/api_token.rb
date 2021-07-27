@@ -17,8 +17,9 @@ module Teachbase
 
       def avaliable?
         return if value.nil? || value.empty? || !active
+
         unless expired_at
-          update!(active: false) 
+          update!(active: false)
           return
         end
         update!(active: expired_at >= Time.now.utc)
@@ -28,7 +29,7 @@ module Teachbase
       def activate_by(token)
         unless token.value && token.expired_at
           update!(active: false)
-          raise "Can't activate token id: '#{id}'. Value: '#{token.value}', expired_at: '#{token.expired_at}'" 
+          raise "Can't activate token id: '#{id}'. Value: '#{token.value}', expired_at: '#{token.expired_at}'"
         end
         update!(version: token.api_version,
                 api_type: token.api_type,

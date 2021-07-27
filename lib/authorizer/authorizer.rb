@@ -25,16 +25,16 @@ module Teachbase
 
       def init_authsession(access_mode)
         current_active = tg_user.auth_sessions.find_active
-        return @authsession = current_active if access_mode == :without_api || (current_active && current_active.tb_api)
+        return @authsession = current_active if access_mode == :without_api || (current_active&.tb_api)
 
         auth_session_after_auth =
-        if current_active && !current_active.with_api_access?
-          current_auth(authsession: current_active)
-        elsif tg_user.auth_sessions.last_auth.without_logout?
-          current_auth(authsession: tg_user.auth_sessions.last_auth)
-        else
-          new_auth
-        end
+          if current_active && !current_active.with_api_access?
+            current_auth(authsession: current_active)
+          elsif tg_user.auth_sessions.last_auth.without_logout?
+            current_auth(authsession: tg_user.auth_sessions.last_auth)
+          else
+            new_auth
+          end
         auth_session_after_auth.update!(auth_at: Time.now.utc, active: true)
         @authsession = auth_session_after_auth
         login_account(authsession: authsession, account_tb_id: authsession.account ? authsession.account.tb_id : nil)
@@ -42,7 +42,7 @@ module Teachbase
       end
 
       def init_user
-        return unless authsession && authsession.user
+        return unless authsession&.user
 
         @user = authsession.user
       end
@@ -78,7 +78,7 @@ module Teachbase
       private
 
       def new_auth(params = {})
-        new_auth_session = params[:authsession] ? params[:authsession] : tg_user.auth_sessions.new
+        new_auth_session = params[:authsession] || tg_user.auth_sessions.new
         oauth_controller = default_auth_contoller(authsession: new_auth_session)
         auth_session_after_auth = new_auth_session.with_api_auth(:mobile, 2, :save_token, oauth_controller.build)
         raise "Can't auth tg user: '#{tg_user.id}'" unless auth_session_after_auth
