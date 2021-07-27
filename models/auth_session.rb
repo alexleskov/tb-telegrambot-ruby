@@ -28,7 +28,7 @@ module Teachbase
             active_session
           else
             active_session.update!(active: false)
-            last_actual_token.update!(active: false) if last_actual_token
+            last_actual_token&.update!(active: false)
             return
           end
         end
