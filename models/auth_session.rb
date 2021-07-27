@@ -28,7 +28,7 @@ module Teachbase
             active_session
           else
             active_session.update!(active: false)
-            last_actual_token.update!(active: false) if active_session.api_tokens
+            last_actual_token.update!(active: false) if last_actual_token
             return
           end
         end
@@ -173,9 +173,9 @@ module Teachbase
       end
 
       def reset_user_password(user_data)
-        payload_data = { "users" =>
-                         { user_data[:tb_id].to_s => user_data[:password]
-                       .decrypt(:symmetric, password: $app_config.load_encrypt_key) } }
+        raise "User data null" unless user_data[:tb_id] && user_data[:password]
+
+        payload_data = { "users" => { user_data[:tb_id].to_s => user_data[:password].to_s } }
         tb_api.request(:users, :users_passwords, payload: payload_data).post
       end
 
@@ -189,10 +189,10 @@ module Teachbase
         payload_data = { "users" => [
           { "name" => user_data[:first_name],
             "last_name" => user_data[:last_name],
-            "phone" => user_data[:phone],
+            "phone" => user_data[:phone].to_i.to_s,
             "role_id" => 1,
             "auth_type" => 0,
-            "password" => user_data[:password].decrypt(:symmetric, password: $app_config.load_encrypt_key),
+            "password" => user_data[:password].to_s,
             "lang" => "ru" }
         ],
                          "options" => { "activate" => true, "skip_notify_new_users" => true, "skip_notify_active_users" => true } }

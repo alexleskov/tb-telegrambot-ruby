@@ -75,7 +75,7 @@ module Teachbase
         controller.reload_commands_list
       end
 
-      def registration(contact, labels = {}) # TO DO: Check after authorizer refactoring
+      def registration(contact, labels = {})
         raise "Expecting ContactController, given: '#{contact.class}" unless contact.is_a?(Teachbase::Bot::ContactController)
 
         phone_number = contact.phone_number.to_i.to_s
@@ -83,17 +83,17 @@ module Teachbase
         user_password = new_user.password ? new_user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key) : rand(100_000..999_999).to_s
         user_attrs = contact.to_payload_hash
         user_attrs[:password] = user_password.to_s
-        api_session = Teachbase::Bot::AuthSession.new.endpoint_v1_api_auth(client_params)
+        api_session = Teachbase::Bot::AuthSession.new.endpoint_v1_api_auth
         registration_result = api_session.add_user_to_account(user_attrs, labels)
         raise "Can't add user to account" if registration_result.empty? || !registration_result
 
         user_attrs[:tb_id] = registration_result.first["id"] unless new_user.tb_id
         user_attrs[:password] = user_password.to_s.encrypt(:symmetric, password: $app_config.load_encrypt_key)
         new_user.update!(user_attrs)
-        registration_result
+        new_user
       end
 
-      def reset_password(contact) # TO DO: Check after authorizer refactoring
+      def reset_password(contact)
         raise "Expecting ContactController, given: '#{contact.class}" unless contact.is_a?(Teachbase::Bot::ContactController)
 
         phone_number = contact.phone_number.to_i.to_s
@@ -103,15 +103,12 @@ module Teachbase
         user_password = request_user_password(:new).source
         raise "Can't get user password" unless user_password
 
-        user_attrs = contact.to_payload_hash
-        user_attrs[:password] = user_password.to_s
-        api_session = Teachbase::Bot::AuthSession.new.endpoint_v1_api_auth(client_params)
-        reset_password_result = api_session.reset_user_password(user_attrs)
+        api_session = Teachbase::Bot::AuthSession.new.endpoint_v1_api_auth
+        reset_password_result = api_session.reset_user_password(tb_id: current_user.tb_id, password: user_password)
         raise "Password not changed" unless reset_password_result.empty?
 
-        user_attrs[:password] = user_password.to_s.encrypt(:symmetric, password: $app_config.load_encrypt_key)
-        current_user.update!(user_attrs)
-        reset_password_result
+        current_user.update!(password: user_password.to_s.encrypt(:symmetric, password: $app_config.load_encrypt_key))
+        current_user
       end
 
       def to_default_scenario
@@ -165,6 +162,8 @@ module Teachbase
       def request_user_account_data(avaliable_accounts = nil, options = [])
         avaliable_accounts ||= data_loader.user.accounts.avaliable_list
         raise TeachbaseBotException::Account.new("Access denied", 403) unless avaliable_accounts
+
+        return avaliable_accounts.first.tb_id if avaliable_accounts.size == 1 && avaliable_accounts.first
 
         controller.interface.sys.menu.accounts(avaliable_accounts, options).show
         user_answer = controller.take_data

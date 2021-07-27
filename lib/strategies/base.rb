@@ -42,22 +42,23 @@ module Teachbase
           interface.sys.menu(text: "#{Emoji.t(:point_down)} #{I18n.t('click_to_send_contact')}").take_contact.show
           contact = appshell.request_data(:none)
           unless contact.is_a?(Teachbase::Bot::ContactController)
-            appshell.to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
+            appshell.to_default_scenario
             return interface.sys.menu(text: I18n.t('declined')).starting.show
           end
           raise if contact.user_id != controller.context.tg_user.id
 
-          result = appshell.reset_password(contact)
-          raise "User password not changed" unless result
+          current_user = appshell.reset_password(contact)
+          raise "User password not changed" unless current_user
 
           interface.sys.text.password_changed.show
+          appshell.authorizer.send(:force_authsession, current_user)
           appshell.controller.context.current_strategy.sign_in
         rescue RuntimeError, TeachbaseBotException => e
           appshell.logout
           interface.sys.menu(text: I18n.t('declined')).starting.show
           title = to_text_by_exceiption_code(e)
           interface.sys.menu(text: title).sign_in_again.show
-          appshell.to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
+          appshell.to_default_scenario
         end
 
         def change_account
@@ -74,7 +75,7 @@ module Teachbase
 
         alias accounts change_account
 
-        # TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
+        # TODO: Aliases made for CommandController commands using. Will remove after refactoring.
 
         def settings_list
           setting.list

@@ -23,7 +23,7 @@ module Teachbase
         @default_auth_type = default_auth_type
       end
 
-      def init_authsession(access_mode)
+      def init_authsession(access_mode, params = {})
         current_active = tg_user.auth_sessions.find_active
         return @authsession = current_active if access_mode == :without_api || (current_active&.tb_api)
 
@@ -33,7 +33,7 @@ module Teachbase
           elsif tg_user.auth_sessions.last_auth.without_logout?
             current_auth(authsession: tg_user.auth_sessions.last_auth)
           else
-            new_auth
+            new_auth(params)
           end
         auth_session_after_auth.update!(auth_at: Time.now.utc, active: true)
         @authsession = auth_session_after_auth
@@ -76,6 +76,11 @@ module Teachbase
       end
 
       private
+
+      def force_authsession(force_user, account_tb_id = $app_config.account_id)
+        account_on_auth = Teachbase::Bot::Account.find_by(tb_id: account_tb_id)
+        tg_user.auth_sessions.create!(auth_at: Time.now.utc, active: true, user_id: force_user.id, account_id: account_on_auth.id)
+      end
 
       def new_auth(params = {})
         new_auth_session = params[:authsession] || tg_user.auth_sessions.new
