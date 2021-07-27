@@ -9,14 +9,32 @@ module Teachbase
     class AuthSession < ActiveRecord::Base
       belongs_to :user
       belongs_to :tg_account
-      belongs_to :api_token
       belongs_to :account
+      has_many :api_tokens, dependent: :destroy
 
       class << self
         def by_user_tb_id(user_tb_id)
           joins('LEFT JOIN users ON auth_sessions.user_id = users.id')
             .where("users.tb_id = :user_tb_id", user_tb_id: user_tb_id.to_i)
             .order(auth_at: :desc)
+        end
+
+        def find_active
+          active_session = find_by(active: true, logout_at: nil)
+          return unless active_session
+
+          last_actual_token = active_session.api_tokens.last_actual
+          if last_actual_token && last_actual_token.avaliable?
+            active_session
+          else
+            active_session.update!(active: false)
+            last_actual_token.update!(active: false) if active_session.api_tokens
+            return
+          end
+        end
+
+        def last_auth
+          where.not(auth_at: nil).order(auth_at: :desc).first
         end
       end
 
@@ -29,8 +47,57 @@ module Teachbase
                 user_id: user_id)
       end
 
+      def deactivate
+        api_tokens.last_actual.update!(active: false) if api_tokens.last_actual
+        reset_account
+        update!(active: false, logout_at: Time.now.utc)
+      end
+
+      def reset_account
+        return unless account
+
+        update!(account_id: nil)
+      end
+
+      def set_account(account_id)
+        update!(account_id: account_id)
+      end
+
+      def user_auth_data
+        return unless user
+
+        { login: user.email || user.phone, crypted_password: user.password }
+      end
+
+      def with_api_auth(api_type, version, token_mode, oauth_params)
+        api_auth(api_type, version, oauth_params)
+        return unless tb_api.token.value
+
+        if token_mode == :save_token
+          new_api_token = api_tokens.find_or_create_by!(active: true)
+          new_api_token.activate_by(tb_api.token)
+          update!(api_token_id: new_api_token.id)
+        end
+        self
+      end
+
+      def endpoint_v1_api_auth(oauth_params = {})
+        oauth_params[:account_id] ||= $app_config.account_id
+        oauth_params[:client_id] ||= $app_config.client_id
+        oauth_params[:client_secret] ||= $app_config.client_secret
+        with_api_auth(:endpoint, 1, :no_save_token, oauth_params)
+      end
+
       def api_auth(api_type, version, oauth_params = {})
         @tb_api = Teachbase::API::Client.new(api_type, version, oauth_params)
+      end
+
+      def with_api_access?
+        tb_api
+      end
+
+      def without_logout?
+        logout_at.nil?
       end
 
       def load_profile
@@ -106,7 +173,10 @@ module Teachbase
       end
 
       def reset_user_password(user_data)
-        tb_api.request(:users, :users_passwords, payload: { "users" => { user_data[:tb_id].to_s => decrypt_user_password(user_data[:password]) } }).post
+        payload_data = { "users" =>
+                         { user_data[:tb_id].to_s => user_data[:password]
+                                                     .decrypt(:symmetric, password: $app_config.load_encrypt_key) } }
+        tb_api.request(:users, :users_passwords, payload: payload_data).post
       end
 
       def ping
@@ -115,10 +185,6 @@ module Teachbase
 
       private
 
-      def decrypt_user_password(password)
-        password.decrypt(:symmetric, password: $app_config.load_encrypt_key)
-      end
-
       def build_user_registration_data(user_data, labels)
         payload_data = { "users" => [
           { "name" => user_data[:first_name],
@@ -126,7 +192,7 @@ module Teachbase
             "phone" => user_data[:phone],
             "role_id" => 1,
             "auth_type" => 0,
-            "password" => decrypt_user_password(user_data[:password]),
+            "password" => user_data[:password].decrypt(:symmetric, password: $app_config.load_encrypt_key),
             "lang" => "ru" }
         ],
                          "options" => { "activate" => true, "skip_notify_new_users" => true, "skip_notify_active_users" => true } }

@@ -14,10 +14,6 @@ module Teachbase
       has_many :tg_account_messages, dependent: :destroy
       has_many :cache_messages, dependent: :destroy
 
-      def last_active_auth_session
-        auth_sessions.where(active: true).order(auth_at: :desc).first
-      end
-
       def on_taking_data?
         reload.context_state == Teachbase::Bot::Controller::TAKING_DATA_CONTEXT_STATE
       end

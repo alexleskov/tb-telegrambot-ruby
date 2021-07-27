@@ -13,19 +13,25 @@ require 'ostruct'
 require 'rufus-scheduler'
 
 require './lib/app_configurator'
+
 require './lib/emoji'
 require './lib/emoji_aliaser'
+
 require './lib/editor_js/editor_js'
 require './lib/formatter'
 require './lib/validator'
 require './lib/phrase'
 require './lib/decorators/decorators'
+
 require './lib/message_responder'
 require './lib/webhook_responder'
 require './lib/message_sender'
+
 require './lib/exceptions/teachbase_bot_exception'
 require './lib/exceptions/account'
-require './lib/app_shell'
+
+require './lib/app_shell/app_shell'
+
 require './lib/filer'
 require './lib/breadcrumb'
 require './lib/ai'

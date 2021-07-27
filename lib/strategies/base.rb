@@ -47,7 +47,7 @@ module Teachbase
           end
           raise if contact.user_id != controller.context.tg_user.id
 
-          result = appshell.authorizer.reset_password(contact)
+          result = appshell.reset_password(contact)
           raise "User password not changed" unless result
 
           interface.sys.text.password_changed.show
@@ -61,7 +61,7 @@ module Teachbase
         end
 
         def change_account
-          appshell.logout_account
+          appshell.change_account
           sign_in
         rescue RuntimeError, TeachbaseBotException => e
           $logger.debug "On auth error: #{e.class}. #{e.inspect}"

@@ -18,7 +18,7 @@ module Teachbase
           raise unless contact.is_a?(Teachbase::Bot::ContactController)
           raise if contact.user_id != controller.context.tg_user.id
 
-          appshell.authorizer.registration(contact, "193850" => "193851")
+          appshell.registration(contact, "193850" => "193851")
         rescue RuntimeError, TeachbaseBotException => e
           appshell.to_default_scenario
           appshell.logout

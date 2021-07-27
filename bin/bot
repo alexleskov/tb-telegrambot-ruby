@@ -23,7 +23,7 @@ $app_config.tg_bot_client.run do |bot|
         end
       end
     end
-  rescue => e
-    $logger.debug "Error: #{e}."
+  #rescue => e
+  #  $logger.debug "Error: #{e}."
   end
 end
