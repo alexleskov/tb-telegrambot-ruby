@@ -16,7 +16,7 @@ scheduler = Rufus::Scheduler.new
 #   job.kill unless notifications_params
 
 #   notifications_params.each do |notify_param|
-#     next unless notify_param[:messages].first.tg_account.last_active_auth_session
+#     next unless notify_param[:messages].first.tg_account.auth_sessions.last_without_logout
 
 #   begin
 #     I18n.with_locale notify_param[:settings].localization.to_sym do

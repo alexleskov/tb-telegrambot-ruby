@@ -5,7 +5,7 @@ module Teachbase
     class Interfaces
       class Section
         class Menu < Teachbase::Bot::Interfaces::Menu
-          def show_by_option(sections, option)
+          def show_by_option(sections, _option)
             raise "Entity must be a CourseSession" unless entity.is_a?(Teachbase::Bot::CourseSession)
 
             @params[:type] = :menu_inline

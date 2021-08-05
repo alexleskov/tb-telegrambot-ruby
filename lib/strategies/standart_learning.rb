@@ -16,8 +16,7 @@ module Teachbase
           auth = appshell.authorization
           raise unless auth
 
-          appshell.data_loader.user.profile.me
-          interface.sys.menu.greetings(appshell.user.profile_info(appshell.current_account.id)).show
+          user_profile
           interface.sys.menu.after_auth.show
         rescue RuntimeError, TeachbaseBotException => e
           $logger.debug "On auth error: #{e.class}. #{e.inspect}"

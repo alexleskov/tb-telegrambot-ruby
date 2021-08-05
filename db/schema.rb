@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 31) do
+ActiveRecord::Schema.define(version: 32) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -75,6 +75,7 @@ ActiveRecord::Schema.define(version: 31) do
     t.datetime "updated_at", null: false
     t.bigint "api_token_id"
     t.bigint "account_id"
+    t.datetime "logout_at"
     t.index ["account_id"], name: "index_auth_sessions_on_account_id"
     t.index ["api_token_id"], name: "index_auth_sessions_on_api_token_id"
     t.index ["tg_account_id"], name: "index_auth_sessions_on_tg_account_id"

@@ -98,7 +98,7 @@ module Teachbase
           end
 
           def ping(account_tb_id, client_id, client_secret)
-            result = appshell.authorizer.ping(account_id: account_tb_id, client_id: client_id, client_secret: client_secret)
+            result = appshell.ping_account(account_tb_id, client_id: client_id, client_secret: client_secret)
             return if result.is_a?(RestClient::Unauthorized)
 
             result

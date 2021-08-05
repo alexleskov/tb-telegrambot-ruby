@@ -6,9 +6,11 @@ module Teachbase
       class DemoMode < Teachbase::Bot::Strategies::Base
         def starting
           super
-          result = registration
-          return interface.sys.menu(text: I18n.t('declined')).starting.show unless result
+          appshell.change_scenario(Teachbase::Bot::Strategies::DEMO_MODE_NAME)
+          new_user = registration
+          return interface.sys.menu(text: I18n.t('declined')).starting.show unless new_user
 
+          appshell.authorizer.send(:force_authsession, new_user)
           sign_in
         end
 
@@ -18,7 +20,7 @@ module Teachbase
           raise unless contact.is_a?(Teachbase::Bot::ContactController)
           raise if contact.user_id != controller.context.tg_user.id
 
-          appshell.authorizer.registration(contact, "193850" => "193851")
+          appshell.registration(contact, "193850" => "193851")
         rescue RuntimeError, TeachbaseBotException => e
           appshell.to_default_scenario
           appshell.logout
@@ -29,7 +31,6 @@ module Teachbase
           raise unless auth
 
           appshell.data_loader.user.profile.me
-          interface.sys.menu.greetings.show
           interface.sys.content(file: "https://storage.yandexcloud.net/tbpublic/other/2868-300x300.png",
                                 caption: "#{appshell.user_fullname(:array).first} #{Emoji.t(:wave)}\n#{I18n.t('about_bot_demo_mode')}").photo
           interface.sys.menu.after_auth.show

@@ -17,6 +17,10 @@ module Teachbase
         @vcard = source.vcard
       end
 
+      def to_payload_hash
+        { first_name: first_name, last_name: last_name, phone: phone_number.to_i.to_s }
+      end
+
       def source
         context.message.contact
       end

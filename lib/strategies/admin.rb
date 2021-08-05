@@ -13,7 +13,7 @@ module Teachbase
           interface.sys.menu.starting.show
         end
 
-        # TO DO: Aliases made for CommandController commands using. Will remove after refactoring.
+        # TODO: Aliases made for CommandController commands using. Will remove after refactoring.
 
         def accounts_manager
           admin.account.list
