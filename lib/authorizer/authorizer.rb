@@ -77,7 +77,7 @@ module Teachbase
 
       private
 
-      def force_authsession(force_user, account_tb_id = $app_config.account_id)
+      def force_authsession(force_user, account_tb_id = $app_config.account_id) # Worked on only user with login/password
         account_on_auth = Teachbase::Bot::Account.find_by(tb_id: account_tb_id)
         tg_user.auth_sessions.create!(auth_at: Time.now.utc, active: true, user_id: force_user.id, account_id: account_on_auth.id)
       end

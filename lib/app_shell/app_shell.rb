@@ -222,10 +222,6 @@ module Teachbase
         authsession(mode).account
       end
 
-      def encrypt_password(password)
-        password.encrypt(:symmetric, password: $app_config.load_encrypt_key)
-      end
-
       def user_fullname(option = :string)
         user_with_full_name.to_full_name(option)
       end
