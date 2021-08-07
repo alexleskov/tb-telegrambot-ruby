@@ -6,6 +6,11 @@ module Teachbase
       class UserAuthData < Teachbase::Bot::Authorizer::Base
         attr_reader :login_type, :login
 
+        def initialize(authsession, appshell, account_credentials = {})
+          @appshell = appshell
+          super(authsession, account_credentials)
+        end
+
         def build
           data = @authsession&.user ? @authsession.user_auth_data : @appshell.request_user_auth_data
           raise "Can't find user auth data" if data.any?(nil)

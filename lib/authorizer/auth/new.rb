@@ -33,9 +33,9 @@ module Teachbase
           def default_auth_contoller
             case default_auth_type
             when :user_auth_data
-              Teachbase::Bot::Authorizer::UserAuthData.new(@appshell, authsession)
+              Teachbase::Bot::Authorizer::UserAuthData.new(authsession, @appshell)
             when :code
-              Teachbase::Bot::Authorizer::Code.new(@appshell, authsession)
+              Teachbase::Bot::Authorizer::Code.new(authsession)
             else
               raise "Don't know such default_auth_type: '#{default_auth_type}'"
             end

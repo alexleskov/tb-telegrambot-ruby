@@ -17,7 +17,7 @@ module Teachbase
           private
 
           def default_auth_contoller
-            Teachbase::Bot::Authorizer::AccessToken.new(@appshell, authsession)
+            Teachbase::Bot::Authorizer::AccessToken.new(authsession)
           end
         end
       end

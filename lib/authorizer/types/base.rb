@@ -5,10 +5,7 @@ module Teachbase
     class Authorizer
       class Base
         attr_reader :client_id, :client_secret, :account_tb_id
-        def initialize(appshell, authsession, account_credentials = {})
-          raise "'#{appshell}' is not Teachbase::Bot::AppShell" unless appshell.is_a?(Teachbase::Bot::AppShell)
-
-          @appshell = appshell
+        def initialize(authsession, account_credentials = {})
           @authsession = authsession
           @account_tb_id = @authsession&.account ? @authsession.account.tb_id : account_credentials[:account_id]
           @client_id = account_credentials[:client_id] || $app_config.client_id
