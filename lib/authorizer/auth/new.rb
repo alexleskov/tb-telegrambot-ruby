@@ -35,7 +35,7 @@ module Teachbase
             when :user_auth_data
               Teachbase::Bot::Authorizer::UserAuthData.new(authsession, @appshell)
             when :code
-              Teachbase::Bot::Authorizer::Code.new(authsession)
+              Teachbase::Bot::Authorizer::Code.new(authsession, @appshell)
             else
               raise "Don't know such default_auth_type: '#{default_auth_type}'"
             end

@@ -36,6 +36,7 @@ module Teachbase
                 grant_type: token.grant_type,
                 expired_at: token.expired_at,
                 value: token.value,
+                refresh_token: token.refresh_token,
                 active: true)
       end
     end

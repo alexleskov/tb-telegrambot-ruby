@@ -131,7 +131,6 @@ module Teachbase
             lms_load(data: :info)["sections"]
           when :total_cs_count
             options[:params][:answer_type] = :raw
-            options[:params]
             appshell.authsession.load_course_sessions(options[:state], options[:params]).headers[:total].to_i
           else
             raise "Can't call such data: '#{options[:data]}'"
