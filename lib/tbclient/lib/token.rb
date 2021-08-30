@@ -14,13 +14,14 @@ module Teachbase
                   :api_type,
                   :api_version,
                   :value,
-                  :account_id,
                   :type,
                   :expires_in,
                   :refresh_token,
                   :created_at,
                   :resource_owner_id,
                   :expiration_time
+                  
+      attr_accessor :account_id
 
       def initialize(api_type, api_version, params)
         @api_type = api_type
@@ -53,7 +54,7 @@ module Teachbase
         when 301, 302, 307
           e.response.follow_redirection
         else
-          raise e, "Unexpected error with token requesting: Code: #{e.http_code}. Response: #{e.response}"
+          raise "Unexpected error with token requesting: Code: #{e.http_code}. Response: #{e.response}"
         end
       end
 
