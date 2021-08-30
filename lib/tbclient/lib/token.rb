@@ -12,7 +12,10 @@ module Teachbase
                   :resource_owner_id,
                   :api_version,
                   :api_type,
-                  :grant_type
+                  :grant_type,
+                  :expiration_time
+                  
+      attr_accessor :account_id
 
       def initialize(client_config)
         @client_config = client_config
@@ -46,7 +49,7 @@ module Teachbase
         when 301, 302, 307
           e.response.follow_redirection
         else
-          raise e, "Unexpected error with token requesting: Code: #{e.http_code}. Response: #{e.response}"
+          raise "Unexpected error with token requesting: Code: #{e.http_code}. Response: #{e.response}"
         end
       end
 

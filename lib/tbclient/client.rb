@@ -52,6 +52,14 @@ module Teachbase
         Teachbase::API::Request.new(type_class_name, api_method_name, @config, token, request_options)
       end
 
+      def set_account_id(id)
+        @client_params[:account_id] = id
+        token.account_id = id
+        self
+      end
+
+      private
+
       def auth_param?
         return @access_token if @access_token
 

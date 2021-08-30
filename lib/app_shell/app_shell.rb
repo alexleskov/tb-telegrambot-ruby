@@ -162,7 +162,6 @@ module Teachbase
       def request_user_account_data(avaliable_accounts = nil, options = [])
         avaliable_accounts ||= data_loader.user.accounts.avaliable_list
         raise TeachbaseBotException::Account.new("Access denied", 403) unless avaliable_accounts
-
         return avaliable_accounts.first.tb_id if avaliable_accounts.size == 1 && avaliable_accounts.first
 
         controller.interface.sys.menu.accounts(avaliable_accounts, options).show

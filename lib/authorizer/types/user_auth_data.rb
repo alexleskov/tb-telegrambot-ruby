@@ -11,7 +11,7 @@ module Teachbase
 
         def build
           data = @authsession&.user ? @authsession.user_auth_data : @appshell.request_user_auth_data
-          raise "Can't find user auth data" if data.any?(nil)
+          raise "Can't find user auth data" if data.values.any?(nil)
 
           @crypted_password = data[:crypted_password]
           build_login_and_type(data)
