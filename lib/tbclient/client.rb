@@ -39,6 +39,12 @@ module Teachbase
         Teachbase::API::Request.new(type_class_name, api_method_name, options, token)
       end
 
+      def set_account_id(id)
+        @client_params[:account_id] = id
+        token.account_id = id
+        self
+      end
+
       private
 
       def api_mobile_type?

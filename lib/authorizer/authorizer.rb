@@ -30,7 +30,7 @@ module Teachbase
         auth_session_after_auth =
           if current_active && !current_active.with_api_access?
             current_auth(authsession: current_active)
-          elsif tg_user.auth_sessions.last_auth.without_logout?
+          elsif tg_user.auth_sessions.last_auth&.without_logout?
             current_auth(authsession: tg_user.auth_sessions.last_auth)
           else
             new_auth(params)
@@ -59,12 +59,13 @@ module Teachbase
         raise "Can't login account without authsession" unless params[:authsession]
         return if params[:authsession].account
 
-        data = @appshell.request_user_account_data unless params[:account_tb_id]
+        data = params[:account_tb_id] || @appshell.request_user_account_data
         raise "Account is not setted for authsession id: '#{params[:authsession].id}'" unless data
 
         user_account = Teachbase::Bot::Account.find_by(tb_id: data.to_i)
         raise TeachbaseBotException::Account.new("Access denied", 403) unless user_account
 
+        params[:authsession].tb_api.set_account_id(data) if params[:authsession].tb_api
         params[:authsession].set_account(user_account.id)
         user_account
       end
