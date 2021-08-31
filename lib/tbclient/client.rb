@@ -12,8 +12,8 @@ module Teachbase
   module API
     class Client
       DEFAULT_ANSWER_TYPE = :json
-      API_TYPES = { endpoint: "client_credentials", mobile: "password"}
-      API_VERSIONS = { endpoint: [1], mobile: [1, 2], refresh_token: [1, 2] }
+      API_TYPES = { endpoint: "client_credentials", mobile: "password" }.freeze
+      API_VERSIONS = { endpoint: [1], mobile: [1, 2], refresh_token: [1, 2] }.freeze
 
       attr_reader :api_type, :api_version, :lms_host, :token, :client_id, :account_id, :rest_client, :grant_type, :answer_type
 
@@ -63,12 +63,12 @@ module Teachbase
         return @access_token if @access_token
 
         auth_params_list =
-        case api_type.to_sym
-        when :endpoint
-          client_params_list
-        when :mobile
-          mobile_params_list
-        end
+          case api_type.to_sym
+          when :endpoint
+            client_params_list
+          when :mobile
+            mobile_params_list
+          end
         auth_params_list.none?(nil)
       end
 
@@ -82,7 +82,7 @@ module Teachbase
                        answer_type: DEFAULT_ANSWER_TYPE || @answer_type)
       end
 
-      def client_params_list 
+      def client_params_list
         array = [@client_id, @client_secret, @account_id]
         @refresh_token ? array + [@refresh_token] : array
       end

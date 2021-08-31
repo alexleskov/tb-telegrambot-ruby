@@ -132,7 +132,7 @@ module Teachbase
 
         ids_hash = request_options.select { |param| param =~ URL_ID_PARAMS_FORMAT && param != :account_id }
         return if ids_hash.empty?
-        
+
         ids_hash
       end
 

@@ -14,7 +14,7 @@ module Teachbase
                   :api_type,
                   :grant_type,
                   :expiration_time
-                  
+
       attr_accessor :account_id
 
       def initialize(client_config)

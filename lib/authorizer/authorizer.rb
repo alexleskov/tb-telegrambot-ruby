@@ -57,7 +57,7 @@ module Teachbase
         user_account = Teachbase::Bot::Account.find_by(tb_id: data.to_i)
         raise TeachbaseBotException::Account.new("Access denied", 403) unless user_account
 
-        params[:authsession].tb_api.set_account_id(data) if params[:authsession].tb_api
+        params[:authsession].tb_api&.set_account_id(data)
         params[:authsession].set_account(user_account.id)
         user_account
       end
@@ -77,15 +77,15 @@ module Teachbase
         return current_active if access_mode == :without_api || (current_active&.tb_api)
 
         result =
-        if current_active && !current_active.with_api_access?
-          params[:authsession] = current_active
-          Teachbase::Bot::Authorizer::Auth::Current.new(params).call(:mobile, 2)
-        elsif tg_user.auth_sessions.last_auth.without_logout?
-          params[:authsession] = tg_user.auth_sessions.last_auth
-          current_auth = Teachbase::Bot::Authorizer::Auth::Current.new(params).call(:mobile, 2)
-          Teachbase::Bot::Authorizer::Auth::New.new(params.merge(auth_type: :refresh_token)).call(:mobile, 2) unless current_auth
-        end
-        result = Teachbase::Bot::Authorizer::Auth::New.new(params).call(:mobile, 2) unless result
+          if current_active && !current_active.with_api_access?
+            params[:authsession] = current_active
+            Teachbase::Bot::Authorizer::Auth::Current.new(params).call(:mobile, 2)
+          elsif tg_user.auth_sessions.last_auth.without_logout?
+            params[:authsession] = tg_user.auth_sessions.last_auth
+            current_auth = Teachbase::Bot::Authorizer::Auth::Current.new(params).call(:mobile, 2)
+            Teachbase::Bot::Authorizer::Auth::New.new(params.merge(auth_type: :refresh_token)).call(:mobile, 2) unless current_auth
+          end
+        result ||= Teachbase::Bot::Authorizer::Auth::New.new(params).call(:mobile, 2)
         result
       end
 

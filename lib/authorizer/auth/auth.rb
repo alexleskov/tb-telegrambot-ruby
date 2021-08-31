@@ -17,10 +17,10 @@ module Teachbase
 
         def call(api_type, api_version, token_save_mode)
           raise "Needed authsession for calling new auth" unless authsession
-          
+
           oauth_params = oauth_controller.build
           return unless oauth_params
-          
+
           authsession.with_api_auth(api_type, api_version, token_save_mode.to_sym, oauth_params)
         end
       end

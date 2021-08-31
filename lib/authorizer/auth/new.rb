@@ -16,7 +16,7 @@ module Teachbase
           def call(api_type, api_version)
             authsession_with_api = super(api_type, api_version, :save_token)
             return unless authsession_with_api
-            
+
             authsession_with_api.save!
             pop_new_user(oauth_controller.login_type, oauth_controller.login)
             @authsession_after_auth = authsession_with_api
