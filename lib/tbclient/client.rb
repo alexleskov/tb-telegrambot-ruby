@@ -12,7 +12,7 @@ module Teachbase
   module API
     class Client
       DEFAULT_ANSWER_TYPE = :json
-      API_TYPES = { endpoint: "client_credentials", mobile: "password", refresh_token: "refresh_token" }
+      API_TYPES = { endpoint: "client_credentials", mobile: "password"}
       API_VERSIONS = { endpoint: [1], mobile: [1, 2], refresh_token: [1, 2] }
 
       attr_reader :api_type, :api_version, :lms_host, :token, :client_id, :account_id, :rest_client, :grant_type, :answer_type
@@ -21,7 +21,7 @@ module Teachbase
         @api_type = api_type
         @api_version = version_number
         @rest_client = client_params[:rest_client] ||= Kernel.const_get($app_config.rest_client)
-        @grant_type = API_TYPES[api_type]
+        @grant_type = client_params[:refresh_token] ? "refresh_token" : API_TYPES[api_type]
         raise "No such API type: '#{api_type}'. Use one of: #{API_TYPES.keys}" unless grant_type
         raise "No such API version: '#{api_version}'. Use one of #{API_VERSIONS}" unless API_VERSIONS[api_type].include?(api_version)
 
@@ -38,7 +38,6 @@ module Teachbase
         raise "Not correct auth params. For api type: '#{api_type}'" unless auth_param?
 
         @config = build_config
-        call_token
       end
 
       def call_token
@@ -53,7 +52,7 @@ module Teachbase
       end
 
       def set_account_id(id)
-        @client_params[:account_id] = id
+        @client_params[:account_id] = id if @client_params
         token.account_id = id
         self
       end
@@ -69,8 +68,6 @@ module Teachbase
           client_params_list
         when :mobile
           mobile_params_list
-        when :refresh_token
-          refresh_token_params_list
         end
         auth_params_list.none?(nil)
       end
@@ -85,16 +82,13 @@ module Teachbase
                        answer_type: DEFAULT_ANSWER_TYPE || @answer_type)
       end
 
-      def client_params_list
-        [@client_id, @client_secret, @account_id]
+      def client_params_list 
+        array = [@client_id, @client_secret, @account_id]
+        @refresh_token ? array + [@refresh_token] : array
       end
 
       def mobile_params_list
-        client_params_list + [@user_login, @password]
-      end
-
-      def refresh_token_params_list
-        client_params_list + [@refresh_token]
+        @refresh_token ? client_params_list : client_params_list + [@user_login, @password]
       end
     end
   end

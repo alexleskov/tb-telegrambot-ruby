@@ -4,6 +4,7 @@ require './lib/authorizer/authorizer'
 require './lib/authorizer/types/base'
 require './lib/authorizer/types/user_auth_data'
 require './lib/authorizer/types/access_token'
+require './lib/authorizer/types/refresh_token'
 require './lib/authorizer/types/code'
 require './lib/authorizer/auth/auth'
 require './lib/authorizer/auth/new'
@@ -70,19 +71,22 @@ module Teachbase
       private
 
       def build_auth_session(access_mode, params = {})
-        params[:appshell] = @appshell
-        params[:tg_user] = tg_user
+        params[:appshell] ||= @appshell
+        params[:tg_user] ||= tg_user
         current_active = tg_user.auth_sessions.find_active
         return current_active if access_mode == :without_api || (current_active&.tb_api)
 
+        result =
         if current_active && !current_active.with_api_access?
           params[:authsession] = current_active
+          Teachbase::Bot::Authorizer::Auth::Current.new(params).call(:mobile, 2)
         elsif tg_user.auth_sessions.last_auth.without_logout?
           params[:authsession] = tg_user.auth_sessions.last_auth
-        else
-          return Teachbase::Bot::Authorizer::Auth::New.new(params).call
+          current_auth = Teachbase::Bot::Authorizer::Auth::Current.new(params).call(:mobile, 2)
+          Teachbase::Bot::Authorizer::Auth::New.new(params.merge(auth_type: :refresh_token)).call(:mobile, 2) unless current_auth
         end
-        Teachbase::Bot::Authorizer::Auth::Current.new(params).call
+        result = Teachbase::Bot::Authorizer::Auth::New.new(params).call(:mobile, 2) unless result
+        result
       end
 
       def force_authsession(force_user, account_tb_id = $app_config.account_id) # Worked on only user with login/password

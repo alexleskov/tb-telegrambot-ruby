@@ -4,7 +4,7 @@ module Teachbase
   module Bot
     class Authorizer
       class Code < Teachbase::Bot::Authorizer::Base
-        attr_reader :code
+        attr_reader :auth_code
 
         def initialize(authsession, appshell, account_credentials = {})
           @appshell = appshell
@@ -13,9 +13,9 @@ module Teachbase
 
         def build
           data = @appshell.request_user_auth_code_data
-          raise "Can't find user auth code data" unless data[:login] && data[:code]
+          return if data.values.any?(nil)
 
-          @code = data[:code]
+          @auth_code = data[:auth_code]
           build_login_and_type(data)
           build_oauth_params
         end
@@ -23,7 +23,7 @@ module Teachbase
         private
 
         def build_oauth_params
-          super.merge!(user_login: login, code: code, password: "")
+          super.merge!(user_login: login, auth_code: auth_code, password: "")
         end
       end
     end

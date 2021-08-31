@@ -90,8 +90,8 @@ module Teachbase
 
       def api_auth(api_type, version, oauth_params = {})
         @tb_api = Teachbase::API::Client.new(api_type, version, oauth_params)
-        @tb_api.call_token
-        @tb_api
+        tb_api.call_token
+        tb_api
       end
 
       def with_api_access?

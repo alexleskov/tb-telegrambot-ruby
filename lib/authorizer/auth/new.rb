@@ -8,13 +8,13 @@ module Teachbase
           DEFAULT_TYPE = :user_auth_data
 
           def initialize(params = {})
-            @default_auth_type = params[:default_auth_type] || DEFAULT_TYPE
+            @auth_type = params[:auth_type] || DEFAULT_TYPE
             super(params)
             @authsession = params[:authsession] || @tg_user.auth_sessions.new
           end
 
-          def call
-            authsession_with_api = super(:save_token)
+          def call(api_type, api_version)
+            authsession_with_api = super(api_type, api_version, :save_token)
             return unless authsession_with_api
             
             authsession_with_api.save!
@@ -25,19 +25,23 @@ module Teachbase
           private
 
           def pop_new_user(login_type, login)
+            return if auth_type == :refresh_token
+
             current_user = Teachbase::Bot::User.find_or_create_by!(login_type => login)
             authsession.update!(user_id: current_user.id)
             current_user
           end
 
           def default_auth_contoller
-            case default_auth_type
+            case auth_type
             when :user_auth_data
               Teachbase::Bot::Authorizer::UserAuthData.new(authsession, @appshell)
+            when :refresh_token
+              Teachbase::Bot::Authorizer::RefreshToken.new(authsession)
             when :code
               Teachbase::Bot::Authorizer::Code.new(authsession, @appshell)
             else
-              raise "Don't know such default_auth_type: '#{default_auth_type}'"
+              raise "Don't know such auth_type: '#{auth_type}'"
             end
           end
         end

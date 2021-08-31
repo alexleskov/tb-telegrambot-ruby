@@ -7,6 +7,8 @@ module Teachbase
         attr_reader :client_id, :client_secret, :account_tb_id, :login_type, :login
 
         def initialize(authsession, account_credentials = {})
+          raise "account_credentials must be a Hash" unless account_credentials.is_a?(Hash)
+
           @authsession = authsession
           @account_tb_id = @authsession&.account ? @authsession.account.tb_id : account_credentials[:account_id]
           @client_id = account_credentials[:client_id] || $app_config.client_id
