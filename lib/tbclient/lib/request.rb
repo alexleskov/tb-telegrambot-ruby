@@ -68,14 +68,14 @@ module Teachbase
         request_options[:headers] ? default_headers.merge!(request_options[:headers]) : default_headers
       end
 
-      def default_settings(http_method)
+      def default_settings(_http_method)
         { params: url_params }.merge!(headers)
       end
 
       def default_headers
         { content_type: content_type,
           "X-Account-Id" => @client_config.account_id.to_s,
-          "Authorization" => "Bearer #{@token.is_a?(Teachbase::API::Token) ? @token.value : ""}",
+          "Authorization" => "Bearer #{@token.is_a?(Teachbase::API::Token) ? @token.value : ''}",
           "User-Agent" => "telegram-bot" }
       end
 
