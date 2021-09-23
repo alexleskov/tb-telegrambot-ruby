@@ -12,7 +12,11 @@ module Teachbase
         end
 
         def build
-          data = @appshell.request_user_auth_code_data
+          user_login = @appshell.request_user_login
+          data = { login: user_login.source }
+          Teachbase::Bot::AuthSession.new.api(:no_type, 1, user_login: data[:login]).call_auth_code
+          auth_code = @appshell.request_auth_code
+          data[:auth_code] = auth_code.source
           return if data.values.any?(nil)
 
           @auth_code = data[:auth_code]

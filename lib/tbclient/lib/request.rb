@@ -3,6 +3,13 @@
 module Teachbase
   module API
     class Request
+      class << self
+        def auth_code(user_login, client_config)
+          auth_code_request = new(:code, :one_time_code, client_config, "", login: user_login, answer_type: :raw)
+          auth_code_request.post
+        end
+      end
+
       SPLIT_SYMBOL = "_"
       URL_ID_PARAMS_FORMAT = /(^id|_id$)/.freeze
       DEFAULT_PAYLOAD_TYPE = :json
@@ -62,20 +69,13 @@ module Teachbase
       end
 
       def default_settings(http_method)
-        case http_method
-        when :post, :patch
-          headers
-        when :get, :delete
-          { params: url_params }.merge!(headers)
-        else
-          raise "No such http_method: '#{http_method}'"
-        end
+        { params: url_params }.merge!(headers)
       end
 
       def default_headers
         { content_type: content_type,
           "X-Account-Id" => @client_config.account_id.to_s,
-          "Authorization" => "Bearer #{@token.value}",
+          "Authorization" => "Bearer #{@token.is_a?(Teachbase::API::Token) ? @token.value : ""}",
           "User-Agent" => "telegram-bot" }
       end
 
@@ -137,7 +137,7 @@ module Teachbase
       end
 
       def fetch_request_params
-        default_url_params = access_token
+        default_url_params = @token.is_a?(Teachbase::API::Token) ? access_token : {}
         sanitize_not_request_params
         url_ids&.each { |key, _value| request_options.delete(key) }
         default_url_params.merge!(request_options)

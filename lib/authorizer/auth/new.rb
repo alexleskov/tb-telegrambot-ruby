@@ -5,7 +5,7 @@ module Teachbase
     class Authorizer
       class Auth
         class New < Teachbase::Bot::Authorizer::Auth
-          DEFAULT_TYPE = :user_auth_data
+          DEFAULT_TYPE = :code
 
           def initialize(params = {})
             @auth_type = params[:auth_type] || DEFAULT_TYPE

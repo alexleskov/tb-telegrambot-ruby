@@ -138,6 +138,16 @@ module Teachbase
         end
       end
 
+      def request_user_auth_code_data
+        user_login = request_user_login
+        raise "Can't find user login" unless user_login
+
+        auth_code = request_auth_code
+        raise "Can't find auth code" unless auth_code
+
+        { login: user_login.source, auth_code: auth_code.source }
+      end
+
       def request_user_auth_data
         user_login = request_user_login
         raise "Can't find user login" unless user_login
@@ -157,6 +167,11 @@ module Teachbase
       def request_user_login
         controller.interface.sys.text.ask_login.show
         request_data(:login)
+      end
+
+      def request_auth_code
+        controller.interface.sys.text.ask_auth_code.show
+        request_data(:string)
       end
 
       def request_user_account_data(avaliable_accounts = nil, options = [])

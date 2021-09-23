@@ -59,6 +59,11 @@ module Teachbase
           self
         end
 
+        def ask_auth_code
+          @params[:text] = Phrase::Enter.auth_code
+          self
+        end
+
         def ask_password(state)
           @params[:text] = Phrase::Enter.password.to_s
           @params[:text] = "#{params[:text]} #{I18n.t('new_password_condition').downcase}:" if state == :new

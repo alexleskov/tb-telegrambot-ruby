@@ -12,10 +12,10 @@ module Teachbase
   module API
     class Client
       DEFAULT_ANSWER_TYPE = :json
-      API_TYPES = { endpoint: "client_credentials", mobile: "password" }.freeze
-      API_VERSIONS = { endpoint: [1], mobile: [1, 2], refresh_token: [1, 2] }.freeze
+      API_TYPES = { endpoint: "client_credentials", mobile: "password", no_type: "no_type" }.freeze
+      API_VERSIONS = { endpoint: [1], mobile: [1, 2], refresh_token: [1, 2], no_type: [1] }.freeze
 
-      attr_reader :api_type, :api_version, :lms_host, :token, :client_id, :account_id, :rest_client, :grant_type, :answer_type
+      attr_reader :api_type, :api_version, :lms_host, :token, :client_id, :account_id, :rest_client, :grant_type, :answer_type, :config
 
       def initialize(api_type, version_number, client_params = {})
         @api_type = api_type
@@ -38,6 +38,10 @@ module Teachbase
         raise "Not correct auth params. For api type: '#{api_type}'" unless auth_param?
 
         @config = build_config
+      end
+
+      def call_auth_code
+        Teachbase::API::Request.auth_code(@user_login, @config)
       end
 
       def call_token
@@ -68,6 +72,8 @@ module Teachbase
             client_params_list
           when :mobile
             mobile_params_list
+          when :no_type
+            [@user_login]
           end
         auth_params_list.none?(nil)
       end

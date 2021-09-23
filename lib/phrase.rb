@@ -84,33 +84,38 @@ class Phrase
   class Enter
     class << self
       include Formatter
+      DEFAULT_EMOJI = :pencil2
 
       def contact
         "#{I18n.t('meet_with_bot')}\n\n#{Emoji.t(:point_down)} #{I18n.t('click_to_send_contact')} #{I18n.t('notice_about_safety')}"
       end
 
       def keyword
-        "#{Emoji.t(:pencil2)} #{I18n.t('enter_what_find')}:"
+        "#{Emoji.t(DEFAULT_EMOJI)} #{I18n.t('enter_what_find')}:"
       end
 
       def login
-        "#{Emoji.t(:pencil2)} #{I18n.t('add_user_login')}:"
+        "#{Emoji.t(DEFAULT_EMOJI)} #{I18n.t('add_user_login')}:"
+      end
+
+      def auth_code
+        "#{Emoji.t(DEFAULT_EMOJI)} #{I18n.t('add_auth_code')}:"
       end
 
       def password
-        "#{Emoji.t(:pencil2)} #{I18n.t('add_user_password')}:"
+        "#{Emoji.t(DEFAULT_EMOJI)} #{I18n.t('add_user_password')}:"
       end
 
       def answer
-        "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_answer')}:"
+        "#{Emoji.t(DEFAULT_EMOJI)} #{I18n.t('enter_your_answer')}:"
       end
 
       def next_answer
-        "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_next_answer')} #{Emoji.t(:point_down)}"
+        "#{Emoji.t(DEFAULT_EMOJI)} #{I18n.t('enter_your_next_answer')} #{Emoji.t(:point_down)}"
       end
 
       def value(name)
-        "#{Emoji.t(:pencil2)} #{I18n.t('enter_your_value')}#{name}:"
+        "#{Emoji.t(DEFAULT_EMOJI)} #{I18n.t('enter_your_value')}#{name}:"
       end
     end
   end
