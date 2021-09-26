@@ -86,10 +86,9 @@ module Teachbase
             Teachbase::Bot::Authorizer::Auth::New.new(params.merge(auth_type: :refresh_token)).call(:mobile, 2) unless current_auth
           end
         result ||= Teachbase::Bot::Authorizer::Auth::New.new(params).call(:mobile, 2)
-        result
       end
 
-      def force_authsession(force_user, account_tb_id = $app_config.account_id) # Worked on only user with login/password
+      def force_authsession(force_user, account_tb_id = $app_config.account_id) # Worked on only user with login
         account_on_auth = Teachbase::Bot::Account.find_by(tb_id: account_tb_id)
         tg_user.auth_sessions.create!(auth_at: Time.now.utc, active: true, user_id: force_user.id, account_id: account_on_auth.id)
       end

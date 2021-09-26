@@ -9,7 +9,9 @@ module Teachbase
         def build
           return unless @authsession
 
-          @refresh_token = @authsession.api_tokens.order(created_at: :desc).first.refresh_token if @authsession.api_tokens
+          if @authsession.api_tokens && !@authsession.api_tokens.empty?
+            @refresh_token = @authsession.api_tokens.order(created_at: :desc).first.refresh_token
+          end
           return unless refresh_token
 
           build_oauth_params
