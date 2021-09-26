@@ -7,8 +7,7 @@ module Teachbase
         class Menu < Teachbase::Bot::Interfaces::Base::Menu
           def sign_in_again
             super
-            @params[:buttons] = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.g(:main, :login).link),
-                                                                         InlineCallbackButton.reset_password(router.g(:main, :password, p: [param: :reset]).link)]).raw
+            @params[:buttons] = InlineCallbackKeyboard.collect(buttons: [InlineCallbackButton.sign_in(router.g(:main, :login).link, 'demo_mode')]).raw
             @params[:slices_count] = 2
             self
           end

@@ -4,15 +4,17 @@ module Teachbase
   module Bot
     class Authorizer
       class UserAuthData < Teachbase::Bot::Authorizer::Base
-        attr_reader :login_type, :login
+        def initialize(authsession, appshell, account_credentials = {})
+          @appshell = appshell
+          super(authsession, account_credentials)
+        end
 
         def build
           data = @authsession&.user ? @authsession.user_auth_data : @appshell.request_user_auth_data
-          raise "Can't find user auth data" if data.values.any?(nil)
+          raise if data.values.any?(nil)
 
           @crypted_password = data[:crypted_password]
-          @login_type = kind_of_login(data[:login])
-          @login = login_type == :phone ? data[:login].to_i.to_s : data[:login]
+          build_login_and_type(data)
           build_oauth_params
         end
 
@@ -21,15 +23,6 @@ module Teachbase
         def build_oauth_params
           super.merge!(user_login: login,
                        password: @crypted_password.decrypt(:symmetric, password: $app_config.load_encrypt_key))
-        end
-
-        def kind_of_login(login_data)
-          case login_data
-          when Validator::EMAIL_MASK
-            :email
-          when Validator::PHONE_MASK
-            :phone
-          end
         end
       end
     end

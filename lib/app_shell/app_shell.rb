@@ -83,7 +83,7 @@ module Teachbase
         user_password = new_user.password ? new_user.password.decrypt(:symmetric, password: $app_config.load_encrypt_key) : rand(100_000..999_999).to_s
         user_attrs = contact.to_payload_hash
         user_attrs[:password] = user_password.to_s
-        api_session = Teachbase::Bot::AuthSession.new.endpoint_v1_api_auth
+        api_session = Teachbase::Bot::AuthSession.new.endpoint_v1_api
         registration_result = api_session.add_user_to_account(user_attrs, labels)
         raise "Can't add user to account" if registration_result.empty? || !registration_result
 
@@ -103,7 +103,7 @@ module Teachbase
         user_password = request_user_password(:new).source
         raise "Can't get user password" unless user_password
 
-        api_session = Teachbase::Bot::AuthSession.new.endpoint_v1_api_auth
+        api_session = Teachbase::Bot::AuthSession.new.endpoint_v1_api
         reset_password_result = api_session.reset_user_password(tb_id: current_user.tb_id, password: user_password)
         raise "Password not changed" unless reset_password_result.empty?
 
@@ -116,7 +116,7 @@ module Teachbase
       end
 
       def ping_account(_account_tb_id, client_params)
-        Teachbase::Bot::AuthSession.new.endpoint_v1_api_auth(client_params).ping
+        Teachbase::Bot::AuthSession.new.endpoint_v1_api(client_params).ping
       rescue RestClient::Unauthorized => e
         e
       end
@@ -157,6 +157,11 @@ module Teachbase
       def request_user_login
         controller.interface.sys.text.ask_login.show
         request_data(:login)
+      end
+
+      def request_auth_code
+        controller.interface.sys.text.ask_auth_code.show
+        request_data(:string)
       end
 
       def request_user_account_data(avaliable_accounts = nil, options = [])

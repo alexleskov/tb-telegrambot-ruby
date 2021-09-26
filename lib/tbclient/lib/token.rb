@@ -3,53 +3,48 @@
 module Teachbase
   module API
     class Token
-      class << self
-        attr_reader :grant_types
-      end
-
-      @grant_types = { endpoint: "client_credentials", mobile: "password" }
-
-      attr_reader :grant_type,
-                  :expired_at,
-                  :api_type,
-                  :api_version,
+      attr_reader :expired_at,
                   :value,
                   :type,
                   :expires_in,
                   :refresh_token,
                   :created_at,
                   :resource_owner_id,
+                  :api_version,
+                  :api_type,
+                  :grant_type,
                   :expiration_time
-                  
+
       attr_accessor :account_id
 
-      def initialize(api_type, api_version, params)
-        @api_type = api_type
-        @api_version = api_version
-        @account_id = params[:account_id]
-        @expiration_time = params[:expiration_time] || $app_config.token_expiration_time
-        @params = params
-        @grant_type = self.class.grant_types[api_type]
-        @value = call_token
+      def initialize(client_config)
+        @client_config = client_config
+        @api_version = client_config.api_version
+        @api_type = client_config.api_type
+        @grant_type = client_config.grant_type
+      end
+
+      def call
+        @value = @client_config.access_token ? @client_config.access_token.to_s : request
         raise "API token '#{value}' is null" unless value
+
+        self
       end
 
-      def call_token
-        @params[:access_token] ? @params[:access_token].to_s : token_request
-      end
+      private
 
-      def token_request
-        r = @params[:rest_client].post "#{@params[:lms_host]}/oauth/token", create_payload.to_json,
-                                       content_type: :json
+      def request
+        r = @client_config.rest_client.post("#{@client_config.lms_host}/oauth/token", create_payload.to_json,
+                                            content_type: @client_config.answer_type)
         raw_token_response = JSON.parse(r.body)
-        @expired_at = access_token_expired_at(raw_token_response)
+        @expired_at = define_expired_at(raw_token_response["created_at"])
         @type = raw_token_response["token_type"]
         @expires_in = raw_token_response["expires_in"]
         @refresh_token = raw_token_response["refresh_token"]
         @created_at = raw_token_response["created_at"]
         @resource_owner_id = raw_token_response["resource_owner_id"]
-        raw_token_response["access_token"]
-      rescue @params[:rest_client]::ExceptionWithResponse => e
+        @value = raw_token_response["access_token"]
+      rescue @client_config.rest_client::ExceptionWithResponse => e
         case e.http_code
         when 301, 302, 307
           e.response.follow_redirection
@@ -58,28 +53,19 @@ module Teachbase
         end
       end
 
-      protected
-
-      def mobile_type?
-        api_type == :mobile
-      end
-
       def create_payload
-        payload = { client_id: @params[:client_id],
-                    client_secret: @params[:client_secret],
-                    grant_type: grant_type }
-        if mobile_type?
-          payload.merge!(username: @params[:user_login],
-                         password: @params[:password])
-        end
-        payload
+        { client_id: @client_config.client_id, client_secret: @client_config.client_secret, grant_type: @client_config.grant_type,
+          username: @client_config.user_login, password: @client_config.password, auth_code: @client_config.auth_code,
+          refresh_token: @client_config.refresh_token }
       end
 
-      def access_token_expired_at(raw_token_response)
-        token_exp_time = @expiration_time.to_i
+      def define_expired_at(token_created_at)
+        raise "Can't find token created at time" unless token_created_at
+
+        token_exp_time = $app_config.token_expiration_time.to_i
         raise "Token time limit = '#{token_exp_time}'. It can't be < 0." if token_exp_time.negative?
 
-        Time.at(raw_token_response["created_at"]).utc + token_exp_time
+        Time.at(token_created_at).utc + token_exp_time
       end
     end
   end

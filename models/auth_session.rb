@@ -70,8 +70,9 @@ module Teachbase
       end
 
       def with_api_auth(api_type, version, token_mode, oauth_params)
-        api_auth(api_type, version, oauth_params)
-        return unless tb_api.token.value
+        api(api_type, version, oauth_params)
+        tb_api.call_token
+        raise "Can't find api token value" unless tb_api.token&.value
 
         if token_mode == :save_token
           new_api_token = api_tokens.find_or_create_by!(active: true)
@@ -81,14 +82,14 @@ module Teachbase
         self
       end
 
-      def endpoint_v1_api_auth(oauth_params = {})
+      def endpoint_v1_api(oauth_params = {})
         oauth_params[:account_id] ||= $app_config.account_id
         oauth_params[:client_id] ||= $app_config.client_id
         oauth_params[:client_secret] ||= $app_config.client_secret
         with_api_auth(:endpoint, 1, :no_save_token, oauth_params)
       end
 
-      def api_auth(api_type, version, oauth_params = {})
+      def api(api_type, version, oauth_params = {})
         @tb_api = Teachbase::API::Client.new(api_type, version, oauth_params)
       end
 

@@ -38,13 +38,9 @@ module Teachbase
           $logger.debug "On auth error: #{e.class}. #{e.inspect}"
           title = to_text_by_exceiption_code(e)
           title = "#{I18n.t('accounts')}: #{title}" if e.is_a?(TeachbaseBotException::Account)
-          if access_denied?(e) || e.is_a?(TeachbaseBotException::Account)
-            appshell.logout
-            title = "#{title} #{I18n.t('enter_by_auth_data').downcase} #{I18n.t('info_about_setted_password')}" if e.http_code == 401
-            interface.sys.menu(text: title).sign_in_again.show
-            appshell.to_default_scenario if appshell.user_settings.scenario == Teachbase::Bot::Strategies::DEMO_MODE_NAME
-          end
+          appshell.logout if access_denied?(e) || e.is_a?(TeachbaseBotException::Account)
           interface.sys.menu.starting.show
+          interface.sys.menu(text: title).sign_in_again.show
         end
       end
     end
