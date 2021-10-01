@@ -152,9 +152,9 @@ module Teachbase
             self
           end
 
-          def farewell(user_name)
+          def farewell
             @params[:type] = :hide_kb
-            @params[:text] ||= "<b>#{user_name}!</b> #{I18n.t('farewell_message')} #{Emoji.t(:crying_cat_face)}"
+            @params[:text] ||= "#{I18n.t('farewell_message').capitalize} #{Emoji.t(:crying_cat_face)}"
             self
           end
 

@@ -28,7 +28,7 @@ module Teachbase
         end
 
         def sign_out
-          interface.sys.menu.farewell(appshell.user_fullname(:string)).show
+          interface.sys.menu.farewell.show
           appshell.to_default_scenario if demo_mode?
           appshell.logout
           appshell.controller.context.handle

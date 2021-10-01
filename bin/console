@@ -2,6 +2,8 @@
 # frozen_string_literal: true
 
 require './application'
-
 require "irb"
+require "pry"
+
+Pry.start
 IRB.start(__FILE__)

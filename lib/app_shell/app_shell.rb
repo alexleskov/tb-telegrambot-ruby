@@ -46,7 +46,6 @@ module Teachbase
 
       def authorization(mode = access_mode)
         user(mode)
-        data_loader.user.me
       end
 
       def logout
