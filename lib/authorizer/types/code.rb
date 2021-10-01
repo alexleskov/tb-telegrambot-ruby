@@ -15,10 +15,9 @@ module Teachbase
           data = { login: @authsession&.user ? @authsession.user_auth_data[:login] : @appshell.request_user_login }
           raise unless data[:login]
 
-          data[:login] = data[:login].source if data[:login].is_a?(Teachbase::Bot::Controller)
+          data[:login] = data[:login] if data[:login].is_a?(Teachbase::Bot::Controller)
           Teachbase::Bot::AuthSession.new.api(:no_type, 1, user_login: data[:login]).call_auth_code
-          auth_code = @appshell.request_auth_code
-          data[:auth_code] = auth_code.source
+          data[:auth_code] = @appshell.request_auth_code
           raise if data.values.any?(nil)
 
           @auth_code = data[:auth_code]

@@ -139,29 +139,32 @@ module Teachbase
       end
 
       def request_user_auth_data
-        user_login = request_user_login
-        raise "Can't find user login" unless user_login
-
-        user_password = request_user_password
-        raise "Can't find user password" unless user_password
-
-        { login: user_login.source,
-          crypted_password: user_password.source.encrypt(:symmetric, password: $app_config.load_encrypt_key) }
+        { login: user_login,
+          crypted_password: user_password.encrypt(:symmetric, password: $app_config.load_encrypt_key) }
       end
 
       def request_user_password(state = :current)
         controller.interface.sys.text.ask_password(state).show
-        request_data(:password)
+        user_password = request_data(:password)
+        raise "Can't find user password" unless user_password
+
+        user_password.source
       end
 
       def request_user_login
         controller.interface.sys.text.ask_login.show
-        request_data(:login)
+        user_login = request_data(:login)
+        raise "Can't find user login" unless user_login
+
+        user_login.source.downcase
       end
 
       def request_auth_code
         controller.interface.sys.text.ask_auth_code.show
-        request_data(:string)
+        auth_code = request_data(:string)
+        raise "Can't find auth code" unless auth_code
+
+        auth_code.source
       end
 
       def request_user_account_data(avaliable_accounts = nil, options = [])
