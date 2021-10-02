@@ -25,7 +25,7 @@ module Teachbase
           def find_user(user_id)
             return appshell.current_account.users.find_by(tb_id: user_id) if user_id
 
-            appshell.data_loader.user.profile.me
+            appshell.data_loader.user.me
             appshell.user
           end
 

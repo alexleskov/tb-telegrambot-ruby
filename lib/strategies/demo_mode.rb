@@ -30,7 +30,6 @@ module Teachbase
           auth = appshell.authorization
           raise unless auth
 
-          appshell.data_loader.user.profile.me
           interface.sys.content(file: "https://storage.yandexcloud.net/tbpublic/other/2868-300x300.png",
                                 caption: "#{appshell.user_fullname(:array).first} #{Emoji.t(:wave)}\n#{I18n.t('about_bot_demo_mode')}").photo
           interface.sys.menu.after_auth.show
